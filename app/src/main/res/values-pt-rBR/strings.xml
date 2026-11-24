@@ -1062,4 +1062,8 @@
     <string name="widget_volume_up">Aumentar volume</string>
     <string name="widget_volume_down">Diminuir volume</string>
     <string name="widget_listening_today">Ouvindo hoje</string>
+    <string name="widget_dark_square_name">Cartão escuro</string>
+    <string name="widget_dark_square_description">Cartão quadrado com curtir, timer de sono, controles, progresso, aleatório e repetir.</string>
+    <string name="widget_light_wave_name">Onda clara</string>
+    <string name="widget_light_wave_description">Cartão creme com onda de áudio, play laranja, aleatório e curtir.</string>
 </resources>

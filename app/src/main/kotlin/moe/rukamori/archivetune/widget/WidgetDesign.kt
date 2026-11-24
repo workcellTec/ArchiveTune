@@ -72,6 +72,10 @@ internal data class WidgetPlaybackState(
     val isAvailable: Boolean,
     val dominantColor: Int?,
     val playbackPosition: Float,
+    val isLiked: Boolean = false,
+    val shuffleOn: Boolean = false,
+    val repeatMode: Int = 0,
+    val durationMs: Long = 0L,
 )
 
 internal enum class WidgetSurfaceStyle {
@@ -133,6 +137,10 @@ internal fun Preferences.toWidgetPlaybackState(context: Context): WidgetPlayback
         isAvailable = isAvailable,
         dominantColor = this[MusicWidgetKeys.DOMINANT_COLOR],
         playbackPosition = (this[MusicWidgetKeys.PLAYBACK_POSITION] ?: 0f).coerceIn(0f, 1f),
+        isLiked = this[MusicWidgetKeys.IS_LIKED] ?: false,
+        shuffleOn = this[MusicWidgetKeys.SHUFFLE_ON] ?: false,
+        repeatMode = this[MusicWidgetKeys.REPEAT_MODE] ?: 0,
+        durationMs = this[MusicWidgetKeys.DURATION_MS] ?: 0L,
     )
 }
 
@@ -430,6 +438,12 @@ internal fun volumeUpAction(): Action = actionRunCallback<VolumeUpAction>()
 internal fun volumeDownAction(): Action = actionRunCallback<VolumeDownAction>()
 
 internal fun showVolumePanelAction(): Action = actionRunCallback<ShowVolumePanelAction>()
+
+internal fun toggleLikeAction(): Action = actionRunCallback<ToggleLikeAction>()
+
+internal fun toggleShuffleAction(): Action = actionRunCallback<ToggleShuffleAction>()
+
+internal fun toggleRepeatAction(): Action = actionRunCallback<ToggleRepeatAction>()
 
 internal fun skipNextAction(): Action = actionRunCallback<SkipNextAction>()
 

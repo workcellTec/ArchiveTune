@@ -432,6 +432,30 @@
         </receiver>
 
         <receiver
+            android:name=".widget.DarkSquareWidgetReceiver"
+            android:label="@string/widget_dark_square_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_dark_square_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.LightWaveWidgetReceiver"
+            android:label="@string/widget_light_wave_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_light_wave_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.QueueWidgetReceiver"
             android:label="@string/widget_queue_name"
             android:exported="true">

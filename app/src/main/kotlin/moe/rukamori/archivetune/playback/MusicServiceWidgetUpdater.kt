@@ -46,6 +46,8 @@ import moe.rukamori.archivetune.widget.PillWidget
 import moe.rukamori.archivetune.widget.QueueWidget
 import moe.rukamori.archivetune.widget.SquareCardWidget
 import moe.rukamori.archivetune.widget.ControlsWidget
+import moe.rukamori.archivetune.widget.DarkSquareWidget
+import moe.rukamori.archivetune.widget.LightWaveWidget
 import moe.rukamori.archivetune.widget.StatsWidget
 import moe.rukamori.archivetune.widget.VolumeWidget
 import moe.rukamori.archivetune.widget.encodeWeeklyStats
@@ -61,6 +63,7 @@ internal class MusicServiceWidgetUpdater(
     private val player: Player,
     private val scopeProvider: () -> CoroutineScope,
     private val isSleepTimerActive: () -> Boolean,
+    private val isCurrentSongLiked: () -> Boolean,
     private val loadWeeklyStats: suspend () -> List<Long>,
 ) {
     private val widgetManager = GlanceAppWidgetManager(service)
@@ -112,7 +115,9 @@ internal class MusicServiceWidgetUpdater(
             TAG,
             "pushState media=${mediaItem?.mediaId} art=${meta?.artworkUri} file=${artFile?.name} targets=${installedTargets.size}",
         )
-        val upNext = queueEntries?.map { entry -> entry.toWidgetMediaItem() }
+        // First pass only uses covers that are already on disk so the new track shows up right away;
+        // missing up-next covers are downloaded afterwards and pushed in a second pass.
+        val upNext = queueEntries?.map { entry -> entry.toWidgetMediaItem(download = false) }
         val weeklyStats = if (installedTargets.any { it.target.requiresStats }) loadWeeklyStatsSafely() else null
         val snapshot =
             WidgetSnapshot(
@@ -127,12 +132,29 @@ internal class MusicServiceWidgetUpdater(
                 upNext = upNext,
                 sleepActive = isSleepTimerActive(),
                 weeklyStats = weeklyStats,
+                liked = isCurrentSongLiked(),
+                shuffleOn = player.shuffleModeEnabled,
+                repeatMode = player.repeatMode,
+                durationMs = player.duration.takeIf { it > 0L && it != C.TIME_UNSET } ?: 0L,
             )
 
         installedTargets.forEach { target ->
             updateWidget(target, snapshot)
         }
-        pruneArtCache(snapshot.referencedArtPaths())
+
+        var finalSnapshot = snapshot
+        val missingCovers =
+            queueEntries != null &&
+                upNext != null &&
+                queueEntries.indices.any { index -> upNext[index].artPath == null && queueEntries[index].artworkUri != null }
+        if (missingCovers && queueEntries != null) {
+            val completed = queueEntries.map { entry -> entry.toWidgetMediaItem(download = true) }
+            finalSnapshot = snapshot.copy(upNext = completed)
+            installedTargets.forEach { target ->
+                updateWidget(target, finalSnapshot)
+            }
+        }
+        pruneArtCache(finalSnapshot.referencedArtPaths())
     }
 
     private fun collectUpNextEntries(): List<QueueEntry> {
@@ -160,14 +182,22 @@ internal class MusicServiceWidgetUpdater(
         return entries
     }
 
-    private suspend fun QueueEntry.toWidgetMediaItem(): WidgetMediaItem =
+    private suspend fun QueueEntry.toWidgetMediaItem(download: Boolean): WidgetMediaItem =
         WidgetMediaItem(
             id = mediaId,
             title = title.ifBlank { service.getString(R.string.no_track_playing) },
             subtitle = artist,
-            artPath = artworkUri?.let { cacheAlbumArt(it) }?.absolutePath,
+            artPath =
+                artworkUri
+                    ?.let { uri -> if (download) cacheAlbumArt(uri) else cachedAlbumArt(uri) }
+                    ?.absolutePath,
             queueIndex = index,
         )
+
+    private fun albumArtFile(uri: Uri): File =
+        File(service.cacheDir, "$ART_FILE_PREFIX${Integer.toHexString(uri.toString().hashCode())}.jpg")
+
+    private fun cachedAlbumArt(uri: Uri): File? = albumArtFile(uri).takeIf { it.isFile && it.length() > 0L }
 
     private suspend fun loadWeeklyStatsSafely(): String? =
         try {
@@ -230,6 +260,10 @@ internal class MusicServiceWidgetUpdater(
             this[MusicWidgetKeys.UP_NEXT]?.let { mutable[MusicWidgetKeys.UP_NEXT] = it }
             this[MusicWidgetKeys.SLEEP_ACTIVE]?.let { mutable[MusicWidgetKeys.SLEEP_ACTIVE] = it }
             this[MusicWidgetKeys.WEEKLY_STATS]?.let { mutable[MusicWidgetKeys.WEEKLY_STATS] = it }
+            this[MusicWidgetKeys.IS_LIKED]?.let { mutable[MusicWidgetKeys.IS_LIKED] = it }
+            this[MusicWidgetKeys.SHUFFLE_ON]?.let { mutable[MusicWidgetKeys.SHUFFLE_ON] = it }
+            this[MusicWidgetKeys.REPEAT_MODE]?.let { mutable[MusicWidgetKeys.REPEAT_MODE] = it }
+            this[MusicWidgetKeys.DURATION_MS]?.let { mutable[MusicWidgetKeys.DURATION_MS] = it }
         }
 
     private fun MutablePreferences.writeSnapshot(snapshot: WidgetSnapshot) {
@@ -261,6 +295,10 @@ internal class MusicServiceWidgetUpdater(
         }
 
         this[MusicWidgetKeys.SLEEP_ACTIVE] = snapshot.sleepActive
+        this[MusicWidgetKeys.IS_LIKED] = snapshot.liked
+        this[MusicWidgetKeys.SHUFFLE_ON] = snapshot.shuffleOn
+        this[MusicWidgetKeys.REPEAT_MODE] = snapshot.repeatMode
+        this[MusicWidgetKeys.DURATION_MS] = snapshot.durationMs
         snapshot.weeklyStats?.let { stats -> this[MusicWidgetKeys.WEEKLY_STATS] = stats }
         snapshot.upNext?.let { items -> writeMediaItems(MusicWidgetKeys.UP_NEXT, items) }
     }
@@ -278,7 +316,7 @@ internal class MusicServiceWidgetUpdater(
 
     private suspend fun cacheAlbumArt(uri: Uri): File? =
         withContext(Dispatchers.IO) {
-            val dest = File(service.cacheDir, "$ART_FILE_PREFIX${Integer.toHexString(uri.toString().hashCode())}.jpg")
+            val dest = albumArtFile(uri)
             if (dest.isFile && dest.length() > 0L) return@withContext dest
 
             if (uri.scheme == "content" || uri.scheme == "file") {
@@ -384,6 +422,10 @@ internal class MusicServiceWidgetUpdater(
         val upNext: List<WidgetMediaItem>?,
         val sleepActive: Boolean,
         val weeklyStats: String?,
+        val liked: Boolean,
+        val shuffleOn: Boolean,
+        val repeatMode: Int,
+        val durationMs: Long,
     )
 
     private data class WidgetTarget(
@@ -411,11 +453,13 @@ internal class MusicServiceWidgetUpdater(
                 WidgetTarget(CoverPlayWidget::class.java, CoverPlayWidget()),
                 WidgetTarget(SquareCardWidget::class.java, SquareCardWidget()),
                 WidgetTarget(CoverWideWidget::class.java, CoverWideWidget()),
-                WidgetTarget(GlassWidget::class.java, GlassWidget()),
+                WidgetTarget(GlassWidget::class.java, GlassWidget(), requiresQueue = true),
                 WidgetTarget(HardwareWidget::class.java, HardwareWidget()),
                 WidgetTarget(HardwareMiniWidget::class.java, HardwareMiniWidget()),
                 WidgetTarget(PillWidget::class.java, PillWidget()),
-                WidgetTarget(ModernWidget::class.java, ModernWidget()),
+                WidgetTarget(ModernWidget::class.java, ModernWidget(), requiresQueue = true),
+                WidgetTarget(DarkSquareWidget::class.java, DarkSquareWidget()),
+                WidgetTarget(LightWaveWidget::class.java, LightWaveWidget()),
                 WidgetTarget(ControlsWidget::class.java, ControlsWidget()),
                 WidgetTarget(VolumeWidget::class.java, VolumeWidget()),
                 WidgetTarget(
@@ -432,6 +476,8 @@ internal class MusicServiceWidgetUpdater(
 
         val progressWidgets =
             listOf(
+                WidgetTarget(DarkSquareWidget::class.java, DarkSquareWidget()),
+                WidgetTarget(LightWaveWidget::class.java, LightWaveWidget()),
                 WidgetTarget(HardwareWidget::class.java, HardwareWidget()),
                 WidgetTarget(HardwareMiniWidget::class.java, HardwareMiniWidget()),
                 WidgetTarget(PillWidget::class.java, PillWidget()),

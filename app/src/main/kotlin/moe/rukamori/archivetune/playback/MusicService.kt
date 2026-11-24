@@ -238,6 +238,7 @@ import moe.rukamori.archivetune.extensions.toEnum
 import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.extensions.toPersistQueue
 import moe.rukamori.archivetune.extensions.toQueue
+import moe.rukamori.archivetune.extensions.toggleRepeatMode
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.SongItem
 import moe.rukamori.archivetune.innertube.models.WatchEndpoint
@@ -1352,6 +1353,7 @@ class MusicService :
                 player = player,
                 scopeProvider = { scope },
                 isSleepTimerActive = { ::sleepTimer.isInitialized && sleepTimer.isActive },
+                isCurrentSongLiked = { currentSong.value?.song?.liked == true },
                 loadWeeklyStats = { widgetStatsRepository.weeklyListeningMillis() },
             )
 
@@ -1416,6 +1418,10 @@ class MusicService :
                 updateNotification()
                 widgetUpdater.update()
             }
+        currentSong
+            .map { song -> song?.song?.liked == true }
+            .distinctUntilChanged()
+            .collect(scope) { widgetUpdater.update() }
         currentMediaMetadata
             .flatMapLatest { mediaMetadata ->
                 if (mediaMetadata == null) flowOf(null) else moduleDownloadUtil.getDownload(mediaMetadata.id)
@@ -7586,6 +7592,7 @@ class MusicService :
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         updateNotification()
+        if (::widgetUpdater.isInitialized) widgetUpdater.update()
         val joined = togetherSessionState.value as? moe.rukamori.archivetune.together.TogetherSessionState.Joined
         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
             if (!isTogetherApplyingRemote()) {
@@ -7616,6 +7623,7 @@ class MusicService :
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         updateNotification()
+        if (::widgetUpdater.isInitialized) widgetUpdater.update()
         val joined = togetherSessionState.value as? moe.rukamori.archivetune.together.TogetherSessionState.Joined
         if (joined?.role is moe.rukamori.archivetune.together.TogetherRole.Guest) {
             if (!isTogetherApplyingRemote()) {
@@ -9135,6 +9143,12 @@ class MusicService :
             WidgetServiceActions.PLAY_QUEUE_ITEM -> playWidgetQueueItem(intent)
 
             WidgetServiceActions.PLAY_SONG -> playWidgetSong(intent)
+
+            WidgetServiceActions.TOGGLE_LIKE -> toggleLike()
+
+            WidgetServiceActions.TOGGLE_SHUFFLE -> player.shuffleModeEnabled = !player.shuffleModeEnabled
+
+            WidgetServiceActions.TOGGLE_REPEAT -> player.toggleRepeatMode()
 
             WidgetServiceActions.SLEEP_TIMER -> {
                 if (sleepTimer.isActive) {

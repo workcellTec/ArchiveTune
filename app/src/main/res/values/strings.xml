@@ -1536,4 +1536,8 @@
     <string name="widget_volume_up">Volume up</string>
     <string name="widget_volume_down">Volume down</string>
     <string name="widget_listening_today">Listening today</string>
+    <string name="widget_dark_square_name">Dark card</string>
+    <string name="widget_dark_square_description">Square card with like, sleep timer, controls, progress, shuffle and repeat.</string>
+    <string name="widget_light_wave_name">Light wave</string>
+    <string name="widget_light_wave_description">Cream card with an audio wave, orange play button, shuffle and like.</string>
 </resources>

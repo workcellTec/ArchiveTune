@@ -65,10 +65,16 @@ class GlassWidget : GlanceAppWidget() {
 @Composable
 private fun GlassContent(context: Context) {
     val state = rememberPlaybackState(context)
+    val upNext = rememberWidgetUpNext()
     val size = LocalSize.current
     WidgetTheme(state.dominantColor, WidgetSurfaceStyle.Ambient, context) { palette ->
         WidgetSurface(state, palette, context, contentPadding = 10.dp, backdrop = true) {
-            val coverSize = (size.height - 44.dp).coerceIn(48.dp, 120.dp)
+            val contentHeight = size.height - 44.dp
+            val coverSize = (size.height - 44.dp).coerceIn(48.dp, 112.dp)
+            // Space left for the cards once title, label and transport are accounted for.
+            val cardSize = (contentHeight - GlassFixedHeight).coerceAtMost(56.dp)
+            val textWidth = size.width - 44.dp - coverSize - 12.dp
+            val cardCount = if (state.isAvailable) nextCardsFit(textWidth, cardSize, upNext.size) else 0
             Row(
                 modifier =
                     GlanceModifier
@@ -90,7 +96,19 @@ private fun GlassContent(context: Context) {
                 )
                 Spacer(GlanceModifier.width(12.dp))
                 Column(modifier = GlanceModifier.defaultWeight().fillMaxHeight()) {
-                    WidgetTrackText(state, palette, GlanceModifier.fillMaxWidth(), titleSize = 16.sp)
+                    WidgetTrackText(
+                        state,
+                        palette,
+                        GlanceModifier.fillMaxWidth(),
+                        titleSize = if (cardCount > 0) 19.sp else 22.sp,
+                        titleLines = if (cardCount > 0) 1 else 2,
+                    )
+                    if (cardCount > 0) {
+                        Spacer(GlanceModifier.height(6.dp))
+                        WidgetOverline(context.getString(R.string.widget_up_next), palette, context)
+                        Spacer(GlanceModifier.height(4.dp))
+                        WidgetNextCards(upNext.take(cardCount), palette, context, cardSize)
+                    }
                     Spacer(GlanceModifier.defaultWeight())
                     WidgetGlassTransport(state, palette, context, buttonSize = 36.dp, playSize = 44.dp)
                 }
@@ -98,3 +116,6 @@ private fun GlassContent(context: Context) {
         }
     }
 }
+
+/** Title, artist, label, spacing and transport, in dp. */
+private val GlassFixedHeight = 134.dp

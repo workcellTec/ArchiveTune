@@ -10,6 +10,7 @@ package moe.rukamori.archivetune.widget
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 object MusicWidgetKeys {
@@ -24,4 +25,8 @@ object MusicWidgetKeys {
     val UP_NEXT = stringPreferencesKey("widget_up_next")
     val SLEEP_ACTIVE = booleanPreferencesKey("widget_sleep_active")
     val WEEKLY_STATS = stringPreferencesKey("widget_weekly_stats")
+    val IS_LIKED = booleanPreferencesKey("widget_is_liked")
+    val SHUFFLE_ON = booleanPreferencesKey("widget_shuffle_on")
+    val REPEAT_MODE = intPreferencesKey("widget_repeat_mode")
+    val DURATION_MS = longPreferencesKey("widget_duration_ms")
 }

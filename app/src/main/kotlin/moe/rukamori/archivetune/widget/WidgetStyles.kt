@@ -179,3 +179,82 @@ internal fun WidgetGlassTransport(
         }
     }
 }
+
+/** "m:ss" for a position/duration in milliseconds. */
+internal fun formatWidgetTime(millis: Long): String {
+    val totalSeconds = (millis / 1000L).coerceAtLeast(0L)
+    return "%d:%02d".format(totalSeconds / 60L, totalSeconds % 60L)
+}
+
+/** Palette with fixed colors, for widgets that ignore the album-art tint. */
+internal fun fixedWidgetPalette(
+    surface: ColorProvider,
+    onSurface: ColorProvider,
+    onSurfaceVariant: ColorProvider,
+    accent: ColorProvider,
+    onAccent: ColorProvider,
+    container: ColorProvider,
+    track: ColorProvider,
+    artworkFallback: ColorProvider,
+): WidgetPalette =
+    WidgetPalette(
+        style = WidgetSurfaceStyle.Ambient,
+        surface = surface,
+        onSurface = onSurface,
+        onSurfaceVariant = onSurfaceVariant,
+        accent = accent,
+        onAccent = onAccent,
+        container = container,
+        onContainer = onSurface,
+        track = track,
+        divider = track,
+        artworkFallback = artworkFallback,
+        motionAccent = WidgetDayNightColor(0xFFFFFFFF.toInt(), 0xFFFFFFFF.toInt()),
+        motionContainer = WidgetDayNightColor(0xFF2E333D.toInt(), 0xFF2E333D.toInt()),
+        backdropTint = 0xFF1B1D24.toInt(),
+    )
+
+@Composable
+internal fun WidgetShuffleButton(
+    state: WidgetPlaybackState,
+    context: Context,
+    activeTint: ColorProvider,
+    idleTint: ColorProvider,
+    modifier: GlanceModifier = GlanceModifier.size(32.dp),
+) {
+    WidgetIconButton(
+        icon = if (state.shuffleOn) R.drawable.shuffle_on else R.drawable.shuffle,
+        contentDescription = context.getString(if (state.shuffleOn) R.string.action_shuffle_off else R.string.action_shuffle_on),
+        action = toggleShuffleAction(),
+        tint = if (state.shuffleOn) activeTint else idleTint,
+        modifier = modifier,
+        iconSize = 20.dp,
+    )
+}
+
+@Composable
+internal fun WidgetRepeatButton(
+    state: WidgetPlaybackState,
+    context: Context,
+    activeTint: ColorProvider,
+    idleTint: ColorProvider,
+    modifier: GlanceModifier = GlanceModifier.size(32.dp),
+) {
+    val (icon, label) =
+        when (state.repeatMode) {
+            RepeatModeOne -> R.drawable.repeat_one_on to R.string.repeat_mode_one
+            RepeatModeAll -> R.drawable.repeat_on to R.string.repeat_mode_all
+            else -> R.drawable.repeat to R.string.repeat_mode_off
+        }
+    WidgetIconButton(
+        icon = icon,
+        contentDescription = context.getString(label),
+        action = toggleRepeatAction(),
+        tint = if (state.repeatMode == 0) idleTint else activeTint,
+        modifier = modifier,
+        iconSize = 20.dp,
+    )
+}
+
+private const val RepeatModeOne = 1
+private const val RepeatModeAll = 2

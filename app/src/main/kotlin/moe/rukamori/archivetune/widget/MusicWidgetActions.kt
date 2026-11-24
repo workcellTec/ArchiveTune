@@ -84,6 +84,36 @@ class SleepTimerAction : ActionCallback {
     }
 }
 
+class ToggleLikeAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        sendWidgetAction(context, WidgetServiceActions.TOGGLE_LIKE)
+    }
+}
+
+class ToggleShuffleAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        sendWidgetAction(context, WidgetServiceActions.TOGGLE_SHUFFLE)
+    }
+}
+
+class ToggleRepeatAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        sendWidgetAction(context, WidgetServiceActions.TOGGLE_REPEAT)
+    }
+}
+
 class VolumeUpAction : ActionCallback {
     override suspend fun onAction(
         context: Context,
@@ -116,6 +146,9 @@ class ShowVolumePanelAction : ActionCallback {
 
 internal object WidgetServiceActions {
     const val SLEEP_TIMER = "moe.rukamori.archivetune.WIDGET_SLEEP_TIMER"
+    const val TOGGLE_LIKE = "moe.rukamori.archivetune.WIDGET_TOGGLE_LIKE"
+    const val TOGGLE_SHUFFLE = "moe.rukamori.archivetune.WIDGET_TOGGLE_SHUFFLE"
+    const val TOGGLE_REPEAT = "moe.rukamori.archivetune.WIDGET_TOGGLE_REPEAT"
     const val PLAY_PAUSE = "moe.rukamori.archivetune.WIDGET_PLAY_PAUSE"
     const val SKIP_NEXT = "moe.rukamori.archivetune.WIDGET_SKIP_NEXT"
     const val SKIP_PREV = "moe.rukamori.archivetune.WIDGET_SKIP_PREV"

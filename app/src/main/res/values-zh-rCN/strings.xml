@@ -636,15 +636,9 @@
     <string name="widget_pause">暂停</string>
     <string name="widget_previous">上一首</string>
     <string name="widget_tap_to_open">点击打开 ArchiveTune</string>
-    <string name="widget_insights_title">听歌偏好</string>
-    <string name="widget_recommendations">为你推荐</string>
     <string name="widget_listening_time_empty">暂无听歌时长</string>
     <string name="widget_listening_time_minutes">%1$d 分钟</string>
     <string name="widget_listening_time_hours_minutes">%1$d 小时 %2$d 分钟</string>
-    <string name="widget_top_song_summary">近期最常听：%1$s</string>
-    <string name="widget_no_recent_songs">暂无近期听歌记录</string>
-    <string name="widget_no_genres">暂无曲风数据</string>
-    <string name="widget_no_recommendations">暂无推荐</string>
     <string name="remove_from_library_confirm">是否从音乐库中移除“%1$s”？</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="add">添加</string>
@@ -1013,9 +1007,6 @@
     <string name="scheduled_backup_load_failed">无法加载计划自动备份设置</string>
     <string name="scheduled_backup_update_failed">无法保存计划自动备份设置</string>
     <string name="gatekeeper_connection_blocked">连接已被 ArchiveTune Remote 拒绝。当前应用未能通过官方 ArchiveTune 构建验证。请从 https://github.com/rukamori/ArchiveTune 或 https://t.me/ArchiveTuneGC 获取官方构建版本</string>
-    <plurals name="widget_total_plays">
-        <item quantity="other">%d 次播放</item>
-    </plurals>
     <string name="sort_a_to_z">A → Z</string>
     <string name="sort_z_to_a">Z → A</string>
     <string name="discord_activity_type_playing_label">正在播放</string>

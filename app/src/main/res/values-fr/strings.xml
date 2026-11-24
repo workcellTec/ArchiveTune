@@ -777,20 +777,9 @@
     <string name="cast_available_device">Appareil disponible</string>
     <string name="cast_available_device_count">Appareils détectés : %1$d</string>
     <string name="cast_route_picker_unavailable">La diffusion n\'est pas disponible pour le moment.</string>
-    <string name="widget_insights_title">Perspectives d\'écoute</string>
-    <string name="widget_recommendations">Recommandations</string>
     <string name="widget_listening_time_empty">Pas encore de durée d\'écoute</string>
     <string name="widget_listening_time_minutes">%1$d min</string>
     <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 lecture</item>
-        <item quantity="many">%d lectures</item>
-        <item quantity="other">%d lectures</item>
-    </plurals>
-    <string name="widget_top_song_summary">Tendances du moment : %1$s</string>
-    <string name="widget_no_recent_songs">Aucune titre récent pour le moment</string>
-    <string name="widget_no_genres">Aucun genre pour l\'instant</string>
-    <string name="widget_no_recommendations">Aucune recommandation pour l\'instant</string>
     <string name="add">Ajouter</string>
     <string name="add_to_n_playlists">Ajouter à %1$d</string>
     <string name="no_playlists_yet">Aucune playlist pour le moment</string>

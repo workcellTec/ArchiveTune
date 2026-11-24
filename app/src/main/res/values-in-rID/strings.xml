@@ -136,18 +136,9 @@
     <string name="widget_pause">Jeda</string>
     <string name="widget_previous">Sebelumnya</string>
     <string name="widget_tap_to_open">Ketuk untuk membuka ArchiveTune</string>
-    <string name="widget_insights_title">Wawasan Mendengarkan</string>
-    <string name="widget_recommendations">Rekomendasi</string>
     <string name="widget_listening_time_empty">Belum ada waktu mendengarkan</string>
     <string name="widget_listening_time_minutes">%1$d mnt</string>
     <string name="widget_listening_time_hours_minutes">%1$d j %2$d mnt</string>
-    <plurals name="widget_total_plays">
-        <item quantity="other">%d pemutaran</item>
-    </plurals>
-    <string name="widget_top_song_summary">Paling sering diputar: %1$s</string>
-    <string name="widget_no_recent_songs">Belum ada lagu yang diputar</string>
-    <string name="widget_no_genres">Belum ada genre</string>
-    <string name="widget_no_recommendations">Belum ada rekomendasi</string>
     <string name="play_next">Putar berikutnya</string>
     <string name="add_to_queue">Tambah ke antrean</string>
     <string name="add_to_library">Tambah ke Pustaka</string>

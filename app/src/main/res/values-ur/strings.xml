@@ -127,19 +127,9 @@
     <string name="widget_pause">روکیں</string>
     <string name="widget_previous">پچھلا</string>
     <string name="widget_tap_to_open">‫ادھر ضرب لگا کر ArchiveTune کو کھولیں</string>
-    <string name="widget_insights_title">سننے کی بصیرت</string>
-    <string name="widget_recommendations">شفاعات</string>
     <string name="widget_listening_time_empty">سنا گیا وقت ابھی موجود نہیں</string>
     <string name="widget_listening_time_minutes">%1$d منٹ</string>
     <string name="widget_listening_time_hours_minutes">%1$d گھٹے %2$d منٹ</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 دفعہ</item>
-        <item quantity="other">%d دفعہ</item>
-    </plurals>
-    <string name="widget_top_song_summary">‫اوپر حالیہ: %1$s‬</string>
-    <string name="widget_no_recent_songs">کوئ حالیہ گانے نہیں</string>
-    <string name="widget_no_genres">ابھی تک کوئ انداز مزح نہیں</string>
-    <string name="widget_no_recommendations">ابھی تک کوئ شفاعات نہیں</string>
     <string name="play_next">اگلا بجائیں</string>
     <string name="add_to_queue">قطار میں شامل کریں</string>
     <string name="add_to_library">فہرست میں شامل کریں</string>

@@ -194,19 +194,9 @@
     <string name="widget_pause">توقيف مؤقت</string>
     <string name="widget_previous">اللي فات</string>
     <string name="widget_tap_to_open">دوس هنا عشان تفتح ArchiveTune</string>
-    <string name="widget_insights_title">تحليلات استماعك للمزيكا</string>
-    <string name="widget_recommendations">ترشيحات</string>
     <string name="widget_listening_time_empty">لسه مفيش أي وقت استماع</string>
     <string name="widget_listening_time_minutes">%1$d دقيقة</string>
     <string name="widget_listening_time_hours_minutes">%1$d س %2$d د</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">ولا مرة اتشغلت</item>
-        <item quantity="other">اتشغلت مرة واحدة</item>
-    </plurals>
-    <string name="widget_top_song_summary">أكتر حاجة سمعتها من قريب: %1$s</string>
-    <string name="widget_no_recent_songs">مفيش أغانٍ سمعتها قريب لسه</string>
-    <string name="widget_no_genres">مفيش أنواع مزيكا ظهرت لسه</string>
-    <string name="widget_no_recommendations">مفيش أي ترشيحات طالعة لسه</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="import_playlist">استيراد بلاي ليست</string>
     <string name="import_failed">الاستيراد فشل</string>

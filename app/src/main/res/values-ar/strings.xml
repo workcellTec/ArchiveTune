@@ -559,23 +559,9 @@
     <string name="widget_pause">إيقاف مؤقت</string>
     <string name="widget_previous">السابق</string>
     <string name="widget_tap_to_open">انقر لفتح ArchiveTune</string>
-    <string name="widget_insights_title">رؤى الاستماع</string>
-    <string name="widget_recommendations">التوصيات</string>
     <string name="widget_listening_time_empty">لا يوجد وقت استماع بعد</string>
     <string name="widget_listening_time_minutes">%1$d دقيقة</string>
     <string name="widget_listening_time_hours_minutes">%1$d س %2$d د</string>
-    <plurals name="widget_total_plays">
-        <item quantity="zero">لا توجد مرات تشغيل</item>
-        <item quantity="one">مرة تشغيل واحدة</item>
-        <item quantity="two">مرتا تشغيل</item>
-        <item quantity="few">%d مرات تشغيل</item>
-        <item quantity="many">%d مرة تشغيل</item>
-        <item quantity="other">%d مرة تشغيل</item>
-    </plurals>
-    <string name="widget_top_song_summary">الأعلى مؤخرًا: %1$s</string>
-    <string name="widget_no_recent_songs">لا توجد أغاني حديثة بعد</string>
-    <string name="widget_no_genres">لا توجد أنواع بعد</string>
-    <string name="widget_no_recommendations">لا توجد توصيات بعد</string>
     <string name="remove_from_library_confirm">هل تريد إزالة \"%1$s\" من مكتبتك؟</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="add">إضافة</string>

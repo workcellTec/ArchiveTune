@@ -128,18 +128,9 @@
     <string name="widget_pause">หยุดชั่วคราว</string>
     <string name="widget_previous">ก่อนหน้า</string>
     <string name="widget_tap_to_open">แตะเพื่อเปิด ArchiveTune</string>
-    <string name="widget_insights_title">ข้อมูลเชิงลึกเกี่ยวกับการฟัง</string>
-    <string name="widget_recommendations">ข้อแนะนำ</string>
     <string name="widget_listening_time_empty">ยังไม่มีสถิติการฟัง</string>
     <string name="widget_listening_time_minutes">%1$d นาที</string>
     <string name="widget_listening_time_hours_minutes">%1$d ชั่วโมง %2$d นาที</string>
-    <plurals name="widget_total_plays">
-        <item quantity="other">เล่น %d ครั้ง</item>
-    </plurals>
-    <string name="widget_top_song_summary">มาแรงช่วงนี้: %1$s</string>
-    <string name="widget_no_recent_songs">ยังไม่มีเพลงที่ฟังเพลงล่าสุด</string>
-    <string name="widget_no_genres">ยังไม่มีแนวเพลง</string>
-    <string name="widget_no_recommendations">ยังไม่มีการแนะนำ</string>
     <string name="play_next">เล่นถัดไป</string>
     <string name="add_to_queue">เพิ่มลงในคิว</string>
     <string name="add_to_library">เพิ่มลงในคลัง</string>

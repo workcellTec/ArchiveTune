@@ -1,0 +1,60 @@
+name: Build debug APK
+
+# Personal build of the fork: no Telegram, no release keystore needed.
+# The APK is signed with the default debug key and installs as a separate app
+# (package ends with ".debug"), next to the original ArchiveTune.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ 'widgets-novos' ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debug-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build gms-mobile-arm64 debug
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
+      - name: Generate translation contributor credits
+        run: python scripts/generate_translation_contributors.py
+
+      - name: Set up JDK 27
+        uses: actions/setup-java@v6
+        with:
+          java-version: '27'
+          distribution: 'temurin'
+
+      - name: Set Up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-cleanup: on-success
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleGmsMobileArm64Debug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: archivetune-debug-arm64
+          path: app/build/outputs/apk/**/*.apk
+          if-no-files-found: error

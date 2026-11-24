@@ -127,19 +127,9 @@
     <string name="widget_pause">Pauzeren</string>
     <string name="widget_previous">Vorige</string>
     <string name="widget_tap_to_open">Klik om ArchiveTune te openen</string>
-    <string name="widget_insights_title">Inzichten op basis van luistergedrag</string>
-    <string name="widget_recommendations">Aanbevelingen</string>
     <string name="widget_listening_time_empty">Nog geen luistertijd</string>
     <string name="widget_listening_time_minutes">%1$d min</string>
     <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 keer afgespeeld</item>
-        <item quantity="other">%d keer afgespeeld</item>
-    </plurals>
-    <string name="widget_top_song_summary">Meest populair de laatste tijd: %1$s</string>
-    <string name="widget_no_recent_songs">Nog geen recente nummers</string>
-    <string name="widget_no_genres">Nog geen genres</string>
-    <string name="widget_no_recommendations">Nog geen aanbevelingen</string>
     <string name="play_next">Volgende afspelen</string>
     <string name="add_to_queue">Toevoegen aan wachtrij</string>
     <string name="add_to_library">Toevoegen aan bibliotheek</string>

@@ -9,10 +9,12 @@ package moe.rukamori.archivetune.widget
 
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.util.Log
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.updateAll
 import moe.rukamori.archivetune.playback.MusicService
 
 class PlayPauseAction : ActionCallback {
@@ -72,7 +74,48 @@ class PlaySongAction : ActionCallback {
     }
 }
 
+class SleepTimerAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        sendWidgetAction(context, WidgetServiceActions.SLEEP_TIMER)
+    }
+}
+
+class VolumeUpAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        adjustWidgetVolume(context, AudioManager.ADJUST_RAISE, flags = 0)
+    }
+}
+
+class VolumeDownAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        adjustWidgetVolume(context, AudioManager.ADJUST_LOWER, flags = 0)
+    }
+}
+
+class ShowVolumePanelAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        adjustWidgetVolume(context, AudioManager.ADJUST_SAME, flags = AudioManager.FLAG_SHOW_UI)
+    }
+}
+
 internal object WidgetServiceActions {
+    const val SLEEP_TIMER = "moe.rukamori.archivetune.WIDGET_SLEEP_TIMER"
     const val PLAY_PAUSE = "moe.rukamori.archivetune.WIDGET_PLAY_PAUSE"
     const val SKIP_NEXT = "moe.rukamori.archivetune.WIDGET_SKIP_NEXT"
     const val SKIP_PREV = "moe.rukamori.archivetune.WIDGET_SKIP_PREV"
@@ -83,6 +126,21 @@ internal object WidgetServiceActions {
 }
 
 private const val TAG = "MusicWidgetActions"
+
+/** Moves the music stream volume (or just shows the system panel) and redraws the widgets that display it. */
+private suspend fun adjustWidgetVolume(
+    context: Context,
+    direction: Int,
+    flags: Int,
+) {
+    runCatching {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, direction, flags)
+    }.onFailure { error ->
+        Log.e(TAG, "Failed to adjust volume", error)
+    }
+    VolumeWidget().updateAll(context)
+}
 
 private inline fun sendWidgetAction(
     context: Context,

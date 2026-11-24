@@ -758,15 +758,6 @@
     <string name="youtube_channels">Canales de YouTube</string>
     <string name="enable_youlyplus_lyrics">Activar las letras de YouLyPlus</string>
     <string name="source">Origen</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">Una reproducci贸n</item>
-        <item quantity="many">%d reproducciones</item>
-        <item quantity="other">%d reproducciones</item>
-    </plurals>
-    <string name="widget_top_song_summary">Lo m谩s destacado recientemente: %1$s</string>
-    <string name="widget_no_recent_songs">A煤n no hay canciones recientes</string>
-    <string name="widget_no_genres">A煤n no hay g茅neros</string>
-    <string name="widget_no_recommendations">Sin recomendaciones</string>
     <string name="library_top_mixes_loading">Preparando tus mezclas de IA鈥�</string>
     <string name="library_top_mixes_refresh">Actualizar las mezclas</string>
     <string name="library_top_mixes_configure_ai">Configurar la IA</string>
@@ -811,8 +802,6 @@
     <string name="cast_available_device">Dispositivo disponible</string>
     <string name="cast_available_device_count">Dispositivos encontrados: %1$d</string>
     <string name="cast_route_picker_unavailable">La transmisi贸n no est谩 disponible en este momento.</string>
-    <string name="widget_insights_title">Estad铆sticas de escucha</string>
-    <string name="widget_recommendations">Recomendaciones</string>
     <string name="widget_listening_time_empty">No se reprodujo ninguna pista</string>
     <string name="widget_listening_time_minutes">%1$d min</string>
     <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>

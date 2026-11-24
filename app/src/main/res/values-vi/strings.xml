@@ -843,19 +843,9 @@
     <string name="cast_available_device">Thiết bị khả dụng</string>
     <string name="cast_available_device_count">Đã tìm thấy thiết bị: %1$d</string>
     <string name="cast_route_picker_unavailable">Hiện không khả dụng để truyền.</string>
-    <string name="widget_insights_title">Thông tin chi tiết nghe nhạc</string>
-    <string name="widget_recommendations">Đề xuất</string>
     <string name="widget_listening_time_empty">Chưa có thời gian nghe</string>
     <string name="widget_listening_time_minutes">%1$d phút</string>
     <string name="widget_listening_time_hours_minutes">%1$d giờ %2$d phút</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 lần</item>
-        <item quantity="other">%d lần</item>
-    </plurals>
-    <string name="widget_top_song_summary">Gần đây nhất: %1$s</string>
-    <string name="widget_no_recent_songs">Chưa có bài hát gần đây</string>
-    <string name="widget_no_genres">Chưa có thể loại</string>
-    <string name="widget_no_recommendations">Chưa có đề xuất</string>
     <string name="onboarding_welcome_title">Chào mừng đến với ArchiveTune</string>
     <string name="onboarding_welcome_subtitle">Thiết lập phát nhạc, nhạc cục bộ và cập nhật quyền trước khi bắt đầu nghe.</string>
     <string name="onboarding_permissions_title">Xem lại quyền</string>

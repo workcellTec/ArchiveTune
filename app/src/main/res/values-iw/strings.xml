@@ -813,20 +813,9 @@
     <string name="cast_available_device">מכשיר זמין</string>
     <string name="cast_available_device_count">מכשירים שנמצאו: %1$d</string>
     <string name="cast_route_picker_unavailable">שידור אינו זמין כרגע.</string>
-    <string name="widget_insights_title">תובנות האזנה</string>
-    <string name="widget_recommendations">המלצות</string>
     <string name="widget_listening_time_empty">‫אין עדיין זמן האזנה</string>
     <string name="widget_listening_time_minutes">%1$d דקות</string>
     <string name="widget_listening_time_hours_minutes">%1$d שעות %2$d דקות</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">ניגון אחד</item>
-        <item quantity="two">שני ניגונים</item>
-        <item quantity="other">%d ניגונים</item>
-    </plurals>
-    <string name="widget_top_song_summary">המובילים לאחרונה: %1$s</string>
-    <string name="widget_no_recent_songs">אין עדיין שירים אחרונים</string>
-    <string name="widget_no_genres">אין עדיין ז\'אנרים</string>
-    <string name="widget_no_recommendations">אין עדיין המלצות</string>
     <string name="add">הוספה</string>
     <string name="add_to_n_playlists">הוספה ל- %1$d</string>
     <string name="no_playlists_yet">אין עדיין פלייליסטים</string>

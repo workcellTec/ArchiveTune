@@ -728,13 +728,8 @@
     <string name="longest_duration">Längste Dauer</string>
     <string name="shortest_duration">Kürzeste Dauer</string>
     <string name="cast_available_device_count">Geräte gefunden: %1$d</string>
-    <string name="widget_recommendations">Empfehlungen</string>
     <string name="widget_listening_time_minutes">%1$d min</string>
     <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 Wiedergabe</item>
-        <item quantity="other">%d Wiedergaben</item>
-    </plurals>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="add">Hinzufügen</string>
     <string name="hide_playlist">Playlist ausblenden</string>
@@ -779,7 +774,6 @@
     <string name="app_icon_current">Aktuelles Symbol</string>
     <string name="together_unknown_participant">Jemand</string>
     <string name="lyrics_searching_providers">Suche Anbieter</string>
-    <string name="widget_insights_title">Höreinblicke</string>
     <string name="together_room_closed_inactivity_notification">Raum geschlossen, da für 10 Minuten niemand beigetreten ist</string>
     <string name="show_player_volume_bar">Lautstärkeregler anzeigen</string>
     <string name="lyrics_search_result_stats">%1$d Zeilen, %2$d Zeichen</string>
@@ -818,9 +812,6 @@
     <string name="onboarding_permission_device_audio_capture_title">Musikerkennung auf dem Gerät</string>
     <string name="library_top_mixes_no_recent_history_title">Noch kein aktueller Hör-Mix</string>
     <string name="widget_listening_time_empty">Noch keine Hörzeit</string>
-    <string name="widget_no_recent_songs">Noch keine aktuellen Songs</string>
-    <string name="widget_no_genres">Noch keine Genres</string>
-    <string name="widget_no_recommendations">Noch keine Empfehlungen</string>
     <string name="add_to_n_playlists">Zu %1$d hinzufügen</string>
     <string name="no_playlists_yet">Noch keine Playlists</string>
     <string name="hide_playlist_confirm">\"%1$s\" in Bibliothek ausblenden?</string>
@@ -978,7 +969,6 @@
     <string name="player_volume_bar_v7_v8_only">Nur mit V7- oder V8-Playerstilen verfügbar</string>
     <string name="custom_background_adjustments_description">Bild in beiden Vorschauen anpassen.</string>
     <string name="eq_bass_boost_description">Wirkung tiefer Frequenzen verstärken</string>
-    <string name="widget_top_song_summary">Aktuell Top: %1$s</string>
     <string name="custom_background_subtitle">Vorschau und Anpassung des Players und des Hintergrunds für die Songtexte</string>
     <string name="custom_background_preview_player">Player</string>
     <string name="custom_background_permission_error">ArchiveTune konnte den Zugriff auf dieses Bild nicht aufrechterhalten.</string>

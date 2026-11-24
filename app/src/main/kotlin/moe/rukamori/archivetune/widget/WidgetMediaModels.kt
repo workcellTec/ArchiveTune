@@ -23,8 +23,6 @@ internal fun WidgetMediaItem.widgetItemId(): Long = (id.hashCode().toLong() and 
 
 internal fun Preferences.widgetUpNext(): List<WidgetMediaItem> = this[MusicWidgetKeys.UP_NEXT].decodeWidgetMediaItems()
 
-internal fun Preferences.widgetRecentItems(): List<WidgetMediaItem> = this[MusicWidgetKeys.RECENT_ITEMS].decodeWidgetMediaItems()
-
 internal fun List<WidgetMediaItem>.encodeWidgetMediaItems(): String =
     joinToString(separator = ItemSeparator) { item ->
         listOf(

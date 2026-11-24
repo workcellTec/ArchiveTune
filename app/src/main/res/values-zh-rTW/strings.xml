@@ -126,18 +126,9 @@
     <string name="widget_pause">暫停</string>
     <string name="widget_previous">上一首</string>
     <string name="widget_tap_to_open">點擊開啟 ArchiveTune</string>
-    <string name="widget_insights_title">聆聽數據</string>
-    <string name="widget_recommendations">建議</string>
     <string name="widget_listening_time_empty">沒有播放曲目</string>
     <string name="widget_listening_time_minutes">%1$d分</string>
     <string name="widget_listening_time_hours_minutes">%1$d小時 %2$d分</string>
-    <plurals name="widget_total_plays">
-        <item quantity="other">%d曲目</item>
-    </plurals>
-    <string name="widget_top_song_summary">近期熱門：%1$s</string>
-    <string name="widget_no_recent_songs">暫無近期歌曲</string>
-    <string name="widget_no_genres">暫無曲風資料</string>
-    <string name="widget_no_recommendations">暫無推薦歌曲</string>
     <string name="play_next">下一首</string>
     <string name="add_to_queue">添加到佇列</string>
     <string name="add_to_library">添加到媒體庫</string>

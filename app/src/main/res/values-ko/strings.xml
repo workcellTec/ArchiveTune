@@ -760,18 +760,9 @@
     <string name="cast_available_device">사용 가능한 기기</string>
     <string name="cast_available_device_count">사용 가능한 기기: %1$d개</string>
     <string name="cast_route_picker_unavailable">기기 검색기를 사용할 수 없습니다.</string>
-    <string name="widget_insights_title">감상 통계</string>
-    <string name="widget_recommendations">추천 음악</string>
     <string name="widget_listening_time_empty">최근 감상 기록이 없습니다</string>
     <string name="widget_listening_time_minutes">%1$d분 감상</string>
     <string name="widget_listening_time_hours_minutes">%1$d시간 %2$d 분 감상</string>
-    <plurals name="widget_total_plays">
-        <item quantity="other">총 재생 횟수: %d 회</item>
-    </plurals>
-    <string name="widget_top_song_summary">가장 많이 들은 곡 : %1$s</string>
-    <string name="widget_no_recent_songs">최근에 감상한 곡이 없습니다.</string>
-    <string name="widget_no_genres">장르 통계 정보가 없습니다.</string>
-    <string name="widget_no_recommendations">추천 음악이 없습니다.</string>
     <string name="add">추가</string>
     <string name="add_to_n_playlists">%1$d개의 재생목록에 추가</string>
     <string name="no_playlists_yet">재생목록이 아직 없습니다.</string>

@@ -27,8 +27,6 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.key
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -61,8 +59,6 @@ import androidx.glance.unit.ColorProvider
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.toPath
 import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.MainActivity
 import moe.rukamori.archivetune.R
 
@@ -355,6 +351,28 @@ internal fun WidgetArtwork(
 }
 
 @Composable
+internal fun WidgetVinyl(
+    artPath: String?,
+    context: Context,
+    size: Dp,
+    modifier: GlanceModifier = GlanceModifier,
+) {
+    val density = context.resources.displayMetrics.density
+    val targetPx = (size.value * density).toInt().coerceIn(64, 512)
+    val bitmap = rememberWidgetBitmap("vinyl:$artPath:$targetPx") {
+        artPath?.let { WidgetArtworkCache.vinyl(it, targetPx) }
+    }
+    if (bitmap != null) {
+        Image(
+            provider = ImageProvider(bitmap),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = modifier.size(size),
+        )
+    }
+}
+
+@Composable
 private fun WidgetArtworkFallback(
     shape: WidgetArtShape,
     palette: WidgetPalette,
@@ -393,12 +411,7 @@ private fun WidgetArtworkFallback(
 private fun rememberWidgetBitmap(
     cacheKey: String,
     loader: () -> Bitmap?,
-): Bitmap? =
-    key(cacheKey) {
-        produceState<Bitmap?>(initialValue = null) {
-            value = withContext(Dispatchers.IO) { loader() }
-        }
-    }.value
+): Bitmap? = remember(cacheKey) { loader() }
 
 internal fun openArchiveTuneAction(context: Context): Action =
     actionStartActivity(
@@ -409,6 +422,14 @@ internal fun openArchiveTuneAction(context: Context): Action =
     )
 
 internal fun playPauseAction(): Action = actionRunCallback<PlayPauseAction>()
+
+internal fun sleepTimerAction(): Action = actionRunCallback<SleepTimerAction>()
+
+internal fun volumeUpAction(): Action = actionRunCallback<VolumeUpAction>()
+
+internal fun volumeDownAction(): Action = actionRunCallback<VolumeDownAction>()
+
+internal fun showVolumePanelAction(): Action = actionRunCallback<ShowVolumePanelAction>()
 
 internal fun skipNextAction(): Action = actionRunCallback<SkipNextAction>()
 
@@ -481,6 +502,10 @@ private fun Color.toAmbientBase(): Color {
     }
     return color
 }
+
+private const val VinylLabelFraction = 0.38f
+private const val VinylDiscColor = 0xFF0C0C0E.toInt()
+private const val VinylGrooveColor = 0x1FFFFFFF
 
 private const val AmbientMaxLuminance = 0.09f
 private const val AmbientMinLuminance = 0.025f
@@ -560,6 +585,44 @@ private object WidgetArtworkCache {
             )
         }
         canvas.drawRect(0f, 0f, size, size, gradient)
+        cache.put(cacheKey, result)
+        return result
+    }
+
+    fun vinyl(
+        path: String,
+        targetPx: Int,
+    ): Bitmap? {
+        val file = File(path)
+        if (!file.isFile || file.length() == 0L) return null
+        val cacheKey = "vinyl:${file.absolutePath}:${file.lastModified()}:$targetPx"
+        cache.get(cacheKey)?.let { return it }
+
+        val labelPx = (targetPx * VinylLabelFraction).toInt().coerceAtLeast(8)
+        val source = decodeSquare(file, labelPx) ?: return null
+        val scaled = Bitmap.createScaledBitmap(source, labelPx, labelPx, true)
+        if (scaled !== source) source.recycle()
+        val label = mask(scaled, WidgetArtShape.Circle, 0f)
+        scaled.recycle()
+
+        val result = Bitmap.createBitmap(targetPx, targetPx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        val center = targetPx / 2f
+        val disc = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = VinylDiscColor }
+        canvas.drawCircle(center, center, center, disc)
+        val groove = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 1f
+            color = VinylGrooveColor
+        }
+        var radius = center * 0.94f
+        while (radius > center * (VinylLabelFraction / 2f + 0.06f)) {
+            canvas.drawCircle(center, center, radius, groove)
+            radius -= center * 0.05f
+        }
+        canvas.drawBitmap(label, center - label.width / 2f, center - label.height / 2f, null)
+        canvas.drawCircle(center, center, targetPx * 0.022f, disc)
+        label.recycle()
         cache.put(cacheKey, result)
         return result
     }

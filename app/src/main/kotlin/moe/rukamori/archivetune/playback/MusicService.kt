@@ -307,9 +307,8 @@ import moe.rukamori.archivetune.utils.isLocalMediaId
 import moe.rukamori.archivetune.utils.isLowDataModeActive
 import moe.rukamori.archivetune.utils.reportException
 import moe.rukamori.archivetune.utils.retryWithoutPlaybackLoginContext
-import moe.rukamori.archivetune.widget.LoadWidgetInsightsUseCase
-import moe.rukamori.archivetune.widget.LoadWidgetRecentSongsUseCase
 import moe.rukamori.archivetune.widget.WidgetServiceActions
+import moe.rukamori.archivetune.widget.WidgetStatsRepository
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.io.EOFException
@@ -366,10 +365,7 @@ class MusicService :
     private var currentDownloadState: Int? = null
 
     @Inject
-    internal lateinit var loadWidgetInsightsUseCase: LoadWidgetInsightsUseCase
-
-    @Inject
-    internal lateinit var loadWidgetRecentSongsUseCase: LoadWidgetRecentSongsUseCase
+    internal lateinit var widgetStatsRepository: WidgetStatsRepository
 
     @Inject
     lateinit var equalizerPlaybackController: EqualizerPlaybackController
@@ -1354,9 +1350,9 @@ class MusicService :
             MusicServiceWidgetUpdater(
                 service = this,
                 player = player,
-                scope = scope,
-                loadWidgetInsights = loadWidgetInsightsUseCase,
-                loadWidgetRecentSongs = loadWidgetRecentSongsUseCase,
+                scopeProvider = { scope },
+                isSleepTimerActive = { ::sleepTimer.isInitialized && sleepTimer.isActive },
+                loadWeeklyStats = { widgetStatsRepository.weeklyListeningMillis() },
             )
 
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -1416,7 +1412,10 @@ class MusicService :
         }
         snapshotFlow { sleepTimer.isActive }
             .distinctUntilChanged()
-            .collect(scope) { updateNotification() }
+            .collect(scope) {
+                updateNotification()
+                widgetUpdater.update()
+            }
         currentMediaMetadata
             .flatMapLatest { mediaMetadata ->
                 if (mediaMetadata == null) flowOf(null) else moduleDownloadUtil.getDownload(mediaMetadata.id)
@@ -7052,11 +7051,17 @@ class MusicService :
         return false
     }
 
+    override fun onMediaMetadataChanged(mediaMetadata: androidx.media3.common.MediaMetadata) {
+        super.onMediaMetadataChanged(mediaMetadata)
+        if (::widgetUpdater.isInitialized) widgetUpdater.update()
+    }
+
     override fun onMediaItemTransition(
         mediaItem: MediaItem?,
         reason: Int,
     ) {
         super.onMediaItemTransition(mediaItem, reason)
+        widgetUpdater.update()
 
         if (sleepTimer.pauseWhenSongEnd) {
             pauseFromSleepTimer()
@@ -7111,8 +7116,6 @@ class MusicService :
 
         val timelineEmpty = player.currentTimeline.isEmpty || player.mediaItemCount == 0 || player.currentMediaItem == null
         currentMediaMetadata.value = if (timelineEmpty) null else (mediaItem?.metadata ?: player.currentMetadata)
-
-        widgetUpdater.update()
 
         scrobbleManager?.onSongStop()
 
@@ -9132,6 +9135,15 @@ class MusicService :
             WidgetServiceActions.PLAY_QUEUE_ITEM -> playWidgetQueueItem(intent)
 
             WidgetServiceActions.PLAY_SONG -> playWidgetSong(intent)
+
+            WidgetServiceActions.SLEEP_TIMER -> {
+                if (sleepTimer.isActive) {
+                    sleepTimer.clear()
+                } else {
+                    sleepTimer.start(minutes = WIDGET_SLEEP_TIMER_MINUTES, finishCurrentSong = false, fadeOut = true)
+                }
+                widgetUpdater.update()
+            }
         }
         super.onStartCommand(intent, flags, startId)
         return START_NOT_STICKY
@@ -9190,6 +9202,7 @@ class MusicService :
     }
 
     companion object {
+        private const val WIDGET_SLEEP_TIMER_MINUTES = 30
         internal fun shouldStopServiceOnTaskRemoved(
             stopMusicOnTaskClearEnabled: Boolean,
             isHostSessionActive: Boolean,

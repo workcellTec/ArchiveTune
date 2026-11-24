@@ -132,20 +132,9 @@
     <string name="widget_pause">Pausar</string>
     <string name="widget_previous">Anteriror</string>
     <string name="widget_tap_to_open">Carrega para abrir o ArchiveTune</string>
-    <string name="widget_insights_title">Detalhes de músicas ouvidas</string>
-    <string name="widget_recommendations">Recomendações</string>
     <string name="widget_listening_time_empty">Sem tempo de escuta</string>
     <string name="widget_listening_time_minutes">%1$d min</string>
     <string name="widget_listening_time_hours_minutes">%1$d h %2$d min</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 reprodução</item>
-        <item quantity="many">%d reproduções</item>
-        <item quantity="other">%d reproduções</item>
-    </plurals>
-    <string name="widget_top_song_summary">Top recente: %1$s</string>
-    <string name="widget_no_recent_songs">Sem músicas recentes</string>
-    <string name="widget_no_genres">Sem géneros</string>
-    <string name="widget_no_recommendations">Sem recomendações</string>
     <string name="play_next">Tocar próxima</string>
     <string name="add_to_queue">Adicionar à fila</string>
     <string name="add_to_library">Adicionar à biblioteca</string>

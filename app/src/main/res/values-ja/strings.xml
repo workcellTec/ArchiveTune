@@ -207,26 +207,13 @@
     <string name="widget_pause">一時停止</string>
     <string name="widget_previous">前へ</string>
     <string name="widget_tap_to_open">タップして ArchiveTune を開きます</string>
-    <string name="widget_insights_title">リスニングに関する洞察</string>
-    <string name="widget_recommendations">推奨事項</string>
     <string name="widget_listening_time_empty">まだ聴く時間がありません</string>
     <string name="widget_listening_time_minutes">%1$d分</string>
     <string name="widget_listening_time_hours_minutes">%1$d 時間 %2$d 分</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 play</item>
-        <item quantity="other">%d 回再生します</item>
-    </plurals>
-    <string name="widget_top_song_summary">最近のトップ: %1$s</string>
-    <string name="widget_no_recent_songs">最近の曲はまだありません</string>
-    <string name="widget_no_genres">ジャンルはまだありません</string>
-    <string name="widget_no_recommendations">まだ推奨事項はありません</string>
     <string name="widget_now_playing">プレイ中</string>
     <string name="widget_up_next">次へ</string>
     <string name="widget_queue_empty">この曲の後には何も待ちませんでした</string>
     <string name="widget_open">開く</string>
-    <string name="widget_last_30_days">過去 30 日間</string>
-    <string name="widget_listening_time_label">リスニング時間</string>
-    <string name="widget_plays_label">遊んだ</string>
     <string name="play_next">次にプレイする</string>
     <string name="add_to_queue">キューに追加</string>
     <string name="add_to_library">ライブラリに追加</string>

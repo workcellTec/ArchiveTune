@@ -322,149 +322,163 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-<receiver
-    android:name=".widget.MusicWidgetReceiver"
-    android:label="@string/widget_player_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_music_info" />
-</receiver>
 
-<receiver
-    android:name=".widget.AlbumArtWidgetReceiver"
-    android:label="@string/widget_album_art_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_album_art_info" />
-</receiver>
+        <receiver
+            android:name=".widget.CoverPillWidgetReceiver"
+            android:label="@string/widget_cover_pill_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_cover_pill_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.NowPlayingCardWidgetReceiver"
-    android:label="@string/widget_now_playing_card_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_now_playing_card_info" />
-</receiver>
+        <receiver
+            android:name=".widget.CoverPlayWidgetReceiver"
+            android:label="@string/widget_cover_play_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_cover_play_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.PlaybackDeckWidgetReceiver"
-    android:label="@string/widget_playback_deck_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_playback_deck_info" />
-</receiver>
+        <receiver
+            android:name=".widget.SquareCardWidgetReceiver"
+            android:label="@string/widget_square_card_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_square_card_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.PlaybackCapsuleWidgetReceiver"
-    android:label="@string/widget_playback_capsule_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_playback_capsule_info" />
-</receiver>
+        <receiver
+            android:name=".widget.CoverWideWidgetReceiver"
+            android:label="@string/widget_cover_wide_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_cover_wide_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.PlaybackSpotlightWidgetReceiver"
-    android:label="@string/widget_playback_spotlight_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_playback_spotlight_info" />
-</receiver>
+        <receiver
+            android:name=".widget.GlassWidgetReceiver"
+            android:label="@string/widget_glass_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glass_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.PlaybackCommandWidgetReceiver"
-    android:label="@string/widget_playback_command_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_playback_command_info" />
-</receiver>
+        <receiver
+            android:name=".widget.HardwareWidgetReceiver"
+            android:label="@string/widget_hardware_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hardware_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.ListeningInsightsWidgetReceiver"
-    android:label="@string/widget_listening_insights_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_listening_insights_info" />
-</receiver>
+        <receiver
+            android:name=".widget.HardwareMiniWidgetReceiver"
+            android:label="@string/widget_hardware_mini_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_hardware_mini_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.ArtworkNowPlayingWidgetReceiver"
-    android:label="@string/widget_artwork_now_playing_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_artwork_now_playing_info" />
-</receiver>
+        <receiver
+            android:name=".widget.PillWidgetReceiver"
+            android:label="@string/widget_pill_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_pill_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.MiniPlayerWidgetReceiver"
-    android:label="@string/widget_mini_player_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_mini_player_info" />
-</receiver>
+        <receiver
+            android:name=".widget.ModernWidgetReceiver"
+            android:label="@string/widget_modern_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_modern_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.UpNextWidgetReceiver"
-    android:label="@string/widget_up_next_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_up_next_info" />
-</receiver>
+        <receiver
+            android:name=".widget.QueueWidgetReceiver"
+            android:label="@string/widget_queue_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_queue_info" />
+        </receiver>
 
-<receiver
-    android:name=".widget.RecentlyPlayedWidgetReceiver"
-    android:label="@string/widget_recently_played_name"
-    android:exported="true">
-    <intent-filter>
-        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-    </intent-filter>
-    <meta-data
-        android:name="android.appwidget.provider"
-        android:resource="@xml/widget_recently_played_info" />
-</receiver>
+        <receiver
+            android:name=".widget.ControlsWidgetReceiver"
+            android:label="@string/widget_controls_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_controls_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.VolumeWidgetReceiver"
+            android:label="@string/widget_volume_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_volume_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.StatsWidgetReceiver"
+            android:label="@string/widget_stats_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_stats_info" />
+        </receiver>
+
 
 
         <activity

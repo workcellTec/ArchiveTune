@@ -542,19 +542,9 @@
     <string name="widget_pause">Durdur</string>
     <string name="widget_previous">Önceki</string>
     <string name="widget_tap_to_open">ArchiveTune\'u açmak için dokunun</string>
-    <string name="widget_insights_title">Dinleme İstatistikleri</string>
-    <string name="widget_recommendations">Öneriler</string>
     <string name="widget_listening_time_empty">Henüz dinleme süresi yok</string>
     <string name="widget_listening_time_minutes">%1$d dk</string>
     <string name="widget_listening_time_hours_minutes">%1$d sa %2$d dk</string>
-    <plurals name="widget_total_plays">
-        <item quantity="one">1 oynatım</item>
-        <item quantity="other">%d oynatım</item>
-    </plurals>
-    <string name="widget_top_song_summary">Son zamanlarda çok dinlenen: %1$s</string>
-    <string name="widget_no_recent_songs">Henüz son çalınan şarkı yok</string>
-    <string name="widget_no_genres">Henüz tür yok</string>
-    <string name="widget_no_recommendations">Henüz öneri yok</string>
     <string name="remove_from_library_confirm">\"%1$s\" kütüphanenizden çıkarılsın mı?</string>
     <string name="download_progress_percent">%1$d%%</string>
     <string name="add">Ekle</string>

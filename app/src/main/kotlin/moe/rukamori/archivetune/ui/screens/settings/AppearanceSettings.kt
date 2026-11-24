@@ -603,15 +603,10 @@ fun AppearanceSettings(navController: NavController) {
         Column(
             Modifier
                 .padding(top = topPadding)
-                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = SettingsDimensions.ScreenBottomPadding),
         ) {
-            PlayerAppearancePreview(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-            Column(
-                Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = SettingsDimensions.ScreenBottomPadding),
-            ) {
             PreferenceGroup(title = stringResource(R.string.theme)) {
                 item {
                     SwitchPreference(
@@ -1243,7 +1238,6 @@ fun AppearanceSettings(navController: NavController) {
                     )
                 }
             }
-        }
         }
     }
 }

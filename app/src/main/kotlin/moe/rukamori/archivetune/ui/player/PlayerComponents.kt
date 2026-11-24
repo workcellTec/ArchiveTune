@@ -4669,7 +4669,7 @@ fun V10PlayerContent(
                 field = field,
                 size = 44.dp
             ) {
-                Icon(painter = painterResource(R.drawable.expand_more), contentDescription = "Collapse", modifier = Modifier.size(26.dp))
+                Icon(painter = painterResource(R.drawable.expand_more), contentDescription = stringResource(R.string.player_collapse), modifier = Modifier.size(26.dp))
             }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -4698,7 +4698,7 @@ fun V10PlayerContent(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     painter = painterResource(R.drawable.bedtime),
-                                    contentDescription = "Sleep timer",
+                                    contentDescription = stringResource(R.string.sleep_timer),
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -4711,7 +4711,7 @@ fun V10PlayerContent(
                         field = accent,
                         size = 44.dp
                     ) {
-                        Icon(painter = painterResource(R.drawable.bedtime), contentDescription = "Sleep timer", modifier = Modifier.size(22.dp))
+                        Icon(painter = painterResource(R.drawable.bedtime), contentDescription = stringResource(R.string.sleep_timer), modifier = Modifier.size(22.dp))
                     }
                 }
 
@@ -4721,7 +4721,7 @@ fun V10PlayerContent(
                     field = field,
                     size = 44.dp
                 ) {
-                    Icon(painter = painterResource(R.drawable.lyrics), contentDescription = "Lyrics", modifier = Modifier.size(22.dp))
+                    Icon(painter = painterResource(R.drawable.lyrics), contentDescription = stringResource(R.string.lyrics), modifier = Modifier.size(22.dp))
                 }
                 EditorialCircleButton(
                     onClick = onMenuClick,
@@ -4881,7 +4881,7 @@ fun V10PlayerContent(
                     field = field,
                     size = 80.dp
                 ) {
-                    Icon(painter = painterResource(R.drawable.skip_next), contentDescription = "Next", modifier = Modifier.size(34.dp))
+                    Icon(painter = painterResource(R.drawable.skip_next), contentDescription = stringResource(R.string.next), modifier = Modifier.size(34.dp))
                 }
             }
 
@@ -4902,7 +4902,7 @@ fun V10PlayerContent(
                     field = field,
                     size = 80.dp
                 ) {
-                    Icon(painter = painterResource(R.drawable.skip_previous), contentDescription = "Previous", modifier = Modifier.size(34.dp))
+                    Icon(painter = painterResource(R.drawable.skip_previous), contentDescription = stringResource(R.string.player_previous), modifier = Modifier.size(34.dp))
                 }
 
                 Column(modifier = Modifier.weight(1f)) {

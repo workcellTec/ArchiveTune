@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="recap_period_so_far">%1$s · Ano até agora</string>
+    <string name="recap_recorded_listening">O que você ouviu</string>
+    <string name="recap_highlights">Melhores momentos</string>
+    <string name="recap_story_intro">Este é o seu ano em música.</string>
+    <string name="recap_story_end">Ainda tem muito mais para ouvir.</string>
+    <string name="recap_replay">Rever os melhores momentos</string>
+    <string name="recap_return_overview">Voltar para o seu ano</string>
+    <string name="recap_hero_emphasis">Reviva</string>
+    <string name="recap_hero_statement">%1$s o seu ano em música.</string>
+    <string name="recap_reel_label">Ano em música ’%1$s</string>
+    <string name="recap_pause_highlights">Pausar os melhores momentos</string>
+    <string name="recap_resume_highlights">Continuar os melhores momentos</string>
+    <string name="recap_mute">Silenciar trilha sonora</string>
+    <string name="recap_unmute">Ativar som da trilha sonora</string>
+    <string name="recap_soundtrack_error">Trilha sonora indisponível</string>
+    <string name="recap_retry_soundtrack">Tentar a trilha sonora de novo</string>
+    <string name="recap_soundtrack_loading">Iniciando a trilha sonora</string>
+    <string name="recap_streak_statement">Sua maior sequência de dias ouvindo foi de %1$s.</string>
+    <string name="recap_top_song">Música mais ouvida</string>
+    <string name="recap_top_artist">Artista mais ouvido</string>
+    <string name="recap_top_album">Álbum mais ouvido</string>
+    <string name="recap_ranked_artist">%1$s · %2$s</string>
+    <string name="recap_top_artists_period">Seus artistas mais ouvidos de %1$s</string>
+    <string name="recap_top_songs_period">Suas músicas mais ouvidas de %1$s</string>
+    <string name="recap_top_albums_period">Seus álbuns mais ouvidos de %1$s</string>
+    <string name="recap_months">Seu ano, mês a mês</string>
+    <string name="recap_habits">Seu ritmo de audição</string>
+    <string name="recap_distinct_tracks">Faixas diferentes</string>
+    <string name="recap_active_days">Dias com música</string>
+    <string name="recap_longest_streak">Maior sequência ouvindo</string>
+    <string name="recap_busiest_month">Mês mais movimentado</string>
+    <string name="recap_weekday">Dia da semana mais ouvido</string>
+    <string name="recap_hour">Hora mais ouvida</string>
+    <string name="recap_minutes_value">%1$s min</string>
+    <string name="recap_month_listening">Você ouviu por %1$s minutos em %2$s.</string>
+    <string name="recap_listening_minutes">%1$s minutos</string>
+    <string name="recap_summary">Seu resumo musical</string>
+    <string name="recap_choose_year">Escolha um ano</string>
+    <string name="recap_previous">Destaque anterior</string>
+    <string name="recap_next">Próximo destaque</string>
+    <string name="recap_progress">Destaque %1$d de %2$d</string>
+    <string name="recap_back">Voltar</string>
+    <string name="recap_pause">Pausar</string>
+    <string name="recap_loading">Reunindo seu histórico de audição</string>
+    <string name="recap_month_empty">Nenhuma música registrada neste mês</string>
+    <string name="recap_load_error">Não foi possível carregar seu histórico de audição.</string>
+    <string name="recap_action_error">Não foi possível concluir esta ação. O item pode não estar mais disponível.</string>
+    <string name="recap_share_error">Não foi possível compartilhar a imagem do seu resumo.</string>
+    <string name="recap_preparing_share">Preparando a imagem</string>
+    <string name="recap_month_accessibility">%1$s, %2$s</string>
+    <string name="recap_future_month">Ainda não disponível</string>
+    <string name="recap_ranked_by_time">Ordenado por tempo de audição</string>
+    <plurals name="recap_plays_value">
+        <item quantity="one">%1$s reprodução</item>
+        <item quantity="many">%1$s reproduções</item>
+        <item quantity="other">%1$s reproduções</item>
+    </plurals>
+    <plurals name="recap_days_value">
+        <item quantity="one">%1$s dia</item>
+        <item quantity="many">%1$s dias</item>
+        <item quantity="other">%1$s dias</item>
+    </plurals>
+</resources>

@@ -1,9 +1,10 @@
 name: Build debug APK
 
 # Personal build of the fork: no Telegram, no release keystore needed.
-# The APK is signed with the default debug key, kept in the Actions cache so
-# every build uses the same key and updates the previous install and installs as a separate app
-# (package ends with ".music"), next to the original ArchiveTune.
+# The APK is signed with the default debug key, kept in the Actions cache, so every build uses
+# the same key and updates the previous install. It installs as a separate app (package ends
+# with ".music"), next to the original ArchiveTune.
+# Every build is also attached, as a plain .apk (no zip), to the "latest" release.
 
 on:
   workflow_dispatch:
@@ -11,7 +12,7 @@ on:
     branches: [ 'widgets-novos' ]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: debug-build-${{ github.ref }}
@@ -65,3 +66,14 @@ jobs:
           name: archivetune-debug-arm64
           path: app/build/outputs/apk/**/*.apk
           if-no-files-found: error
+
+      - name: Publish APK to the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(find app/build/outputs/apk -name '*.apk' | head -n 1)
+          gh release view latest >/dev/null 2>&1 || gh release create latest \
+            --prerelease --title "Última build" --notes "Build automática da branch widgets-novos." \
+            --target "$GITHUB_SHA"
+          gh release upload latest "$APK" --clobber
+          echo "APK: https://github.com/${GITHUB_REPOSITORY}/releases/download/latest/$(basename "$APK")"

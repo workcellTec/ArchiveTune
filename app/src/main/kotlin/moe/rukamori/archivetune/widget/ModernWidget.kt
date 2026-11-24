@@ -70,10 +70,15 @@ private fun ModernContent(context: Context) {
     WidgetTheme(state.dominantColor, WidgetSurfaceStyle.Ambient, context) { palette ->
         WidgetSurface(state, palette, context, contentPadding = 12.dp, backdrop = true) {
             val contentHeight = size.height - 24.dp
-            val coverSize = (size.height - 24.dp).coerceIn(56.dp, 130.dp)
-            val cardSize = (contentHeight - ModernFixedHeight).coerceAtMost(52.dp)
+            val coverSize = minOf(contentHeight, size.width * 0.46f).coerceAtLeast(56.dp)
             val textWidth = size.width - 24.dp - coverSize - 14.dp
-            val cardCount = if (state.isAvailable) nextCardsFit(textWidth, cardSize, upNext.size) else 0
+            val plan =
+                if (state.isAvailable) {
+                    planNextCards(textWidth, contentHeight - ModernFixedHeight, upNext.size)
+                } else {
+                    NextCardPlan(0.dp, 0)
+                }
+            val withCards = plan.count > 0
             Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 WidgetArtwork(
                     artPath = state.artPath,
@@ -87,18 +92,18 @@ private fun ModernContent(context: Context) {
                 )
                 Spacer(GlanceModifier.width(14.dp))
                 Column(modifier = GlanceModifier.defaultWeight().fillMaxHeight()) {
+                    if (withCards) {
+                        WidgetNextCards(upNext.take(plan.count), palette, context, plan.size)
+                        Spacer(GlanceModifier.defaultWeight())
+                    }
                     WidgetTrackText(
                         state,
                         palette,
                         GlanceModifier.fillMaxWidth(),
-                        titleSize = if (cardCount > 0) 19.sp else 22.sp,
-                        titleLines = if (cardCount > 0) 1 else 2,
+                        titleSize = if (withCards) 17.sp else 22.sp,
+                        titleLines = if (withCards) 1 else 2,
                     )
-                    if (cardCount > 0) {
-                        Spacer(GlanceModifier.height(8.dp))
-                        WidgetNextCards(upNext.take(cardCount), palette, context, cardSize)
-                    }
-                    Spacer(GlanceModifier.defaultWeight())
+                    if (withCards) Spacer(GlanceModifier.height(8.dp)) else Spacer(GlanceModifier.defaultWeight())
                     if (state.isAvailable) {
                         WidgetProgress(state, palette)
                         Spacer(GlanceModifier.height(8.dp))
@@ -136,5 +141,5 @@ private fun ModernContent(context: Context) {
     }
 }
 
-/** Title, artist, spacing, progress and transport, in dp. */
-private val ModernFixedHeight = 122.dp
+/** Title, artist, spacing, progress and transport, in dp (the cards take everything above). */
+private val ModernFixedHeight = 108.dp

@@ -65,22 +65,27 @@ class SquareCardWidget : GlanceAppWidget() {
 @Composable
 private fun SquareCardContent(context: Context) {
     val state = rememberPlaybackState(context)
+    val size = LocalSize.current
     WidgetTheme(state.dominantColor, WidgetSurfaceStyle.Ambient, context) { palette ->
         WidgetSurface(state, palette, context, contentPadding = 12.dp, backdrop = true) {
+            // The cover takes everything the title row (38dp play button) leaves free.
+            val coverSize = minOf(size.width - 24.dp, size.height - 24.dp - 38.dp - 10.dp).coerceAtLeast(56.dp)
             Column(modifier = GlanceModifier.fillMaxSize()) {
-                WidgetArtwork(
-                    artPath = state.artPath,
-                    context = context,
-                    contentDescription = null,
-                    targetSize = 56.dp,
-                    shape = WidgetArtShape.Rounded,
-                    cornerRadius = 16.dp,
-                    palette = palette,
-                    modifier = GlanceModifier.size(56.dp),
-                )
-                Spacer(GlanceModifier.defaultWeight())
+                Box(modifier = GlanceModifier.fillMaxWidth().defaultWeight(), contentAlignment = Alignment.Center) {
+                    WidgetArtwork(
+                        artPath = state.artPath,
+                        context = context,
+                        contentDescription = null,
+                        targetSize = coverSize,
+                        shape = WidgetArtShape.Rounded,
+                        cornerRadius = 20.dp,
+                        palette = palette,
+                        modifier = GlanceModifier.size(coverSize),
+                    )
+                }
+                Spacer(GlanceModifier.height(10.dp))
                 Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    WidgetTrackText(state, palette, GlanceModifier.defaultWeight(), titleSize = 14.sp)
+                    WidgetTrackText(state, palette, GlanceModifier.defaultWeight(), titleSize = 15.sp)
                     Spacer(GlanceModifier.width(6.dp))
                     WidgetPlayCircle(state, palette, context, 38.dp)
                 }

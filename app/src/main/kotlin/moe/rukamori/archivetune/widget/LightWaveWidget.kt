@@ -27,7 +27,6 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -62,7 +61,7 @@ private fun LightWaveContent(context: Context) {
     val size = LocalSize.current
     val contentWidth = size.width - 28.dp
     val showTimes = size.height >= TimesMinHeight
-    val coverSize = ((size.height - 28.dp) * 0.46f).coerceIn(56.dp, 96.dp)
+    val coverSize = minOf((size.height - 28.dp) * 0.5f, size.width * 0.36f).coerceIn(56.dp, 128.dp)
     val titleLines = if (size.height >= 210.dp) 2 else 1
     Box(
         modifier =
@@ -115,7 +114,7 @@ private fun LightWaveContent(context: Context) {
                 seed = state.mediaId ?: state.title,
                 progress = state.playbackPosition,
                 width = contentWidth,
-                height = 26.dp,
+                height = if (showTimes) 34.dp else 28.dp,
                 playedColor = LightCardAccentArgb,
                 restColor = LightCardWaveRestArgb,
             )

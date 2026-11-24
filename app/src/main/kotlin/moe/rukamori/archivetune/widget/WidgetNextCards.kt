@@ -36,6 +36,27 @@ internal fun rememberWidgetUpNext(): List<WidgetMediaItem> {
     return remember(preferences) { preferences.widgetUpNext() }
 }
 
+/** Card size and count that fill the free area of a widget. */
+internal data class NextCardPlan(
+    val size: Dp,
+    val count: Int,
+)
+
+/**
+ * Sizes the up-next cards from the free area: as tall as the height allows (up to [MaxNextCardSize]),
+ * never wider than the area, and as many overlapped cards as then fit the width. A zero count means
+ * the area is too small and the cards should be left out.
+ */
+internal fun planNextCards(
+    availableWidth: Dp,
+    availableHeight: Dp,
+    available: Int,
+): NextCardPlan {
+    val size = minOf(availableHeight, availableWidth, MaxNextCardSize)
+    val count = nextCardsFit(availableWidth, size, available)
+    return if (count == 0) NextCardPlan(0.dp, 0) else NextCardPlan(size, count)
+}
+
 /** How many overlapped cards fit in [availableWidth] (0 when not even one fits). */
 internal fun nextCardsFit(
     availableWidth: Dp,
@@ -106,11 +127,12 @@ internal fun WidgetNextCards(
     }
 }
 
-private val NextCardRadius = 12.dp
+private val NextCardRadius = 14.dp
 private val NextCardRingWidth = 2.dp
 private val NextCardRing = ColorProvider(Color.White.copy(alpha = 0.28f))
-private val MinNextCardSize = 32.dp
-private const val NextCardStepFraction = 0.58f
-private const val NextCardShrink = 0.08f
+private val MinNextCardSize = 40.dp
+private val MaxNextCardSize = 88.dp
+private const val NextCardStepFraction = 0.74f
+private const val NextCardShrink = 0.07f
 private const val NextCardDim = 0.16f
 private const val MaxNextCards = 4

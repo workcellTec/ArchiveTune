@@ -37,10 +37,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
@@ -58,6 +63,8 @@ import moe.rukamori.archivetune.ui.screens.Screens
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberPreference
 
+/** The preview is laid out at the size of a phone screen and then scaled down to fit the card. */
+private val PreviewDesignWidth = 392.dp
 private val PreviewHeight = 250.dp
 
 @Composable
@@ -148,7 +155,7 @@ private fun NavigationBarLivePreview(mode: NavigationBarMode) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(PreviewHeight)
+                .scaledToFitWidth(PreviewDesignWidth, PreviewHeight)
                 .clip(RoundedCornerShape(20.dp))
                 .background(scheme.surface),
     ) {
@@ -203,3 +210,20 @@ private fun NavigationBarLivePreview(mode: NavigationBarMode) {
         }
     }
 }
+
+/** Measures the content at [designWidth] x [designHeight] and scales it to the width it is given. */
+private fun Modifier.scaledToFitWidth(
+    designWidth: Dp,
+    designHeight: Dp,
+): Modifier =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(Constraints.fixed(designWidth.roundToPx(), designHeight.roundToPx()))
+        val scale = constraints.maxWidth.toFloat() / placeable.width
+        layout(constraints.maxWidth, (placeable.height * scale).roundToInt()) {
+            placeable.placeWithLayer(0, 0) {
+                scaleX = scale
+                scaleY = scale
+                transformOrigin = TransformOrigin(0f, 0f)
+            }
+        }
+    }

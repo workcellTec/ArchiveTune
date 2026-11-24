@@ -239,6 +239,14 @@ android {
             applicationIdSuffix = ".music"
             isDebuggable = true
         }
+        // Personal build: optimized like release (R8, resource shrinking) but installed as the
+        // ".music" app and signed with the debug key, so it updates the debug build in place.
+        create("personal") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".music"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
     }
 
     compileOptions {

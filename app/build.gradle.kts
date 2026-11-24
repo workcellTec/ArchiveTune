@@ -236,7 +236,7 @@ android {
         }
         debug {
             buildConfigField("boolean", "GATEKEEPER_ENABLED", "false")
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".music"
             isDebuggable = true
         }
     }

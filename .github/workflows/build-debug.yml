@@ -1,8 +1,9 @@
 name: Build debug APK
 
 # Personal build of the fork: no Telegram, no release keystore needed.
-# The APK is signed with the default debug key and installs as a separate app
-# (package ends with ".debug"), next to the original ArchiveTune.
+# The APK is signed with the default debug key, kept in the Actions cache so
+# every build uses the same key and updates the previous install and installs as a separate app
+# (package ends with ".music"), next to the original ArchiveTune.
 
 on:
   workflow_dispatch:
@@ -48,6 +49,12 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Restore signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: personal-signing-key-v1
 
       - name: Build debug APK
         run: ./gradlew assembleGmsMobileArm64Debug --stacktrace

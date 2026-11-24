@@ -200,14 +200,16 @@ private fun NewMiniPlayer(
             useArtworkBackground = shouldUseArtworkBackground && backgroundPalette != null,
         )
     val proximity =
-        if (navigationBarMode == NavigationBarMode.CONNECTED) navigationProximityProvider() else 0f
+        if (navigationBarMode.joinsMiniPlayer) navigationProximityProvider() else 0f
+    val junctionCornerRadius =
+        if (navigationBarMode == NavigationBarMode.SINGLE_PIECE) 0f else FloatingBarJunctionCornerRadius.value
     val miniPlayerShape =
-        remember(proximity) {
+        remember(proximity, junctionCornerRadius) {
             RoundedCornerShape(
                 topStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
                 topEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarOuterCornerRadius.value, proximity).dp,
-                bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
-                bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, FloatingBarJunctionCornerRadius.value, proximity).dp,
+                bottomStart = lerp(FloatingBarStandaloneCornerRadius.value, junctionCornerRadius, proximity).dp,
+                bottomEnd = lerp(FloatingBarStandaloneCornerRadius.value, junctionCornerRadius, proximity).dp,
             )
         }
     val constrainToNavigationWidth by remember {

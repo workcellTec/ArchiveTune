@@ -784,6 +784,18 @@ enum class NavigationBarMode {
     CONNECTED,
     STANDALONE,
     APPLE_MUSIC,
+    COVER_COLOR,
+    SINGLE_PIECE,
+    ICONS_PILL,
+    ;
+
+    /** Styles that paint the bar with the color taken from the current cover art. */
+    val usesCoverColor: Boolean
+        get() = this == COVER_COLOR || this == SINGLE_PIECE || this == ICONS_PILL
+
+    /** Styles where the bar sits against the mini player and the corners morph between them. */
+    val joinsMiniPlayer: Boolean
+        get() = this == CONNECTED || this == COVER_COLOR || this == SINGLE_PIECE
 }
 
 // Keys for customized background

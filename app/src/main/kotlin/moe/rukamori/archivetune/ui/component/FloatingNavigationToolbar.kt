@@ -71,6 +71,19 @@ fun FloatingNavigationToolbar(
     onItemClick: (Screens, Boolean) -> Unit,
     onSearchItemDoubleClick: (() -> Unit)? = null,
 ) {
+    if (navigationBarMode.usesCoverColor) {
+        CoverNavigationToolbar(
+            items = items,
+            mode = navigationBarMode,
+            pureBlack = pureBlack,
+            modifier = modifier,
+            miniPlayerProximityProvider = miniPlayerProximityProvider,
+            isSelected = isSelected,
+            onItemClick = onItemClick,
+            onSearchItemDoubleClick = onSearchItemDoubleClick,
+        )
+        return
+    }
     if (navigationBarMode == NavigationBarMode.APPLE_MUSIC) {
         AppleMusicNavigationToolbar(
             items = items,

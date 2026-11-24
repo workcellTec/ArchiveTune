@@ -939,11 +939,13 @@ fun AppearanceSettings(navController: NavController) {
                         icon = { Icon(painterResource(R.drawable.gradient), null) },
                         selectedValue = displayedNavigationBarBackground,
                         values = availableNavigationBarBackgroundStyles,
-                        isEnabled = navigationBarMode != NavigationBarMode.APPLE_MUSIC,
-                        description = if (navigationBarMode == NavigationBarMode.APPLE_MUSIC) {
-                            stringResource(R.string.navigation_bar_background_apple_music)
-                        } else {
-                            null
+                        isEnabled = navigationBarMode != NavigationBarMode.APPLE_MUSIC && !navigationBarMode.usesCoverColor,
+                        description = when {
+                            navigationBarMode == NavigationBarMode.APPLE_MUSIC ->
+                                stringResource(R.string.navigation_bar_background_apple_music)
+                            navigationBarMode.usesCoverColor ->
+                                stringResource(R.string.navigation_bar_background_cover_color)
+                            else -> null
                         },
                         onValueSelected = onNavigationBarBackgroundSelected,
                         valueText = {
@@ -958,18 +960,9 @@ fun AppearanceSettings(navController: NavController) {
                 }
 
                 item {
-                    EnumListPreference(
-                        title = { Text(stringResource(R.string.navigation_bar_mode)) },
-                        icon = { Icon(painterResource(R.drawable.palette), null) },
-                        selectedValue = navigationBarMode,
-                        onValueSelected = onNavigationBarModeChange,
-                        valueText = {
-                            when (it) {
-                                NavigationBarMode.CONNECTED -> stringResource(R.string.navigation_bar_mode_connected)
-                                NavigationBarMode.STANDALONE -> stringResource(R.string.navigation_bar_mode_standalone)
-                                NavigationBarMode.APPLE_MUSIC -> stringResource(R.string.navigation_bar_mode_apple_music)
-                            }
-                        },
+                    NavigationBarStylePreference(
+                        selectedMode = navigationBarMode,
+                        onModeSelected = onNavigationBarModeChange,
                     )
                 }
 

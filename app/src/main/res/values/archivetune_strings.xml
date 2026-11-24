@@ -420,7 +420,7 @@
     <string name="lyrics_background_default">Default</string>
     <string name="mini_player_background_style">Mini player background style</string>
     <string name="navigation_bar_background_style">Navigation bar background style</string>
-    <string name="navigation_bar_mode">Navigation bar mode</string>
+    <string name="navigation_bar_mode">Navigation bar style</string>
     <string name="navigation_bar_mode_connected">Connected</string>
     <string name="navigation_bar_mode_standalone">Standalone</string>
     <string name="navigation_bar_mode_apple_music" translatable="false">Apple Music</string>
@@ -1165,4 +1165,8 @@
     <string name="media_notification_reset_done">Notification settings reset</string>
     <string name="media_notification_settings_load_failed">Couldn\'t load notification settings</string>
     <string name="media_notification_settings_save_failed">Couldn\'t save notification settings</string>
+    <string name="navigation_bar_mode_cover_color">Cover color</string>
+    <string name="navigation_bar_mode_single_piece">Single piece</string>
+    <string name="navigation_bar_mode_icons_pill">Icons pill</string>
+    <string name="navigation_bar_background_cover_color">This navigation bar style takes its color from the cover</string>
 </resources>

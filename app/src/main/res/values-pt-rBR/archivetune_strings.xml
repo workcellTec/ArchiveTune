@@ -758,7 +758,7 @@
     <string name="lyrics_source_embedded">Incorporada ao arquivo</string>
     <string name="lyrics_refetch_failed">Não foi possível atualizar a letra. Verifique sua conexão e tente de novo.</string>
     <string name="navigation_bar_background_style">Estilo do fundo da barra de navegação</string>
-    <string name="navigation_bar_mode">Modo da barra de navegação</string>
+    <string name="navigation_bar_mode">Estilo da barra de navegação</string>
     <string name="navigation_bar_mode_connected">Conectada</string>
     <string name="navigation_bar_mode_standalone">Independente</string>
     <string name="navigation_bar_background_apple_music">O modo Apple Music usa o próprio fundo de vidro</string>
@@ -1173,4 +1173,8 @@
         <item quantity="many">Avançar %d segundos</item>
         <item quantity="other">Avançar %d segundos</item>
     </plurals>
+    <string name="navigation_bar_mode_cover_color">Cor da capa</string>
+    <string name="navigation_bar_mode_single_piece">Peça única</string>
+    <string name="navigation_bar_mode_icons_pill">Pílula de ícones</string>
+    <string name="navigation_bar_background_cover_color">Este estilo de barra usa a cor da capa</string>
 </resources>

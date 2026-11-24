@@ -1550,4 +1550,7 @@
         <item quantity="many">%d músicas não puderam ser importadas</item>
         <item quantity="other">%d músicas não puderam ser importadas</item>
     </plurals>
+    <string name="appearance_preview_tab_player">Player</string>
+    <string name="appearance_preview_tab_mini">Mini player</string>
+    <string name="appearance_preview_note">Prévia aproximada. O player real pode ter pequenas diferenças de detalhe.</string>
 </resources>

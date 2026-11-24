@@ -1540,4 +1540,7 @@
     <string name="widget_dark_square_description">Square card with like, sleep timer, controls, progress, shuffle and repeat.</string>
     <string name="widget_light_wave_name">Light wave</string>
     <string name="widget_light_wave_description">Cream card with an audio wave, orange play button, shuffle and like.</string>
+    <string name="appearance_preview_tab_player">Player</string>
+    <string name="appearance_preview_tab_mini">Mini player</string>
+    <string name="appearance_preview_note">Approximate preview. The real player may differ in small details.</string>
 </resources>

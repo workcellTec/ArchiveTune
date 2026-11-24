@@ -1177,4 +1177,6 @@
     <string name="navigation_bar_mode_single_piece">Peça única</string>
     <string name="navigation_bar_mode_icons_pill">Pílula de ícones</string>
     <string name="navigation_bar_background_cover_color">Este estilo de barra usa a cor da capa</string>
+    <string name="navigation_bar_mode_gradient">Gradiente</string>
+    <string name="navigation_bar_preview_play_something">Toque uma música para ver o mini player aqui</string>
 </resources>

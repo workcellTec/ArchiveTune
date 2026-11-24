@@ -1169,4 +1169,6 @@
     <string name="navigation_bar_mode_single_piece">Single piece</string>
     <string name="navigation_bar_mode_icons_pill">Icons pill</string>
     <string name="navigation_bar_background_cover_color">This navigation bar style takes its color from the cover</string>
+    <string name="navigation_bar_mode_gradient">Gradient</string>
+    <string name="navigation_bar_preview_play_something">Play a song to see the mini player here</string>
 </resources>

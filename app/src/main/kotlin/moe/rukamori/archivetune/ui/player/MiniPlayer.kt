@@ -55,6 +55,8 @@ import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
 import moe.rukamori.archivetune.constants.MiniPlayerHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.constants.NavigationBarMode
+import moe.rukamori.archivetune.ui.component.CoverGradient
+import moe.rukamori.archivetune.ui.component.MiniPlayerGradientEnd
 import moe.rukamori.archivetune.constants.SwipeSensitivityKey
 import moe.rukamori.archivetune.ui.component.FloatingBarBlurBackground
 import moe.rukamori.archivetune.ui.component.FloatingBarGlassBackground
@@ -118,8 +120,10 @@ private fun NewMiniPlayer(
             }
         }
     val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
+    val continuesGradient = navigationBarMode == NavigationBarMode.GRADIENT
     val shouldUseArtworkBackground =
-        miniPlayerBackgroundStyle == MiniPlayerBackgroundStyle.GRADIENT ||
+        continuesGradient ||
+            miniPlayerBackgroundStyle == MiniPlayerBackgroundStyle.GRADIENT ||
             miniPlayerBackgroundStyle == MiniPlayerBackgroundStyle.GLOW
 
     LaunchedEffect(
@@ -189,10 +193,10 @@ private fun NewMiniPlayer(
             MiniPlayerBackgroundPalette.from(gradientColors)
         }
     val effectiveBackgroundStyle =
-        if (shouldUseArtworkBackground && backgroundPalette == null) {
-            MiniPlayerBackgroundStyle.THEME
-        } else {
-            miniPlayerBackgroundStyle
+        when {
+            shouldUseArtworkBackground && backgroundPalette == null -> MiniPlayerBackgroundStyle.THEME
+            continuesGradient -> MiniPlayerBackgroundStyle.GRADIENT
+            else -> miniPlayerBackgroundStyle
         }
 
     val contentColors =
@@ -202,7 +206,7 @@ private fun NewMiniPlayer(
     val proximity =
         if (navigationBarMode.joinsMiniPlayer) navigationProximityProvider() else 0f
     val junctionCornerRadius =
-        if (navigationBarMode == NavigationBarMode.SINGLE_PIECE) 0f else FloatingBarJunctionCornerRadius.value
+        if (navigationBarMode.closesGap) 0f else FloatingBarJunctionCornerRadius.value
     val miniPlayerShape =
         remember(proximity, junctionCornerRadius) {
             RoundedCornerShape(
@@ -238,6 +242,7 @@ private fun NewMiniPlayer(
             MiniPlayerBackground(
                 style = effectiveBackgroundStyle,
                 palette = backgroundPalette,
+                continuesIntoNavigation = continuesGradient,
                 hazeState = hazeState,
                 pureBlack = pureBlack,
                 shape = miniPlayerShape,
@@ -309,6 +314,7 @@ private fun rememberMiniPlayerContentColors(useArtworkBackground: Boolean): Mini
 private fun MiniPlayerBackground(
     style: MiniPlayerBackgroundStyle,
     palette: MiniPlayerBackgroundPalette?,
+    continuesIntoNavigation: Boolean,
     hazeState: HazeState,
     pureBlack: Boolean,
     shape: RoundedCornerShape,
@@ -342,6 +348,12 @@ private fun MiniPlayerBackground(
 
         MiniPlayerBackgroundStyle.GRADIENT -> {
             val colors = requireNotNull(palette)
+            if (continuesIntoNavigation) {
+                // The navigation bar picks this gradient up below, so only the top slice is drawn here.
+                val joint = remember(colors) { CoverGradient(colors.first, colors.second, colors.third) }
+                Box(modifier = modifier.background(joint.brush(0f, MiniPlayerGradientEnd)))
+                return
+            }
             Box(modifier = modifier.background(Color.Black)) {
                 Box(
                     modifier =

@@ -31,12 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,8 +41,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp as lerpColor
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -56,16 +50,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import androidx.palette.graphics.Palette
-import coil3.imageLoader
-import coil3.request.ImageRequest
-import coil3.request.allowHardware
-import coil3.toBitmap
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.withContext
-import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.constants.FloatingBarJunctionCornerRadius
 import moe.rukamori.archivetune.constants.FloatingBarOuterCornerRadius
 import moe.rukamori.archivetune.constants.FloatingBarStandaloneCornerRadius
@@ -73,85 +57,10 @@ import moe.rukamori.archivetune.constants.MiniPlayerBottomSpacing
 import moe.rukamori.archivetune.constants.NavigationBarHeight
 import moe.rukamori.archivetune.constants.NavigationBarMaxWidth
 import moe.rukamori.archivetune.constants.NavigationBarMode
-import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.ui.screens.Screens
-import moe.rukamori.archivetune.ui.theme.PlayerColorExtractor
-
-private const val CoverColorCacheSize = 24
-
-/** How much of the artwork color is kept; the rest goes to black so white icons stay readable. */
-private const val CoverColorStrength = 0.5f
 
 private val IconsPillHeight = 56.dp
 private val IconsPillItemWidth = 64.dp
-
-/**
- * Dark navigation color derived from the cover art of the song that is playing, or null while
- * nothing is playing or the cover is not available yet. It follows the bottom color of the
- * mini player gradient so both pieces look like the same family.
- */
-@Composable
-fun rememberCoverNavigationColor(): Color? {
-    val context = LocalContext.current
-    val playerConnection = LocalPlayerConnection.current
-    val metadataFlow =
-        remember(playerConnection) {
-            playerConnection?.mediaMetadata ?: MutableStateFlow<MediaMetadata?>(null)
-        }
-    val metadata by metadataFlow.collectAsState()
-    val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
-    val cache =
-        remember {
-            object : LinkedHashMap<String, Color>(CoverColorCacheSize, 0.75f, true) {
-                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Color>?): Boolean =
-                    size > CoverColorCacheSize
-            }
-        }
-    var color by remember { mutableStateOf<Color?>(null) }
-    val thumbnailUrl = metadata?.thumbnailUrl
-
-    LaunchedEffect(thumbnailUrl, fallbackColor) {
-        if (thumbnailUrl.isNullOrBlank()) {
-            color = null
-            return@LaunchedEffect
-        }
-        cache[thumbnailUrl]?.let {
-            color = it
-            return@LaunchedEffect
-        }
-        val request =
-            ImageRequest
-                .Builder(context)
-                .data(thumbnailUrl)
-                .size(PlayerColorExtractor.Config.IMAGE_SIZE, PlayerColorExtractor.Config.IMAGE_SIZE)
-                .allowHardware(false)
-                .build()
-        val extracted =
-            runCatching {
-                val result = withContext(Dispatchers.IO) { context.imageLoader.execute(request) }
-                val bitmap = result.image?.toBitmap() ?: return@runCatching null
-                val palette =
-                    withContext(Dispatchers.Default) {
-                        Palette
-                            .from(bitmap)
-                            .maximumColorCount(PlayerColorExtractor.Config.MAX_COLOR_COUNT)
-                            .resizeBitmapArea(PlayerColorExtractor.Config.BITMAP_AREA)
-                            .generate()
-                    }
-                val colors = PlayerColorExtractor.extractGradientColors(palette = palette, fallbackColor = fallbackColor)
-                val base = colors.getOrNull(2) ?: colors.firstOrNull() ?: return@runCatching null
-                lerpColor(Color.Black, base, CoverColorStrength)
-            }.getOrElse { error ->
-                if (error is CancellationException) throw error
-                null
-            }
-        if (extracted != null) {
-            cache[thumbnailUrl] = extracted
-        }
-        color = extracted
-    }
-    return color
-}
 
 @Composable
 internal fun CoverNavigationToolbar(
@@ -165,17 +74,22 @@ internal fun CoverNavigationToolbar(
     onSearchItemDoubleClick: (() -> Unit)?,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val cover = rememberCoverNavigationColor()
+    val coverGradient = rememberCoverGradient()
+    val cover = coverGradient?.colorAt(1f)
     val fallbackContainer = if (pureBlack) Color.Black else scheme.surfaceContainer
     val container by animateColorAsState(cover ?: fallbackContainer, label = "coverNavigationContainer")
     val hasCover = cover != null
+    val jointGradient = if (mode == NavigationBarMode.GRADIENT) coverGradient else null
+    val barBrush = remember(jointGradient) { jointGradient?.brush(NavigationGradientStart, 1f) }
+    val bridgeColor = jointGradient?.colorAt((MiniPlayerGradientEnd + NavigationGradientStart) / 2f) ?: container
     val selectedTint = if (hasCover) Color.White else scheme.primary
     val unselectedTint = if (hasCover) Color.White.copy(alpha = 0.72f) else scheme.onSurfaceVariant
-    val indicator = if (hasCover) lerpColor(container, Color.White, 0.22f) else scheme.secondaryContainer
+    val indicatorBase = jointGradient?.colorAt((NavigationGradientStart + 1f) / 2f) ?: container
+    val indicator = if (hasCover) lerpColor(indicatorBase, Color.White, 0.22f) else scheme.secondaryContainer
 
     val isPill = mode == NavigationBarMode.ICONS_PILL
     val proximity = if (mode.joinsMiniPlayer) miniPlayerProximityProvider() else 0f
-    val junctionRadius = if (mode == NavigationBarMode.SINGLE_PIECE) 0f else FloatingBarJunctionCornerRadius.value
+    val junctionRadius = if (mode.closesGap) 0f else FloatingBarJunctionCornerRadius.value
     val shape =
         if (isPill) {
             RoundedCornerShape(percent = 50)
@@ -188,7 +102,7 @@ internal fun CoverNavigationToolbar(
             )
         }
     val bridgeHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { MiniPlayerBottomSpacing.toPx() }
-    val fillGap = mode == NavigationBarMode.SINGLE_PIECE
+    val fillGap = mode.closesGap
 
     Box(
         modifier =
@@ -207,11 +121,11 @@ internal fun CoverNavigationToolbar(
                             Modifier.widthIn(max = NavigationBarMaxWidth).fillMaxWidth().height(NavigationBarHeight)
                         },
                     ).drawBehind {
-                        // Single piece: close the small gap between the mini player and the bar.
-                        val gapAlpha = if (fillGap) proximity.coerceIn(0f, 1f) else 0f
+                        // Styles without a notch: close the small gap between the mini player and the bar.
+                        val gapAlpha = if (fillGap) (proximity * 2f).coerceIn(0f, 1f) else 0f
                         if (gapAlpha > 0f) {
                             drawRect(
-                                color = container.copy(alpha = gapAlpha),
+                                color = bridgeColor.copy(alpha = gapAlpha),
                                 topLeft = Offset(0f, -bridgeHeightPx),
                                 size = Size(size.width, bridgeHeightPx),
                             )
@@ -223,7 +137,7 @@ internal fun CoverNavigationToolbar(
                     Modifier
                         .then(if (isPill) Modifier else Modifier.fillMaxWidth().fillMaxHeight())
                         .clip(shape)
-                        .background(container)
+                        .then(if (barBrush != null) Modifier.background(barBrush) else Modifier.background(container))
                         .selectableGroup()
                         .padding(
                             horizontal = if (isPill) 8.dp else 12.dp,

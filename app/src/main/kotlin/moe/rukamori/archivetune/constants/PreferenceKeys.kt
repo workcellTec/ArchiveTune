@@ -787,15 +787,20 @@ enum class NavigationBarMode {
     COVER_COLOR,
     SINGLE_PIECE,
     ICONS_PILL,
+    GRADIENT,
     ;
 
     /** Styles that paint the bar with the color taken from the current cover art. */
     val usesCoverColor: Boolean
-        get() = this == COVER_COLOR || this == SINGLE_PIECE || this == ICONS_PILL
+        get() = this == COVER_COLOR || this == SINGLE_PIECE || this == ICONS_PILL || this == GRADIENT
 
     /** Styles where the bar sits against the mini player and the corners morph between them. */
     val joinsMiniPlayer: Boolean
-        get() = this == CONNECTED || this == COVER_COLOR || this == SINGLE_PIECE
+        get() = this == CONNECTED || this == COVER_COLOR || this == SINGLE_PIECE || this == GRADIENT
+
+    /** Styles where the mini player and the bar touch, with no rounded notch between them. */
+    val closesGap: Boolean
+        get() = this == SINGLE_PIECE || this == GRADIENT
 }
 
 // Keys for customized background

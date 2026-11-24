@@ -8,9 +8,8 @@
 package moe.rukamori.archivetune.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,39 +18,47 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import kotlinx.coroutines.delay
+import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.MiniPlayerBottomSpacing
+import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyle
+import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyleKey
+import moe.rukamori.archivetune.constants.NavigationBarHeight
+import moe.rukamori.archivetune.constants.NavigationBarHorizontalPadding
 import moe.rukamori.archivetune.constants.NavigationBarMode
+import moe.rukamori.archivetune.constants.PureBlackKey
+import moe.rukamori.archivetune.ui.component.FloatingNavigationToolbar
 import moe.rukamori.archivetune.ui.component.PreferenceEntry
-import moe.rukamori.archivetune.ui.component.rememberCoverNavigationColor
+import moe.rukamori.archivetune.ui.player.MiniPlayer
+import moe.rukamori.archivetune.ui.screens.Screens
+import moe.rukamori.archivetune.utils.rememberEnumPreference
+import moe.rukamori.archivetune.utils.rememberPreference
 
-private val PreviewHeight = 92.dp
-private val MockMiniHeight = 26.dp
-private val MockBarHeight = 28.dp
+private val PreviewHeight = 250.dp
 
 @Composable
 private fun navigationBarModeLabel(mode: NavigationBarMode): String =
@@ -62,11 +69,13 @@ private fun navigationBarModeLabel(mode: NavigationBarMode): String =
         NavigationBarMode.COVER_COLOR -> stringResource(R.string.navigation_bar_mode_cover_color)
         NavigationBarMode.SINGLE_PIECE -> stringResource(R.string.navigation_bar_mode_single_piece)
         NavigationBarMode.ICONS_PILL -> stringResource(R.string.navigation_bar_mode_icons_pill)
+        NavigationBarMode.GRADIENT -> stringResource(R.string.navigation_bar_mode_gradient)
     }
 
 /**
- * Navigation bar style picker. Tapping the entry opens the list right below it, and every style
- * shows a small drawing of how the mini player and the bar will look.
+ * Navigation bar style picker. Tapping the entry opens a panel right below it with one preview and
+ * a row of styles; picking a style applies it and the preview redraws with the real mini player
+ * and the real navigation bar.
  */
 @Composable
 fun NavigationBarStylePreference(
@@ -92,151 +101,105 @@ fun NavigationBarStylePreference(
             AnimatedVisibility(visible = expanded) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    NavigationBarMode.entries.forEach { mode ->
-                        NavigationBarStyleOption(
-                            mode = mode,
-                            selected = mode == selectedMode,
-                            onClick = { onModeSelected(mode) },
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        NavigationBarMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = mode == selectedMode,
+                                onClick = { onModeSelected(mode) },
+                                label = { Text(navigationBarModeLabel(mode)) },
+                            )
+                        }
                     }
+                    NavigationBarLivePreview(selectedMode)
                 }
             }
         },
     )
 }
 
+/** The real mini player and the real navigation bar, drawn over a simplified home screen. */
 @Composable
-private fun NavigationBarStyleOption(
-    mode: NavigationBarMode,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun NavigationBarLivePreview(mode: NavigationBarMode) {
     val scheme = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(16.dp)
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(shape)
-                .border(
-                    border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) scheme.primary else scheme.outlineVariant),
-                    shape = shape,
-                ).selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-                .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            text = navigationBarModeLabel(mode),
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            color = if (selected) scheme.primary else scheme.onSurface,
-        )
-        NavigationBarStyleMock(mode)
+    val playerConnection = LocalPlayerConnection.current
+    val (pureBlack) = rememberPreference(PureBlackKey, defaultValue = false)
+    val (backgroundStyle) =
+        rememberEnumPreference(NavigationBarBackgroundStyleKey, defaultValue = NavigationBarBackgroundStyle.THEME)
+    val hazeState = remember { HazeState() }
+    val metadata = playerConnection?.mediaMetadata?.collectAsState()?.value
+
+    var position by remember { mutableLongStateOf(0L) }
+    var duration by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(playerConnection) {
+        val player = playerConnection?.player ?: return@LaunchedEffect
+        while (true) {
+            position = player.currentPosition.coerceAtLeast(0L)
+            duration = player.duration.coerceAtLeast(0L)
+            delay(500)
+        }
     }
-}
 
-@Composable
-private fun NavigationBarStyleMock(mode: NavigationBarMode) {
-    val scheme = MaterialTheme.colorScheme
-    val cover = rememberCoverNavigationColor() ?: lerp(Color.Black, scheme.primary, 0.5f)
-    val usesCover = mode.usesCoverColor
-    val barColor = if (usesCover) cover else scheme.surfaceContainer
-    val miniColor = if (usesCover) lerp(cover, Color.White, 0.08f) else scheme.surfaceContainerHigh
-    val foreground = if (usesCover) Color.White.copy(alpha = 0.85f) else scheme.onSurfaceVariant
-    val big = 14.dp
-    val small = 4.dp
-
-    Column(
+    Box(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .height(PreviewHeight)
-                .clip(RoundedCornerShape(12.dp))
-                .background(scheme.surface)
-                .padding(8.dp),
-        verticalArrangement = Arrangement.Bottom,
+                .clip(RoundedCornerShape(20.dp))
+                .background(scheme.surface),
     ) {
-        when (mode) {
-            NavigationBarMode.CONNECTED, NavigationBarMode.COVER_COLOR -> {
-                MockMini(miniColor, foreground, RoundedCornerShape(big, big, small, small))
-                Spacer(Modifier.height(3.dp))
-                MockBar(barColor, foreground, RoundedCornerShape(small, small, big, big), Modifier.fillMaxWidth())
-            }
-            NavigationBarMode.STANDALONE -> {
-                MockMini(miniColor, foreground, RoundedCornerShape(big))
-                Spacer(Modifier.height(6.dp))
-                MockBar(barColor, foreground, RoundedCornerShape(big), Modifier.fillMaxWidth())
-            }
-            NavigationBarMode.APPLE_MUSIC -> {
-                MockMini(miniColor, foreground, RoundedCornerShape(big))
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MockBar(scheme.onSurface.copy(alpha = 0.12f), foreground, CircleShape, Modifier.weight(1f), icons = 2)
-                    Box(
-                        modifier = Modifier.size(MockBarHeight).clip(CircleShape).background(scheme.onSurface.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        MockIcon(foreground)
-                    }
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(Modifier.fillMaxWidth().height(28.dp).clip(RoundedCornerShape(14.dp)).background(scheme.surfaceContainerHigh))
+            Box(Modifier.fillMaxWidth().height(52.dp).clip(RoundedCornerShape(16.dp)).background(scheme.primaryContainer))
+        }
+        Column(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(start = NavigationBarHorizontalPadding, end = NavigationBarHorizontalPadding, bottom = 10.dp),
+        ) {
+            if (metadata == null) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(70.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(R.string.navigation_bar_preview_play_something),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
                 }
+            } else {
+                MiniPlayer(
+                    position = position,
+                    duration = duration,
+                    hazeState = hazeState,
+                    modifier = Modifier.fillMaxWidth(),
+                    pureBlack = pureBlack,
+                    navigationProximityProvider = { 1f },
+                    navigationBarMode = mode,
+                )
             }
-            NavigationBarMode.SINGLE_PIECE -> {
-                Column(modifier = Modifier.clip(RoundedCornerShape(big)).background(barColor)) {
-                    MockMini(miniColor, foreground, RoundedCornerShape(0.dp))
-                    MockBar(barColor, foreground, RoundedCornerShape(0.dp), Modifier.fillMaxWidth())
-                }
-            }
-            NavigationBarMode.ICONS_PILL -> {
-                MockMini(miniColor, foreground, RoundedCornerShape(big))
-                Spacer(Modifier.height(6.dp))
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    MockBar(barColor, foreground, CircleShape, Modifier.width(96.dp), icons = 3)
-                }
-            }
+            Spacer(Modifier.height(MiniPlayerBottomSpacing))
+            FloatingNavigationToolbar(
+                items = Screens.MainScreens,
+                pureBlack = pureBlack,
+                backgroundStyle = backgroundStyle,
+                hazeState = hazeState,
+                modifier = Modifier.height(NavigationBarHeight),
+                miniPlayerProximityProvider = { 1f },
+                navigationBarMode = mode,
+                isSelected = { it == Screens.Library },
+                onItemClick = { _, _ -> },
+            )
         }
     }
-}
-
-@Composable
-private fun MockMini(
-    color: Color,
-    foreground: Color,
-    shape: Shape,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(MockMiniHeight).clip(shape).background(color).padding(horizontal = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Box(Modifier.size(16.dp).clip(RoundedCornerShape(4.dp)).background(foreground.copy(alpha = 0.5f)))
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Box(Modifier.width(54.dp).height(4.dp).clip(CircleShape).background(foreground))
-            Box(Modifier.width(34.dp).height(3.dp).clip(CircleShape).background(foreground.copy(alpha = 0.5f)))
-        }
-        Box(Modifier.size(14.dp).clip(CircleShape).background(foreground))
-    }
-}
-
-@Composable
-private fun MockBar(
-    color: Color,
-    foreground: Color,
-    shape: Shape,
-    modifier: Modifier,
-    icons: Int = 3,
-) {
-    Row(
-        modifier = modifier.height(MockBarHeight).clip(shape).background(color).padding(horizontal = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        repeat(icons) { MockIcon(foreground) }
-    }
-}
-
-@Composable
-private fun MockIcon(color: Color) {
-    Box(Modifier.size(10.dp).clip(CircleShape).background(color))
 }

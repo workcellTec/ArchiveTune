@@ -59,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -663,7 +664,14 @@ fun AppearanceSettings(navController: NavController) {
                     PreferenceEntry(
                         title = { Text(stringResource(R.string.app_icon)) },
                         description = stringResource(R.string.app_icon_description),
-                        icon = { Icon(painterResource(R.drawable.app_icon_small), null) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.app_icon_small),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)),
+                            )
+                        },
                         onClick = { navController.navigate("settings/appearance/icon") },
                     )
                 }

@@ -107,11 +107,36 @@ private fun SheetWindowBlur(
     radius: Int,
 ) {
     androidx.compose.runtime.DisposableEffect(view, radius) {
-        val window = (view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
-        if (window != null && radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            window.attributes = window.attributes.also { it.blurBehindRadius = radius }
+        if (radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            applyWindowBlur(view, radius)
         }
         onDispose {}
     }
+}
+
+/**
+ * The sheet may live in a Dialog window or in a bare window added straight to the WindowManager
+ * (newer Material3), so try the dialog's Window first and fall back to the root view's layout params.
+ */
+@android.annotation.SuppressLint("NewApi")
+private fun applyWindowBlur(
+    view: android.view.View,
+    radius: Int,
+) {
+    var node: android.view.View? = view
+    while (node != null) {
+        val window = (node as? androidx.compose.ui.window.DialogWindowProvider)?.window
+        if (window != null) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+            window.attributes = window.attributes.also { it.blurBehindRadius = radius }
+            return
+        }
+        node = node.parent as? android.view.View
+    }
+    val root = view.rootView
+    val params = root.layoutParams as? android.view.WindowManager.LayoutParams ?: return
+    params.flags = params.flags or android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND
+    params.blurBehindRadius = radius
+    val wm = view.context.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
+    wm.updateViewLayout(root, params)
 }

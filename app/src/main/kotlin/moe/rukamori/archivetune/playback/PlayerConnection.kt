@@ -7,6 +7,7 @@
 
 package moe.rukamori.archivetune.playback
 
+import moe.rukamori.archivetune.db.entities.Song
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -74,8 +75,24 @@ class PlayerConnection(
     val playbackParameters = MutableStateFlow(player.playbackParameters)
     val mediaMetadata = service.currentMediaMetadata
     val currentSong =
-        mediaMetadata.flatMapLatest {
-            database.song(it?.id)
+        kotlinx.coroutines.flow.combine(
+            mediaMetadata.flatMapLatest { database.song(it?.id) },
+            service.likeOverride,
+            mediaMetadata,
+        ) { song, override, metadata ->
+            // Show a tapped like right away; the database catches up in the background.
+            when {
+                override == null -> song
+                song != null && override.first == song.id ->
+                    if (song.song.liked != override.second) song.copy(song = song.song.copy(liked = override.second)) else song
+                // Streamed song that is not in the database yet: show a provisional entry until it is saved.
+                song == null && metadata != null && override.first == metadata.id ->
+                    Song(
+                        song = metadata.toSongEntity().copy(liked = override.second),
+                        artists = emptyList(),
+                    )
+                else -> song
+            }
         }
     val isCurrentDisliked =
         kotlinx.coroutines.flow.combine(mediaMetadata, service.dislikedSongIds) { metadata, disliked ->

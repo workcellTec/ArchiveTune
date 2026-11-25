@@ -599,6 +599,13 @@ private fun MetadataRow(
     onAction: (ImmersivePlayerAction) -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+        DislikeIconButton(
+            size = 48.dp,
+            iconSize = 26.dp,
+            shape = androidx.compose.foundation.shape.CircleShape,
+            tint = ImmersiveContentColor,
+            activeTint = ImmersiveContentColor,
+        )
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -638,13 +645,6 @@ private fun MetadataRow(
                 modifier = Modifier.heartPop(isLiked).size(28.dp),
             )
         }
-        DislikeIconButton(
-            size = 48.dp,
-            iconSize = 26.dp,
-            shape = androidx.compose.foundation.shape.CircleShape,
-            tint = ImmersiveContentColor,
-            activeTint = ImmersiveContentColor,
-        )
         IconButton(onClick = { onAction(ImmersivePlayerAction.OpenMenu) }) {
             Icon(
                 painter = painterResource(R.drawable.more_horiz),

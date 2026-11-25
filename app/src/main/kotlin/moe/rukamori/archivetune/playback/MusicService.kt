@@ -576,6 +576,9 @@ class MusicService :
     private val dislikeStore by lazy { DislikeStore(dataStore) }
     @Volatile
     private var dislikeSnapshot = DislikeStore.Snapshot()
+    /** Optimistic like state (songId to liked) shown instantly while the real toggle is still being saved. */
+    val likeOverride = MutableStateFlow<Pair<String, Boolean>?>(null)
+    private val pendingLikeToggles = java.util.concurrent.atomic.AtomicInteger(0)
     private val _dislikedSongIds = MutableStateFlow<Set<String>>(emptySet())
     val dislikedSongIds = _dislikedSongIds.asStateFlow()
     private var hideMusicVideos = false
@@ -6411,10 +6414,15 @@ class MusicService :
                 }
                 return@launch
             }
-            dislikeStore.add(mediaMetadata.id, mediaMetadata.artists.mapNotNull { it.id })
+            val strikes = dislikeStore.add(mediaMetadata.id, mediaMetadata.artists.mapNotNull { it.id })
             if (database.getSongById(mediaMetadata.id)?.song?.liked == true) toggleLike()
             withContext(Dispatchers.Main) {
-                Toast.makeText(this@MusicService, R.string.dislike_added, Toast.LENGTH_SHORT).show()
+                Toast
+                    .makeText(
+                        this@MusicService,
+                        if (strikes >= 2) R.string.dislike_added_until_undone else R.string.dislike_added,
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 if (player.currentMediaItem?.mediaId == mediaMetadata.id) {
                     if (player.hasNextMediaItem()) player.seekToNext() else player.pause()
                 }
@@ -6434,6 +6442,11 @@ class MusicService :
 
     fun toggleLike() {
         val mediaMetadata = currentMediaMetadata.value ?: return
+        val shownLiked =
+            likeOverride.value?.takeIf { it.first == mediaMetadata.id }?.second
+                ?: (currentSong.value?.song?.liked == true)
+        likeOverride.value = mediaMetadata.id to !shownLiked
+        pendingLikeToggles.incrementAndGet()
         ioScope.launch {
             try {
                 val result =
@@ -6451,6 +6464,8 @@ class MusicService :
                                         ?: return@withTransaction null
                                 currentSongEntity.song.toggleLike()
                             } ?: return@withLock null
+                        // Liking a song cancels a previous "don't like" so the two states never coexist.
+                        if (requestedSong.liked) dislikeStore.remove(requestedSong.id)
                         syncUtils.likeSong(requestedSong)
                     } ?: return@launch
                 val song =
@@ -6461,9 +6476,6 @@ class MusicService :
                         }
                         return@launch
                     }
-
-                // Liking a song cancels a previous "don't like" so the two states never coexist.
-                if (song.liked) dislikeStore.remove(song.id)
 
                 // Check if auto-download on like is enabled and the song is now liked
                 if (!song.isLocal && dataStore.get(AutoDownloadOnLikeKey, false) && song.liked) {
@@ -6485,6 +6497,12 @@ class MusicService :
                 throw error
             } catch (error: Exception) {
                 reportException(error)
+            }
+        }.invokeOnCompletion {
+            // Back to the real database state once every pending toggle has finished (or failed).
+            if (pendingLikeToggles.decrementAndGet() <= 0) {
+                pendingLikeToggles.set(0)
+                likeOverride.value = null
             }
         }
     }

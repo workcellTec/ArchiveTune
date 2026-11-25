@@ -15,9 +15,11 @@ import kotlinx.coroutines.flow.map
 import moe.rukamori.archivetune.constants.DislikedSongsKey
 
 /**
- * Songs the user marked as "don't like". They are avoided for [AVOID_DURATION_MS]
- * and the artists behind several of them are avoided as well. Stored in DataStore as one line
- * per song (`id|expiresAtMs|artistId,artistId`) so no database migration is needed.
+ * Songs the user marked as "don't like". The first dislike avoids the song for [AVOID_DURATION_MS];
+ * disliking the same song again after that has expired makes it avoided until the user undoes it
+ * (button again or liking it). Artists behind several disliked songs are avoided as well.
+ * Stored in DataStore as one line per song (`id|expiresAtMs|artistId,artistId|strikes`)
+ * so no database migration is needed.
  */
 class DislikeStore(
     private val dataStore: DataStore<Preferences>,
@@ -26,6 +28,7 @@ class DislikeStore(
         val songId: String,
         val expiresAt: Long,
         val artistIds: List<String>,
+        val strikes: Int = 1,
     )
 
     /** Snapshot of the active dislikes, used synchronously by playback filters. */
@@ -44,20 +47,33 @@ class DislikeStore(
     val snapshots: Flow<Snapshot> =
         dataStore.data.map { preferences -> snapshotOf(parse(preferences[DislikedSongsKey]), System.currentTimeMillis()) }
 
+    /** Returns how many times this song was disliked in a row (2 or more means avoided until undone). */
     suspend fun add(
         songId: String,
         artistIds: List<String>,
-    ) {
-        if (!songId.isSafeToken()) return
+    ): Int {
+        if (!songId.isSafeToken()) return 1
         val now = System.currentTimeMillis()
+        var result = 1
         dataStore.edit { preferences ->
+            val all = parse(preferences[DislikedSongsKey])
+            // Expired entries are kept for a year so repeated dislikes of the same song can be counted.
             val entries =
-                parse(preferences[DislikedSongsKey])
-                    .filter { it.expiresAt > now && it.songId != songId }
+                all
+                    .filter { it.songId != songId && (it.expiresAt == FOREVER || it.expiresAt + COUNT_MEMORY_MS > now) }
                     .toMutableList()
-            entries += Entry(songId, now + AVOID_DURATION_MS, artistIds.filter { it.isSafeToken() })
+            val strikes = (all.firstOrNull { it.songId == songId }?.strikes ?: 0) + 1
+            result = strikes
+            entries +=
+                Entry(
+                    songId = songId,
+                    expiresAt = if (strikes >= 2) FOREVER else now + AVOID_DURATION_MS,
+                    artistIds = artistIds.filter { it.isSafeToken() },
+                    strikes = strikes,
+                )
             preferences[DislikedSongsKey] = encode(entries.takeLast(MAX_ENTRIES))
         }
+        return result
     }
 
     suspend fun remove(songId: String) {
@@ -70,6 +86,8 @@ class DislikeStore(
 
     companion object {
         const val AVOID_DURATION_MS = 30L * 24 * 60 * 60 * 1000
+        private const val COUNT_MEMORY_MS = 365L * 24 * 60 * 60 * 1000
+        private const val FOREVER = Long.MAX_VALUE
 
         /** Number of active dislikes by the same artist that makes the artist avoided too. */
         const val ARTIST_STRIKES = 3
@@ -89,11 +107,12 @@ class DislikeStore(
                         songId = parts[0],
                         expiresAt = expiresAt,
                         artistIds = parts.getOrNull(2)?.split(',')?.filter { it.isNotBlank() }.orEmpty(),
+                        strikes = parts.getOrNull(3)?.toIntOrNull() ?: 1,
                     )
                 }.toList()
 
         internal fun encode(entries: List<Entry>): String =
-            entries.joinToString("\n") { "${it.songId}|${it.expiresAt}|${it.artistIds.joinToString(",")}" }
+            entries.joinToString("\n") { "${it.songId}|${it.expiresAt}|${it.artistIds.joinToString(",")}|${it.strikes}" }
 
         internal fun snapshotOf(
             entries: List<Entry>,

@@ -1032,6 +1032,14 @@ private fun V11ActionToolbar(
         expanded = true,
         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(toolbarContainerColor = palette.accent),
     ) {
+        val dislikeConnection = LocalPlayerConnection.current
+        val disliked = rememberCurrentDisliked()
+        IconButton(onClick = { dislikeConnection?.toggleDislike() }, shapes = IconButtonDefaults.shapes(), colors = iconColors) {
+            Icon(
+                painterResource(if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken),
+                contentDescription = stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
+            )
+        }
         IconButton(onClick = onQueueClick, shapes = IconButtonDefaults.shapes(), colors = iconColors) {
             Icon(painterResource(R.drawable.queue_music), contentDescription = stringResource(R.string.queue))
         }
@@ -1066,14 +1074,6 @@ private fun V11ActionToolbar(
                         scaleX = likeScale.value
                         scaleY = likeScale.value
                     },
-            )
-        }
-        val dislikeConnection = LocalPlayerConnection.current
-        val disliked = rememberCurrentDisliked()
-        IconButton(onClick = { dislikeConnection?.toggleDislike() }, shapes = IconButtonDefaults.shapes(), colors = iconColors) {
-            Icon(
-                painterResource(if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken),
-                contentDescription = stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
             )
         }
         IconButton(onClick = onAddToPlaylistClick, shapes = IconButtonDefaults.shapes(), colors = iconColors) {

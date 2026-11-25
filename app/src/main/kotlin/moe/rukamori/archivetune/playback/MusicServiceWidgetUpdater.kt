@@ -32,6 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moe.rukamori.archivetune.R
@@ -247,8 +249,20 @@ internal class MusicServiceWidgetUpdater(
         installedTarget: InstalledWidgetTarget,
         snapshot: WidgetSnapshot,
     ) {
+        val name = installedTarget.target.widgetClass.simpleName
+        val startedAt = android.os.SystemClock.elapsedRealtime()
         try {
-            updateWidget(installedTarget, snapshot)
+            // A hung widget must not block the coalesced update loop forever.
+            withTimeout(WIDGET_UPDATE_TIMEOUT_MILLIS) { updateWidget(installedTarget, snapshot) }
+            Timber.tag(TAG).i(
+                "widget %s ok (%d ids, %d ms) media=%s",
+                name,
+                installedTarget.ids.size,
+                android.os.SystemClock.elapsedRealtime() - startedAt,
+                snapshot.mediaId,
+            )
+        } catch (error: TimeoutCancellationException) {
+            Timber.tag(TAG).e(error, "Widget update timed out: %s", name)
         } catch (error: CancellationException) {
             throw error
         } catch (error: Throwable) {
@@ -484,6 +498,7 @@ internal class MusicServiceWidgetUpdater(
         const val MAX_CACHED_ART_FILES = 64
         const val ART_FILE_PREFIX = "widget_art_"
         const val TAG = "WidgetUpdater"
+        private const val WIDGET_UPDATE_TIMEOUT_MILLIS = 8_000L
 
         val WidgetErrorHandler =
             CoroutineExceptionHandler { _, error -> Timber.tag(TAG).e(error, "Widget state push failed") }

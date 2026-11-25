@@ -533,11 +533,19 @@ public fun MediaDetailAction(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isDestructive: Boolean = false,
+    tintedContainer: Color? = null,
     content: @Composable () -> Unit,
 ) {
     val actionDescription = stringResource(contentDescription)
     val colors =
-        if (isDestructive) {
+        if (tintedContainer != null && !isDestructive) {
+            IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = tintedContainer,
+                contentColor = contentColor,
+                disabledContainerColor = tintedContainer.copy(alpha = 0.4f),
+                disabledContentColor = contentColor.copy(alpha = 0.38f),
+            )
+        } else if (isDestructive) {
             IconButtonDefaults.filledTonalIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.16f),
                 contentColor = MaterialTheme.colorScheme.error,

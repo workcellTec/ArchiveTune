@@ -281,6 +281,7 @@ fun ImmersiveMediaHeader(
     metadata: String? = null,
     description: String? = null,
     additionalPrimaryActions: (@Composable RowScope.(Color) -> Unit)? = null,
+    trailingSecondaryAction: (@Composable RowScope.() -> Unit)? = null,
     isToggleAddEnabled: Boolean = true,
 ) {
     val menuState = LocalMenuState.current
@@ -387,6 +388,7 @@ fun ImmersiveMediaHeader(
             ImmersiveSecondaryActions(
                 colors = colors,
                 actions = actions,
+                trailing = trailingSecondaryAction,
                 modifier = Modifier.padding(top = 12.dp),
             )
         }
@@ -529,6 +531,7 @@ fun ImmersiveSecondaryActions(
     colors: ImmersiveDetailColors,
     actions: @Composable RowScope.(Color) -> Unit,
     modifier: Modifier = Modifier,
+    trailing: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
@@ -543,6 +546,7 @@ fun ImmersiveSecondaryActions(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             actions(colors.content)
+            trailing?.invoke(this)
         }
     }
 }

@@ -53,7 +53,7 @@ fun styleTagLabel(tag: String): String = tag.substringAfter('=')
 fun styleTagKind(tag: String): Char = tag.firstOrNull() ?: ' '
 
 private const val MAX_LABEL_LENGTH = 24
-private const val MAX_OPTIONS = 14
+private const val MAX_OPTIONS = 8
 private const val MIN_COUNT = 2
 private const val MIN_COUNT_ARTIST = 3
 private val LiveRegex = Regex("""\b(live|ao vivo)\b""")

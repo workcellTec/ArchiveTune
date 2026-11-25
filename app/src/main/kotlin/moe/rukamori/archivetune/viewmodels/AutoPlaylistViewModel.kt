@@ -7,6 +7,16 @@
 
 package moe.rukamori.archivetune.viewmodels
 
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.StateFlow
+import moe.rukamori.archivetune.styles.styleOptions
+import moe.rukamori.archivetune.styles.filterByStylePath
+import moe.rukamori.archivetune.styles.buildStyleIndex
+import moe.rukamori.archivetune.styles.StyleOption
+import moe.rukamori.archivetune.styles.StyleLabels
+import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.db.entities.Song
 import moe.rukamori.archivetune.styles.SongStyleTagger
 import android.content.Context
@@ -62,6 +72,7 @@ class AutoPlaylistViewModel
             if (playlist == "liked" && songs.isNotEmpty()) styleTagger.tagMissing(songs)
         }
 
+
         private val _isRefreshing = MutableStateFlow(false)
         val isRefreshing = _isRefreshing.asStateFlow()
 
@@ -99,6 +110,47 @@ class AutoPlaylistViewModel
                         }
                     }
                 }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+        /** Songs matching the selected style path and the options to show next (computed off the main thread). */
+        data class StyleState(
+            val songs: List<Song> = emptyList(),
+            val options: List<StyleOption> = emptyList(),
+            val path: List<String> = emptyList(),
+        )
+
+        private val styleLabels =
+            StyleLabels(
+                live = context.getString(R.string.style_tag_live),
+                acoustic = context.getString(R.string.style_tag_acoustic),
+                remix = context.getString(R.string.style_tag_remix),
+                explicit = context.getString(R.string.style_tag_explicit),
+                decade = { context.getString(R.string.style_decade, it) },
+            )
+        private val stylePath = MutableStateFlow<List<String>>(emptyList())
+
+        val styleState: StateFlow<StyleState> =
+            combine(likedSongs, styleTags, stylePath) { songs, aiTags, path ->
+                val index = buildStyleIndex(songs, aiTags, styleLabels)
+                var effectivePath = path
+                var matching = filterByStylePath(songs, index, effectivePath)
+                if (effectivePath.isNotEmpty() && matching.isEmpty()) {
+                    // The selected style vanished (song unliked, tags changed): show everything again.
+                    effectivePath = emptyList()
+                    matching = songs
+                }
+                StyleState(matching, styleOptions(matching, index, effectivePath), effectivePath)
+            }.flowOn(Dispatchers.Default)
+                .stateIn(viewModelScope, SharingStarted.Eagerly, StyleState())
+
+        init {
+            viewModelScope.launch {
+                styleState.collect { state -> if (state.path != stylePath.value) stylePath.value = state.path }
+            }
+        }
+
+        fun selectStyle(tag: String) = stylePath.update { it + tag }
+
+        fun removeStyleFrom(index: Int) = stylePath.update { it.take(index) }
 
         fun refresh() {
             if (_isRefreshing.value) return

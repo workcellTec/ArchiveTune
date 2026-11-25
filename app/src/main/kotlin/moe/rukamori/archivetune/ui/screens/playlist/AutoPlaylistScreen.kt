@@ -9,11 +9,8 @@
 
 package moe.rukamori.archivetune.ui.screens.playlist
 
-import moe.rukamori.archivetune.ui.component.StyleFilterRow
-import moe.rukamori.archivetune.styles.styleOptions
-import moe.rukamori.archivetune.styles.filterByStylePath
-import moe.rukamori.archivetune.styles.buildStyleIndex
-import moe.rukamori.archivetune.styles.StyleLabels
+import moe.rukamori.archivetune.ui.component.StylePillsRow
+import moe.rukamori.archivetune.ui.component.StyleSortModule
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenu
@@ -193,29 +190,12 @@ fun AutoPlaylistScreen(
         )
     val (sortDescending, onSortDescendingChange) = rememberPreference(AutoPlaylistSongSortDescendingKey, true)
 
-    val styleLabels =
-        remember(context) {
-            StyleLabels(
-                live = context.getString(R.string.style_tag_live),
-                acoustic = context.getString(R.string.style_tag_acoustic),
-                remix = context.getString(R.string.style_tag_remix),
-                explicit = context.getString(R.string.style_tag_explicit),
-                decade = { context.getString(R.string.style_decade, it) },
-            )
-        }
-    val aiStyleTags by viewModel.styleTags.collectAsStateWithLifecycle()
+    val styleState by viewModel.styleState.collectAsStateWithLifecycle()
     val styleProgress by viewModel.styleProgress.collectAsStateWithLifecycle()
-    val styleIndex = remember(songs, aiStyleTags, styleLabels) { buildStyleIndex(songs, aiStyleTags, styleLabels) }
-    var stylePath by remember { mutableStateOf<List<String>>(emptyList()) }
-    val styledSongs = remember(songs, styleIndex, stylePath) { filterByStylePath(songs, styleIndex, stylePath) }
-    val styleChoices = remember(styledSongs, styleIndex, stylePath) { styleOptions(styledSongs, styleIndex, stylePath) }
-    var sortMenuExpanded by remember { mutableStateOf(false) }
+    val styledSongs = styleState.songs
+    val stylePath = styleState.path
 
     LaunchedEffect(songs) { viewModel.tagStyles(songs) }
-    // A selected style can vanish (song unliked, tags changed): drop the selection instead of showing nothing.
-    LaunchedEffect(styledSongs, stylePath) {
-        if (stylePath.isNotEmpty() && styledSongs.isEmpty()) stylePath = emptyList()
-    }
 
     val downloadUtil = LocalDownloadUtil.current
     var downloads by remember { mutableStateOf<Map<String, Download>>(emptyMap()) }
@@ -413,6 +393,14 @@ fun AutoPlaylistScreen(
                                 )
                             },
                             onToggleAdd = null,
+                            trailingSecondaryAction = {
+                                AutoPlaylistSortModule(
+                                    sortType = sortType,
+                                    sortDescending = sortDescending,
+                                    onSortTypeChange = onSortTypeChange,
+                                    onSortDescendingChange = onSortDescendingChange,
+                                )
+                            },
                             additionalPrimaryActions = { contentColor ->
                                 val isCompleted = downloadState == HeaderDownloadState.Completed
                                 MediaDetailAction(
@@ -422,7 +410,8 @@ fun AutoPlaylistScreen(
                                         } else {
                                             R.string.download
                                         },
-                                    contentColor = contentColor,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    tintedContainer = MaterialTheme.colorScheme.secondaryContainer,
                                     onClick = {
                                         when (downloadState) {
                                             HeaderDownloadState.Completed -> {
@@ -478,7 +467,8 @@ fun AutoPlaylistScreen(
 
                                 MediaDetailAction(
                                     contentDescription = R.string.download,
-                                    contentColor = contentColor,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    tintedContainer = MaterialTheme.colorScheme.secondaryContainer,
                                     onClick = {
                                         navController.navigate("auto_playlist/downloaded?tab=progress")
                                     },
@@ -501,68 +491,28 @@ fun AutoPlaylistScreen(
                     key = "sortHeader",
                     contentType = CONTENT_TYPE_HEADER,
                 ) {
-                    StyleFilterRow(
-                        sortLabel =
-                            stringResource(
-                                when (sortType) {
-                                    AutoPlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                    AutoPlaylistSongSortType.NAME -> R.string.sort_by_name
-                                    AutoPlaylistSongSortType.ARTIST -> R.string.sort_by_artist
-                                    AutoPlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                                },
-                            ),
-                        sortDescending = sortDescending,
-                        onSortClick = { sortMenuExpanded = true },
-                        onSortDescendingChange = onSortDescendingChange,
-                        path = stylePath,
-                        options = styleChoices,
-                        progress = styleProgress,
-                        onSelect = { stylePath = stylePath + it },
-                        onRemoveFrom = { index -> stylePath = stylePath.take(index) },
-                        sortMenu = {
-                            DropdownMenu(
-                                expanded = sortMenuExpanded,
-                                onDismissRequest = { sortMenuExpanded = false },
-                                modifier = Modifier.widthIn(min = 172.dp),
-                            ) {
-                                AutoPlaylistSongSortType.entries.forEach { type ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text =
-                                                    stringResource(
-                                                        when (type) {
-                                                            AutoPlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
-                                                            AutoPlaylistSongSortType.NAME -> R.string.sort_by_name
-                                                            AutoPlaylistSongSortType.ARTIST -> R.string.sort_by_artist
-                                                            AutoPlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
-                                                        },
-                                                    ),
-                                                style = MaterialTheme.typography.bodyLarge,
-                                            )
-                                        },
-                                        trailingIcon = {
-                                            Icon(
-                                                painter =
-                                                    painterResource(
-                                                        if (sortType == type) {
-                                                            R.drawable.radio_button_checked
-                                                        } else {
-                                                            R.drawable.radio_button_unchecked
-                                                        },
-                                                    ),
-                                                contentDescription = null,
-                                            )
-                                        },
-                                        onClick = {
-                                            onSortTypeChange(type)
-                                            sortMenuExpanded = false
-                                        },
-                                    )
-                                }
-                            }
-                        },
-                    )
+                    if (isSearching) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            AutoPlaylistSortModule(
+                                sortType = sortType,
+                                sortDescending = sortDescending,
+                                onSortTypeChange = onSortTypeChange,
+                                onSortDescendingChange = onSortDescendingChange,
+                            )
+                        }
+                    }
+                    if (styleState.options.isNotEmpty() || stylePath.isNotEmpty() || styleProgress != null) {
+                        StylePillsRow(
+                            path = stylePath,
+                            options = styleState.options,
+                            progress = styleProgress,
+                            onSelect = viewModel::selectStyle,
+                            onRemoveFrom = viewModel::removeStyleFrom,
+                        )
+                    }
                 }
 
                 // Song items
@@ -815,4 +765,63 @@ enum class PlaylistType {
     LIKE,
     DOWNLOAD,
     OTHER,
+}
+
+@Composable
+private fun AutoPlaylistSortModule(
+    sortType: AutoPlaylistSongSortType,
+    sortDescending: Boolean,
+    onSortTypeChange: (AutoPlaylistSongSortType) -> Unit,
+    onSortDescendingChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    fun AutoPlaylistSongSortType.label(): Int =
+        when (this) {
+            AutoPlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
+            AutoPlaylistSongSortType.NAME -> R.string.sort_by_name
+            AutoPlaylistSongSortType.ARTIST -> R.string.sort_by_artist
+            AutoPlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
+        }
+
+    StyleSortModule(
+        sortLabel = stringResource(sortType.label()),
+        sortDescending = sortDescending,
+        onSortClick = { menuExpanded = true },
+        onSortDescendingChange = onSortDescendingChange,
+        height = 48.dp,
+        modifier = modifier,
+        sortMenu = {
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                modifier = Modifier.widthIn(min = 172.dp),
+            ) {
+                AutoPlaylistSongSortType.entries.forEach { type ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(type.label()),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                painter =
+                                    painterResource(
+                                        if (sortType == type) R.drawable.radio_button_checked else R.drawable.radio_button_unchecked,
+                                    ),
+                                contentDescription = null,
+                            )
+                        },
+                        onClick = {
+                            onSortTypeChange(type)
+                            menuExpanded = false
+                        },
+                    )
+                }
+            }
+        },
+    )
 }

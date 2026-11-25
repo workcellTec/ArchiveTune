@@ -111,34 +111,67 @@ private fun SheetWindowBlur(
     radius: Int,
 ) {
     androidx.compose.runtime.DisposableEffect(view, radius) {
-        var target: android.view.View? = null
         val active = radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+        var entry: SheetBlurStack.Entry? = null
         if (active) {
             var ctx = view.context
             while (ctx is android.content.ContextWrapper && ctx !is android.app.Activity) ctx = ctx.baseContext
-            target = (ctx as? android.app.Activity)?.findViewById(android.R.id.content)
-            SheetBlurStack.radii.add(radius)
-            SheetBlurStack.apply(target)
+            val screen = (ctx as? android.app.Activity)?.findViewById<android.view.View>(android.R.id.content)
+            entry = SheetBlurStack.Entry(radius, view.rootView)
+            SheetBlurStack.add(entry, screen)
         }
-        onDispose {
-            if (active) {
-                SheetBlurStack.radii.remove(radius)
-                SheetBlurStack.apply(target)
-            }
-        }
+        onDispose { entry?.let(SheetBlurStack::remove) }
     }
 }
 
-/** Sheets can stack (queue, then a song menu); the screen keeps the blur of the strongest open one. */
+/**
+ * Sheets can stack (queue, then a song menu). Each open sheet blurs everything beneath it: the
+ * screen gets the strongest radius, and each sheet gets the radius of the sheets opened above it,
+ * so a menu over the queue blurs the queue with the same level the user chose.
+ */
 private object SheetBlurStack {
-    val radii = mutableListOf<Int>()
+    class Entry(val radius: Int, val root: android.view.View)
+
+    private val entries = mutableListOf<Entry>()
+    private var screen: android.view.View? = null
+
+    fun add(entry: Entry, screenView: android.view.View?) {
+        entries.add(entry)
+        if (screenView != null) screen = screenView
+        apply()
+    }
+
+    fun remove(entry: Entry) {
+        entries.remove(entry)
+        val old = screen
+        apply()
+        if (entries.isEmpty()) {
+            if (old != null) setBlur(old, 0)
+            screen = null
+        }
+        setBlur(entry.root, 0)
+    }
+
+    private fun apply() {
+        screen?.let { setBlur(it, entries.maxOfOrNull { e -> e.radius } ?: 0) }
+        entries.forEachIndexed { i, e ->
+            setBlur(e.root, entries.drop(i + 1).maxOfOrNull { it.radius } ?: 0)
+        }
+    }
 
     @android.annotation.SuppressLint("NewApi")
-    fun apply(target: android.view.View?) {
-        if (target == null || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
-        val r = radii.maxOrNull()?.toFloat()
-        target.setRenderEffect(
-            if (r == null) null else android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.CLAMP),
+    private fun setBlur(
+        view: android.view.View,
+        radius: Int,
+    ) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
+        view.setRenderEffect(
+            if (radius <= 0) {
+                null
+            } else {
+                val r = radius.toFloat()
+                android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.CLAMP)
+            },
         )
     }
 }

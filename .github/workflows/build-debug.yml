@@ -4,8 +4,8 @@ name: Build debug APK
 # The APK is signed with the default debug key, kept in the Actions cache, so every build uses
 # the same key and updates the previous install. It installs as a separate app (package ends
 # with ".music"), next to the original ArchiveTune.
-# Every build is also attached, as plain .apk files (no zip), to the "latest" release:
-# the debug one and, when it builds, an optimized "personal" one (faster to open).
+# Every build is also attached, as a plain .apk (no zip), to the "latest" release.
+# It is the optimized build (faster to open); the debug build is only a fallback if R8 fails.
 
 on:
   workflow_dispatch:
@@ -58,13 +58,16 @@ jobs:
           path: ~/.android/debug.keystore
           key: personal-signing-key-v1
 
-      - name: Build debug APK
-        run: ./gradlew assembleGmsMobileArm64Debug --stacktrace
-
-      - name: Build optimized personal APK
-        # Optional: if R8 fails, the debug APK above is still published.
+      - name: Build optimized APK
+        id: personal
+        # Optimized (R8) build, same app name and icon as before. If R8 breaks, the debug build below
+        # is used instead so there is always one APK.
         continue-on-error: true
         run: ./gradlew assembleGmsMobileArm64Personal --stacktrace
+
+      - name: Build debug APK (fallback)
+        if: steps.personal.outcome == 'failure'
+        run: ./gradlew assembleGmsMobileArm64Debug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -77,10 +80,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          for APK in $(find app/build/outputs/apk -name '*.apk'); do
-            gh release view latest >/dev/null 2>&1 || gh release create latest \
-              --prerelease --title "Última build" --notes "Build automática da branch widgets-novos." \
-              --target "$GITHUB_SHA"
-            gh release upload latest "$APK" --clobber
-            echo "APK: https://github.com/${GITHUB_REPOSITORY}/releases/download/latest/$(basename "$APK")"
-          done
+          gh release view latest >/dev/null 2>&1 || gh release create latest \
+            --prerelease --title "Última build" --notes "Build automática da branch widgets-novos." \
+            --target "$GITHUB_SHA"
+          APK=$(find app/build/outputs/apk -name '*.apk' | head -n 1)
+          gh release upload latest "$APK" --clobber
+          # Keep a single APK on the release: drop the one from the other build type.
+          case "$APK" in
+            *personal*) gh release delete-asset latest app-gms-mobile-arm64-debug.apk --yes || true ;;
+            *debug*) gh release delete-asset latest app-gms-mobile-arm64-personal.apk --yes || true ;;
+          esac
+          echo "APK: https://github.com/${GITHUB_REPOSITORY}/releases/download/latest/$(basename "$APK")"

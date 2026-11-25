@@ -249,6 +249,13 @@ android {
         }
     }
 
+    sourceSets {
+        // Same app name and icon as the debug build, which keeps them in src/debug/res.
+        getByName("personal") {
+            res.srcDir("src/debug/res")
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = false
         sourceCompatibility = JavaVersion.VERSION_21

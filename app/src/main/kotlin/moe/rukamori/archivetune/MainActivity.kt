@@ -78,8 +78,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButtonMenu
-import androidx.compose.material3.FloatingActionButtonMenuItem
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -97,8 +96,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.ToggleFloatingActionButton
-import androidx.compose.material3.ToggleFloatingActionButtonDefaults
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
@@ -1163,17 +1160,11 @@ class MainActivity : ComponentActivity() {
                                     MiniPlayerHeight,
                             expandedBound = maxHeight,
                         )
-                    var homeOverflowMenuExpanded by rememberSaveable { mutableStateOf(false) }
                     val showHomeOverflowFab =
                         shouldShowHomeShuffleButton &&
                             !useRail &&
                             (playerBottomSheetState.isDismissed || playerBottomSheetState.isCollapsed)
 
-                    LaunchedEffect(showHomeOverflowFab) {
-                        if (!showHomeOverflowFab) {
-                            homeOverflowMenuExpanded = false
-                        }
-                    }
                     LaunchedEffect(currentRoute) {
                         mainMenuViewModel.dismiss()
                     }
@@ -1614,7 +1605,7 @@ class MainActivity : ComponentActivity() {
                     val blockingStartupModal =
                         pendingBackupRestoreUri != null || backupInProgress || sharedSong != null ||
                             menuState.isVisible || menuState.dialogContent != null || bottomSheetPageState.isVisible ||
-                            playerBottomSheetState.isExpandedOrExpanding || active || homeOverflowMenuExpanded || topAppBarOverflowExpanded
+                            playerBottomSheetState.isExpandedOrExpanding || active || topAppBarOverflowExpanded
                     val canPresentStartupPrompt =
                         LocalWindowInfo.current.isWindowFocused && !blockingStartupModal && !showStarDialog && !isAppUpdateScreen
 
@@ -1994,6 +1985,14 @@ class MainActivity : ComponentActivity() {
                                                                     }
                                                                 }
                                                             }
+                                                        }
+                                                        TranslucentTopAppBarIconButton(
+                                                            onClick = { navController.navigate(MusicRecognitionRoute) },
+                                                        ) {
+                                                            Icon(
+                                                                painter = painterResource(R.drawable.music_recognize),
+                                                                contentDescription = stringResource(R.string.music_recognition),
+                                                            )
                                                         }
                                                         TooltipBox(
                                                             positionProvider =
@@ -2426,10 +2425,8 @@ class MainActivity : ComponentActivity() {
                                                             bottom = homeOverflowFabBottomPadding,
                                                         ),
                                             ) {
-                                                HomeOverflowFab(
-                                                    expanded = homeOverflowMenuExpanded,
-                                                    onExpandedChange = { homeOverflowMenuExpanded = it },
-                                                    onShuffleClick = {
+                                                HomeMixFab(
+                                                    onClick = {
                                                         val useLocalSource =
                                                             when {
                                                                 allLocalItems.isNotEmpty() && allYtItems.isNotEmpty() -> {
@@ -2446,6 +2443,13 @@ class MainActivity : ComponentActivity() {
                                                             }
 
                                                         coroutineScope.launch(Dispatchers.Main) {
+                                                            // Personal mix first: a radio seeded from what I play and like the most.
+                                                            val avoidedIds = playerConnection?.service?.dislikedSongIds?.value.orEmpty()
+                                                            val seed = withContext(Dispatchers.IO) { pickPersonalMixSeed(database, avoidedIds) }
+                                                            if (seed != null) {
+                                                                playerConnection?.playQueue(YouTubeQueue.radio(seed.toMediaMetadata()))
+                                                                return@launch
+                                                            }
                                                             if (useLocalSource) {
                                                                 when (val luckyItem = allLocalItems.random()) {
                                                                     is Song -> {
@@ -2518,12 +2522,6 @@ class MainActivity : ComponentActivity() {
                                                                 }
                                                             }
                                                         }
-                                                    },
-                                                    onMusicRecognitionClick = {
-                                                        navController.navigate(MusicRecognitionRoute)
-                                                    },
-                                                    onMusicTogetherClick = {
-                                                        navController.navigate("settings/music_together")
                                                     },
                                                 )
                                             }
@@ -3226,7 +3224,6 @@ val LocalDownloadUtil = staticCompositionLocalOf<DownloadUtil> { error("No Downl
 val LocalSyncUtils = staticCompositionLocalOf<SyncUtils> { error("No SyncUtils provided") }
 
 private val HomeOverflowFabSpacing = 12.dp
-private const val HomeOverflowFabIconRotation = 90f
 
 @Composable
 private fun HomeOverflowFabVisibility(
@@ -3257,73 +3254,35 @@ private fun HomeOverflowFabVisibility(
     }
 }
 
+/** One-tap personal mix: plays a radio seeded from the songs I play and like the most. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun HomeOverflowFab(
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    onShuffleClick: () -> Unit,
-    onMusicRecognitionClick: () -> Unit,
-    onMusicTogetherClick: () -> Unit,
-) {
-    BackHandler(expanded) { onExpandedChange(false) }
-    val moreLabel = stringResource(R.string.more)
-    val stateLabel =
-        stringResource(if (expanded) R.string.home_fab_menu_expanded else R.string.home_fab_menu_collapsed)
+private fun HomeMixFab(onClick: () -> Unit) {
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        icon = { Icon(painterResource(R.drawable.auto_awesome), contentDescription = null) },
+        text = { Text(stringResource(R.string.home_mix_for_you)) },
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+}
 
-    FloatingActionButtonMenu(
-        expanded = expanded,
-        button = {
-            ToggleFloatingActionButton(
-                checked = expanded,
-                onCheckedChange = onExpandedChange,
-                modifier =
-                    Modifier.semantics {
-                        traversalIndex = -1f
-                        stateDescription = stateLabel
-                        contentDescription = moreLabel
-                    },
-            ) {
-                val icon by remember {
-                    derivedStateOf { if (checkedProgress > 0.5f) R.drawable.close else R.drawable.more_horiz }
-                }
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = null,
-                    modifier =
-                        with(ToggleFloatingActionButtonDefaults) {
-                            Modifier
-                                .animateIcon({ checkedProgress })
-                                .graphicsLayer { rotationZ = checkedProgress * HomeOverflowFabIconRotation }
-                        },
-                )
-            }
-        },
-    ) {
-        FloatingActionButtonMenuItem(
-            onClick = {
-                onExpandedChange(false)
-                onMusicRecognitionClick()
-            },
-            icon = { Icon(painterResource(R.drawable.mic), contentDescription = null) },
-            text = { Text(stringResource(R.string.music_recognition)) },
-        )
-        FloatingActionButtonMenuItem(
-            onClick = {
-                onExpandedChange(false)
-                onMusicTogetherClick()
-            },
-            icon = { Icon(painterResource(R.drawable.multi_user), contentDescription = null) },
-            text = { Text(stringResource(R.string.music_together)) },
-        )
-        FloatingActionButtonMenuItem(
-            onClick = {
-                onExpandedChange(false)
-                onShuffleClick()
-            },
-            icon = { Icon(painterResource(R.drawable.shuffle), contentDescription = null) },
-            text = { Text(stringResource(R.string.shuffle)) },
-        )
-    }
+/** Picks a seed song from recent most-played and liked songs (online songs only, skipping avoided ones). */
+private suspend fun pickPersonalMixSeed(
+    database: MusicDatabase,
+    avoidedSongIds: Set<String>,
+): Song? {
+    val since =
+        java.time.LocalDateTime
+            .now()
+            .minusDays(60)
+            .toInstant(java.time.ZoneOffset.UTC)
+            .toEpochMilli()
+    val mostPlayed = database.mostPlayedSongs(fromTimeStamp = since, limit = 25).first()
+    val liked = database.likedSongsByCreateDateAscNoVideo().first().shuffled().take(25)
+    return (mostPlayed + liked)
+        .filter { !it.song.isLocal && it.id !in avoidedSongIds }
+        .randomOrNull()
 }
 
 private const val TopAppBarIconButtonContainerAlpha = 0.48f

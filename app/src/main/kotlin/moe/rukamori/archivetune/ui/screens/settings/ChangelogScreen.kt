@@ -9,6 +9,7 @@
 
 package moe.rukamori.archivetune.ui.screens.settings
 
+import moe.rukamori.archivetune.ui.utils.rememberTranslatedText
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -302,7 +303,7 @@ private fun ReleaseCard(release: ChangelogReleaseUiModel) {
             val notes = release.notes
             if (notes != null) {
                 MarkdownText(
-                    markdown = notes,
+                    markdown = rememberTranslatedText(notes),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

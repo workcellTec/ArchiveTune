@@ -12,6 +12,7 @@
 
 package moe.rukamori.archivetune.ui.screens
 
+import moe.rukamori.archivetune.ui.utils.rememberTranslatedText
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
@@ -462,7 +463,7 @@ private fun NewsCard(
                 NewsMetaRow(item = item)
 
                 Text(
-                    text = item.title,
+                    text = rememberTranslatedText(item.title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     maxLines = 3,
@@ -472,7 +473,7 @@ private fun NewsCard(
 
                 if (item.description.isNotBlank()) {
                     Text(
-                        text = item.description,
+                        text = rememberTranslatedText(item.description),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 3,

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="support_archivetune_title">Apoie o ArchiveTune ❤️</string>
+    <string name="support_archivetune_description">Gostou do app? Toque para ver um anúncio rápido e apoiar o desenvolvimento.</string>
+    <string name="support_archivetune_preparing">Abrindo a página de apoio…</string>
+    <string name="support_archivetune_unavailable">A página de apoio não está disponível no momento.</string>
+    <string name="support_archivetune_retry">Não foi possível abrir a página de apoio. Toque para tentar de novo.</string>
+    <string name="support_archivetune_failed">Não foi possível abrir a página de apoio.</string>
+    <string name="drive_backup_title">Backup no Google Drive</string>
+    <string name="drive_backup_account">Conta Google</string>
+    <string name="drive_backup_choose_account">Escolher uma conta</string>
+    <string name="drive_backup_last_backup">Último backup</string>
+    <string name="drive_backup_no_backup">Nenhum backup encontrado</string>
+    <string name="drive_backup_details">%1$s · %2$s</string>
+    <string name="drive_backup_contents">Faça backup da sua biblioteca, configurações e contas no armazenamento privado do app no Google Drive. Os áudios baixados não são enviados.</string>
+    <string name="drive_backup_now">Fazer backup no Google Drive</string>
+    <string name="drive_backup_restore">Restaurar do Google Drive</string>
+    <string name="drive_backup_restore_description">Baixe o backup mais recente e escolha o que restaurar. A restauração substitui os dados selecionados e reinicia o app.</string>
+    <string name="drive_backup_manual">Só quando eu tocar em Fazer backup</string>
+    <string name="drive_backup_wifi_only">Fazer backup só no Wi-Fi</string>
+    <string name="drive_backup_wifi_description">Usa uma conexão sem limite de dados para envios manuais e automáticos.</string>
+    <string name="drive_backup_disconnect">Desconectar conta</string>
+    <string name="drive_backup_disconnect_description">Para os backups automáticos neste aparelho. O backup no Google Drive é mantido.</string>
+    <string name="drive_backup_loading">Verificando o Google Drive…</string>
+    <string name="drive_backup_preparing">Preparando o backup…</string>
+    <string name="drive_backup_uploading">Enviando o backup…</string>
+    <string name="drive_backup_downloading">Baixando e verificando o backup…</string>
+    <string name="drive_backup_waiting">Aguardando conexão e recursos disponíveis em segundo plano…</string>
+    <string name="drive_backup_authorization_failed">O acesso ao Google Drive não está disponível. Escolha sua conta Google de novo e conceda o acesso. Os serviços do Google Play precisam estar disponíveis.</string>
+    <string name="drive_backup_configuration_error">O Google Drive não está configurado para esta instalação do app.</string>
+    <string name="drive_backup_network_error">Não foi possível acessar o Google Drive. Verifique sua conexão e tente de novo.</string>
+    <string name="drive_backup_quota_error">O armazenamento do seu Google Drive está cheio. Libere espaço e tente de novo.</string>
+    <string name="drive_backup_not_found">Este backup não está mais disponível no Google Drive.</string>
+    <string name="drive_backup_storage_error">Sem espaço suficiente, ou o backup passa do tamanho aceito.</string>
+    <string name="drive_backup_failed">A operação no Google Drive falhou. Tente de novo.</string>
+</resources>

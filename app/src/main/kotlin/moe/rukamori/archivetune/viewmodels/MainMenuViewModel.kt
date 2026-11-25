@@ -44,6 +44,7 @@ enum class MainMenuDestination(val route: String) {
     NewRelease("new_release"),
     News("news"),
     History("history"),
+    MusicTogether("settings/music_together"),
     Settings("settings"),
 }
 

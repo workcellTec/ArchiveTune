@@ -1130,6 +1130,7 @@
     <string name="widget_open">Abrir</string>
     <string name="remove_download_confirm">Tem certeza de que deseja remover este item baixado? Esta ação não pode ser desfeita.</string>
     <string name="remove_download_section_confirm">Tem certeza de que deseja remover todos os downloads desta seção? Esta ação não pode ser desfeita.</string>
+    <string name="home_mix_for_you">Mix pra você</string>
     <string name="home_fab_menu_expanded">Ações rápidas visíveis</string>
     <string name="home_fab_menu_collapsed">Ações rápidas ocultas</string>
     <string name="queue_undo_unavailable">A fila mudou. Não é possível desfazer.</string>

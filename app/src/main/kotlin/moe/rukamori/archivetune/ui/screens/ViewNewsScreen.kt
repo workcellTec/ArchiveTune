@@ -12,6 +12,7 @@
 
 package moe.rukamori.archivetune.ui.screens
 
+import moe.rukamori.archivetune.ui.utils.rememberTranslatedText
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -116,7 +117,7 @@ fun ViewNewsScreen(
             LargeTopAppBar(
                 title = {
                     Text(
-                        text = newsItem?.title ?: "",
+                        text = rememberTranslatedText(newsItem?.title.orEmpty()),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.headlineMedium,
@@ -242,7 +243,7 @@ private fun ViewNewsArticleContent(
 
             item(key = "article_content", contentType = "markdown") {
                 MarkdownText(
-                    markdown = content,
+                    markdown = rememberTranslatedText(content),
                     style =
                         MaterialTheme.typography.bodyLarge.copy(
                             lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f,

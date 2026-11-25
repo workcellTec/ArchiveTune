@@ -7,6 +7,8 @@
 
 package moe.rukamori.archivetune.ui.screens.search
 
+import moe.rukamori.archivetune.musicrecognition.MusicRecognitionRoute
+import androidx.compose.material3.IconButton
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -195,6 +197,7 @@ fun SearchScreen(
             ) {
                 SearchEntryField(
                     onClick = onSearchClick,
+                    onRecognitionClick = { navController.navigate(MusicRecognitionRoute) },
                     modifier =
                         Modifier
                             .fillMaxWidth()
@@ -375,6 +378,7 @@ fun SearchScreen(
 @Composable
 private fun SearchEntryField(
     onClick: () -> Unit,
+    onRecognitionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     SearchBar(
@@ -401,10 +405,12 @@ private fun SearchEntryField(
                     )
                 },
                 trailingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.language),
-                        contentDescription = null,
-                    )
+                    IconButton(onClick = onRecognitionClick) {
+                        Icon(
+                            painter = painterResource(R.drawable.music_recognize),
+                            contentDescription = stringResource(R.string.music_recognition),
+                        )
+                    }
                 },
             )
         },

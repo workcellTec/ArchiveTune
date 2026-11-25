@@ -97,6 +97,13 @@ fun TopAppBarOverflowMenu(
         )
         OverflowMenuDivider()
         OverflowAction(
+            label = stringResource(R.string.music_together),
+            iconRes = R.drawable.multi_user,
+            contentColor = contentColor,
+            onClick = remember(onSelect) { { onSelect(MainMenuDestination.MusicTogether) } },
+        )
+        OverflowMenuDivider()
+        OverflowAction(
             label = stringResource(R.string.settings),
             iconRes = R.drawable.settings,
             contentColor = contentColor,

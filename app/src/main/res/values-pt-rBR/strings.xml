@@ -911,7 +911,7 @@
     <string name="app_icon_available">Ícones disponíveis</string>
     <string name="app_icon_builtin">Integrado</string>
     <string name="app_icon_community">Ícone da comunidade</string>
-    <string name="app_icon_builtin_description">Ícone original do ArchiveTune</string>
+    <string name="app_icon_builtin_description">Ícone do Perfect Music</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <string name="app_icon_community_notice">Os ícones da comunidade são criados pelos usuários e podem mudar com o tempo.</string>
     <plurals name="app_icon_count">
@@ -1046,6 +1046,12 @@
     <string name="widget_cover_wide_description">Capa larga do álbum com os controles.</string>
     <string name="widget_glass_name">Vidro</string>
     <string name="widget_glass_description">Cartão de vidro fosco sobre a capa desfocada.</string>
+    <string name="widget_glass_slim_name">Vidro fino</string>
+    <string name="widget_glass_slim_description">Cartão de vidro baixo com as próximas músicas, sobre a capa desfocada.</string>
+    <string name="widget_glass_medium_name">Vidro médio</string>
+    <string name="widget_glass_medium_description">Cartão de vidro médio com as próximas músicas, sobre a capa desfocada.</string>
+    <string name="widget_glass_compact_name">Vidro mínimo</string>
+    <string name="widget_glass_compact_description">Cartão de vidro pequeno com as próximas músicas, sobre a capa desfocada.</string>
     <string name="widget_hardware_name">Hardware</string>
     <string name="widget_hardware_description">Disco saindo de um aparelho escuro, com progresso e controles.</string>
     <string name="widget_hardware_mini_name">Hardware mini</string>

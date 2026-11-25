@@ -384,6 +384,42 @@
         </receiver>
 
         <receiver
+            android:name=".widget.GlassSlimWidgetReceiver"
+            android:label="@string/widget_glass_slim_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glass_slim_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.GlassMediumWidgetReceiver"
+            android:label="@string/widget_glass_medium_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glass_medium_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.GlassCompactWidgetReceiver"
+            android:label="@string/widget_glass_compact_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glass_compact_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.HardwareWidgetReceiver"
             android:label="@string/widget_hardware_name"
             android:exported="true">

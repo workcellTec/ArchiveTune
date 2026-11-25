@@ -417,7 +417,7 @@
     <string name="app_icon_available">Available icons</string>
     <string name="app_icon_builtin">Built in</string>
     <string name="app_icon_community">Community icon</string>
-    <string name="app_icon_builtin_description">Original ArchiveTune icon</string>
+    <string name="app_icon_builtin_description">Perfect Music icon</string>
     <string name="app_icon_identifier">ID %1$s</string>
     <string name="app_icon_community_notice">Community icons are created by users and may change over time.</string>
     <plurals name="app_icon_count">
@@ -1521,6 +1521,12 @@
     <string name="widget_cover_wide_description">Wide album cover with playback controls.</string>
     <string name="widget_glass_name">Glass</string>
     <string name="widget_glass_description">Frosted glass card over a blurred cover.</string>
+    <string name="widget_glass_slim_name">Glass slim</string>
+    <string name="widget_glass_slim_description">Slim glass card with the next songs, over a blurred cover.</string>
+    <string name="widget_glass_medium_name">Glass medium</string>
+    <string name="widget_glass_medium_description">Medium glass card with the next songs, over a blurred cover.</string>
+    <string name="widget_glass_compact_name">Glass compact</string>
+    <string name="widget_glass_compact_description">Compact glass card with the next songs, over a blurred cover.</string>
     <string name="widget_hardware_name">Hardware</string>
     <string name="widget_hardware_description">Record peeking out of a dark player with progress and controls.</string>
     <string name="widget_hardware_mini_name">Hardware mini</string>

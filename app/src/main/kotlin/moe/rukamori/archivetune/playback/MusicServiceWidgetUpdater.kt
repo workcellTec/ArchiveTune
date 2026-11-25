@@ -40,6 +40,9 @@ import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.widget.CoverPillWidget
 import moe.rukamori.archivetune.widget.CoverPlayWidget
 import moe.rukamori.archivetune.widget.CoverWideWidget
+import moe.rukamori.archivetune.widget.GlassCompactWidget
+import moe.rukamori.archivetune.widget.GlassMediumWidget
+import moe.rukamori.archivetune.widget.GlassSlimWidget
 import moe.rukamori.archivetune.widget.GlassWidget
 import moe.rukamori.archivetune.widget.HardwareMiniWidget
 import moe.rukamori.archivetune.widget.HardwareWidget
@@ -510,6 +513,9 @@ internal class MusicServiceWidgetUpdater(
                 WidgetTarget(SquareCardWidget::class.java, SquareCardWidget()),
                 WidgetTarget(CoverWideWidget::class.java, CoverWideWidget()),
                 WidgetTarget(GlassWidget::class.java, GlassWidget(), requiresQueue = true),
+                WidgetTarget(GlassSlimWidget::class.java, GlassSlimWidget(), requiresQueue = true),
+                WidgetTarget(GlassMediumWidget::class.java, GlassMediumWidget(), requiresQueue = true),
+                WidgetTarget(GlassCompactWidget::class.java, GlassCompactWidget(), requiresQueue = true),
                 WidgetTarget(HardwareWidget::class.java, HardwareWidget()),
                 WidgetTarget(HardwareMiniWidget::class.java, HardwareMiniWidget()),
                 WidgetTarget(PillWidget::class.java, PillWidget()),

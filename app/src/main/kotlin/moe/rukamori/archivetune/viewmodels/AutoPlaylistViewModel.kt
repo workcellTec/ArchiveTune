@@ -7,6 +7,8 @@
 
 package moe.rukamori.archivetune.viewmodels
 
+import moe.rukamori.archivetune.db.entities.Song
+import moe.rukamori.archivetune.styles.SongStyleTagger
 import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -47,8 +49,18 @@ class AutoPlaylistViewModel
         database: MusicDatabase,
         savedStateHandle: SavedStateHandle,
         private val syncUtils: SyncUtils,
+        private val styleTagger: SongStyleTagger,
     ) : ViewModel() {
         val playlist = savedStateHandle.get<String>("playlist")!!
+
+        /** AI style tags per song id, cached by [SongStyleTagger]; empty when no AI is configured. */
+        val styleTags =
+            styleTagger.tags.stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+        val styleProgress = styleTagger.progress
+
+        fun tagStyles(songs: List<Song>) {
+            if (playlist == "liked" && songs.isNotEmpty()) styleTagger.tagMissing(songs)
+        }
 
         private val _isRefreshing = MutableStateFlow(false)
         val isRefreshing = _isRefreshing.asStateFlow()

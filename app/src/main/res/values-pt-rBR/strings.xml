@@ -1556,4 +1556,10 @@
         <item quantity="many">%d músicas não puderam ser importadas</item>
         <item quantity="other">%d músicas não puderam ser importadas</item>
     </plurals>
+    <string name="style_tag_live">Ao vivo</string>
+    <string name="style_tag_acoustic">Acústico</string>
+    <string name="style_tag_remix">Remix</string>
+    <string name="style_tag_explicit">Explícitas</string>
+    <string name="style_decade">Anos %1$d</string>
+    <string name="style_ai_progress">Classificando com IA… %1$d/%2$d</string>
 </resources>

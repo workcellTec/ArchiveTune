@@ -1052,3 +1052,4 @@ val MusicRecognitionFloatingEnabledKey = booleanKey("musicRecognitionFloatingEna
 val ShowCodecOnPlayerKey = booleanKey("show_codec_on_player")
 val DevShowDiscordDebugKey = booleanKey("dev_show_discord_debug")
 val DevShowNerdStatsKey = booleanKey("dev_show_nerd_stats")
+val SongStyleTagsKey = stringKey("songStyleTags")

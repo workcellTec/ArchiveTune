@@ -9,6 +9,14 @@
 
 package moe.rukamori.archivetune.ui.screens.playlist
 
+import moe.rukamori.archivetune.ui.component.StyleFilterRow
+import moe.rukamori.archivetune.styles.styleOptions
+import moe.rukamori.archivetune.styles.filterByStylePath
+import moe.rukamori.archivetune.styles.buildStyleIndex
+import moe.rukamori.archivetune.styles.StyleLabels
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -88,7 +96,6 @@ import moe.rukamori.archivetune.ui.component.ImmersiveMediaHeader
 import moe.rukamori.archivetune.ui.component.LocalMenuState
 import moe.rukamori.archivetune.ui.component.MediaDetailAction
 import moe.rukamori.archivetune.ui.component.SongListItem
-import moe.rukamori.archivetune.ui.component.SortHeader
 import moe.rukamori.archivetune.ui.component.immersiveTopAppBarColors
 import moe.rukamori.archivetune.ui.component.rememberImmersiveDetailColors
 import moe.rukamori.archivetune.ui.menu.SelectionSongMenu
@@ -143,8 +150,6 @@ fun AutoPlaylistScreen(
 
     val (ytmSync) = rememberPreference(YtmSyncKey, true)
 
-    val likeLength = remember(songs) { songs.fastSumBy { it.song.duration } }
-
     val playlistId = viewModel.playlist
     val playlistType =
         when (playlistId) {
@@ -187,6 +192,30 @@ fun AutoPlaylistScreen(
             AutoPlaylistSongSortType.CREATE_DATE,
         )
     val (sortDescending, onSortDescendingChange) = rememberPreference(AutoPlaylistSongSortDescendingKey, true)
+
+    val styleLabels =
+        remember(context) {
+            StyleLabels(
+                live = context.getString(R.string.style_tag_live),
+                acoustic = context.getString(R.string.style_tag_acoustic),
+                remix = context.getString(R.string.style_tag_remix),
+                explicit = context.getString(R.string.style_tag_explicit),
+                decade = { context.getString(R.string.style_decade, it) },
+            )
+        }
+    val aiStyleTags by viewModel.styleTags.collectAsStateWithLifecycle()
+    val styleProgress by viewModel.styleProgress.collectAsStateWithLifecycle()
+    val styleIndex = remember(songs, aiStyleTags, styleLabels) { buildStyleIndex(songs, aiStyleTags, styleLabels) }
+    var stylePath by remember { mutableStateOf<List<String>>(emptyList()) }
+    val styledSongs = remember(songs, styleIndex, stylePath) { filterByStylePath(songs, styleIndex, stylePath) }
+    val styleChoices = remember(styledSongs, styleIndex, stylePath) { styleOptions(styledSongs, styleIndex, stylePath) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(songs) { viewModel.tagStyles(songs) }
+    // A selected style can vanish (song unliked, tags changed): drop the selection instead of showing nothing.
+    LaunchedEffect(styledSongs, stylePath) {
+        if (stylePath.isNotEmpty() && styledSongs.isEmpty()) stylePath = emptyList()
+    }
 
     val downloadUtil = LocalDownloadUtil.current
     var downloads by remember { mutableStateOf<Map<String, Download>>(emptyMap()) }
@@ -272,12 +301,14 @@ fun AutoPlaylistScreen(
     }
 
     val filteredSongs =
-        remember(wrappedSongs, query) {
+        remember(wrappedSongs, query, styledSongs, stylePath) {
             val searchQuery = query.text.trim()
+            val styleIds = if (stylePath.isEmpty()) null else styledSongs.mapTo(HashSet()) { it.id }
+            val styled = if (styleIds == null) wrappedSongs else wrappedSongs.filter { it.item.id in styleIds }
             if (searchQuery.isEmpty()) {
-                wrappedSongs
+                styled
             } else {
-                wrappedSongs.filter { wrapper ->
+                styled.filter { wrapper ->
                     val song = wrapper.item
                     song.song.title.contains(searchQuery, true) ||
                         song.artists.any { it.name.contains(searchQuery, true) }
@@ -357,10 +388,10 @@ fun AutoPlaylistScreen(
                                 listOf(
                                     pluralStringResource(
                                         R.plurals.n_song,
-                                        songs.size,
-                                        songs.size,
+                                        styledSongs.size,
+                                        styledSongs.size,
                                     ),
-                                    makeTimeString(likeLength * 1000L),
+                                    makeTimeString(styledSongs.fastSumBy { it.song.duration } * 1000L),
                                 ).joinToString(MediaDetailMetadataSeparator),
                             isAdded = false,
                             addContentDescription = R.string.add_to_queue,
@@ -369,7 +400,7 @@ fun AutoPlaylistScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = playlist,
-                                        items = songs.shuffled().map { it.toMediaItem() },
+                                        items = styledSongs.shuffled().map { it.toMediaItem() },
                                     ),
                                 )
                             },
@@ -377,7 +408,7 @@ fun AutoPlaylistScreen(
                                 playerConnection.playQueue(
                                     ListQueue(
                                         title = playlist,
-                                        items = songs.map { it.toMediaItem() },
+                                        items = styledSongs.map { it.toMediaItem() },
                                     ),
                                 )
                             },
@@ -470,26 +501,68 @@ fun AutoPlaylistScreen(
                     key = "sortHeader",
                     contentType = CONTENT_TYPE_HEADER,
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 16.dp),
-                    ) {
-                        SortHeader(
-                            sortType = sortType,
-                            sortDescending = sortDescending,
-                            onSortTypeChange = onSortTypeChange,
-                            onSortDescendingChange = onSortDescendingChange,
-                            sortTypeText = { sortType ->
+                    StyleFilterRow(
+                        sortLabel =
+                            stringResource(
                                 when (sortType) {
                                     AutoPlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
                                     AutoPlaylistSongSortType.NAME -> R.string.sort_by_name
                                     AutoPlaylistSongSortType.ARTIST -> R.string.sort_by_artist
                                     AutoPlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
+                                },
+                            ),
+                        sortDescending = sortDescending,
+                        onSortClick = { sortMenuExpanded = true },
+                        onSortDescendingChange = onSortDescendingChange,
+                        path = stylePath,
+                        options = styleChoices,
+                        progress = styleProgress,
+                        onSelect = { stylePath = stylePath + it },
+                        onRemoveFrom = { index -> stylePath = stylePath.take(index) },
+                        sortMenu = {
+                            DropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false },
+                                modifier = Modifier.widthIn(min = 172.dp),
+                            ) {
+                                AutoPlaylistSongSortType.entries.forEach { type ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text =
+                                                    stringResource(
+                                                        when (type) {
+                                                            AutoPlaylistSongSortType.CREATE_DATE -> R.string.sort_by_create_date
+                                                            AutoPlaylistSongSortType.NAME -> R.string.sort_by_name
+                                                            AutoPlaylistSongSortType.ARTIST -> R.string.sort_by_artist
+                                                            AutoPlaylistSongSortType.PLAY_TIME -> R.string.sort_by_play_time
+                                                        },
+                                                    ),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            Icon(
+                                                painter =
+                                                    painterResource(
+                                                        if (sortType == type) {
+                                                            R.drawable.radio_button_checked
+                                                        } else {
+                                                            R.drawable.radio_button_unchecked
+                                                        },
+                                                    ),
+                                                contentDescription = null,
+                                            )
+                                        },
+                                        onClick = {
+                                            onSortTypeChange(type)
+                                            sortMenuExpanded = false
+                                        },
+                                    )
                                 }
-                            },
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                            }
+                        },
+                    )
                 }
 
                 // Song items

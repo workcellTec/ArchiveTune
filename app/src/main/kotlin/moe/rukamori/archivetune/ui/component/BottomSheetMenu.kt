@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
+import moe.rukamori.archivetune.constants.ListStyle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -82,7 +84,10 @@ fun BottomSheetMenu(
 
     if (state.isVisible) {
         ListStyleTheme(enabled = state.listStyled) { backdrop ->
+            val blurRadius = LocalListBlurRadius.current
             BackAwareModalBottomSheet(
+                scrimColor = if (blurRadius > 0) Color.Transparent else BottomSheetDefaults.ScrimColor,
+                blurBehindRadius = blurRadius,
                 onDismissRequest = {
                     if (!isTvDevice) focusManager.clearFocus()
                     state.isVisible = false
@@ -104,8 +109,9 @@ fun BottomSheetMenu(
                                 .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
                     )
                 },
+                shape = if (LocalListStyle.current == ListStyle.SINGLE_PIECE) RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp) else BottomSheetDefaults.ExpandedShape,
                 modifier =
-                    modifier.fillMaxHeight().then(
+                    modifier.fillMaxHeight().then(if (LocalListStyle.current == ListStyle.SINGLE_PIECE) Modifier.padding(top = 40.dp) else Modifier).then(
                         if (backdrop != null) {
                             Modifier.background(backdrop, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                         } else {

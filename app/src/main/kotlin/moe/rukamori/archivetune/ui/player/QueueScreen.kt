@@ -83,7 +83,11 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.materialkolor.ktx.toColor
 import com.materialkolor.ktx.toHct
+import moe.rukamori.archivetune.constants.ListStyle
 import moe.rukamori.archivetune.ui.component.LocalListBackdrop
+import moe.rukamori.archivetune.ui.component.LocalListStyle
+import moe.rukamori.archivetune.ui.component.listRowGap
+import moe.rukamori.archivetune.ui.component.listRowShapes
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.utils.joinByBullet
 import sh.calvin.reorderable.DragGestureDetector
@@ -177,7 +181,7 @@ fun QueueScreen(
                         end = 16.dp,
                         bottom = padding.calculateBottomPadding() + 32.dp,
                     ),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalArrangement = Arrangement.spacedBy(listRowGap()),
                     modifier = Modifier.weight(1f).navigationBarsPadding(),
                 ) {
                     if (scrollingHeader) {
@@ -280,6 +284,7 @@ private fun QueueSongRow(
         entry.current -> highlight.container
         pureBlack -> colors.surface
         entry.recommended -> colors.surfaceContainer
+        LocalListStyle.current == ListStyle.SINGLE_PIECE -> Color.Transparent
         else -> colors.surfaceContainerLow
     }
     val container by animateColorAsState(target, MaterialTheme.motionScheme.fastEffectsSpec(), label = "QueueRowColor")
@@ -318,7 +323,7 @@ private fun QueueSongRow(
             }
         }
     }
-    val shapes = ListItemDefaults.segmentedShapes(index = index, count = count)
+    val shapes = listRowShapes(index = index, count = count)
     val defaultPadding = ListItemDefaults.ContentPadding
     val layoutDirection = LocalLayoutDirection.current
     // Split the leading padding around the handle without moving the artwork.

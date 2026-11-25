@@ -40,8 +40,12 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import moe.rukamori.archivetune.ui.component.ListStyleTheme
+import moe.rukamori.archivetune.ui.component.LocalListBlurRadius
+import moe.rukamori.archivetune.ui.component.LocalListStyle
+import moe.rukamori.archivetune.constants.ListStyle
 import moe.rukamori.archivetune.ui.component.LocalListStyled
 import moe.rukamori.archivetune.ui.component.BackAwareModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -190,11 +194,15 @@ fun Queue(
     if (queueVisible) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ListStyleTheme { backdrop ->
+            val blurRadius = LocalListBlurRadius.current
             BackAwareModalBottomSheet(
+                scrimColor = if (blurRadius > 0) Color.Transparent else BottomSheetDefaults.ScrimColor,
+                blurBehindRadius = blurRadius,
                 onDismissRequest = viewModel::dismissQueue,
                 sheetState = sheetState,
                 sheetMaxWidth = Dp.Unspecified,
-                modifier = Modifier.fillMaxSize(),
+                shape = if (LocalListStyle.current == ListStyle.SINGLE_PIECE) RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp) else BottomSheetDefaults.ExpandedShape,
+                modifier = Modifier.fillMaxSize().then(if (LocalListStyle.current == ListStyle.SINGLE_PIECE) Modifier.padding(top = 40.dp) else Modifier),
                 containerColor =
                     when {
                         backdrop != null -> Color.Transparent

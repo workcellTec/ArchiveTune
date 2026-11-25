@@ -46,6 +46,8 @@ fun BackAwareModalBottomSheet(
     contentColor: Color = contentColorFor(containerColor),
     dragHandle: @Composable (() -> Unit)? = { BottomSheetDefaults.DragHandle() },
     contentWindowInsets: @Composable () -> WindowInsets = { BottomSheetDefaults.modalWindowInsets },
+    scrimColor: Color = BottomSheetDefaults.ScrimColor,
+    blurBehindRadius: Int = 0,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
@@ -59,6 +61,7 @@ fun BackAwareModalBottomSheet(
         contentColor = contentColor,
         dragHandle = dragHandle,
         contentWindowInsets = contentWindowInsets,
+        scrimColor = scrimColor,
         properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
     ) {
         val scope = rememberCoroutineScope()
@@ -67,6 +70,7 @@ fun BackAwareModalBottomSheet(
             "No NavigationEventDispatcherOwner in the composition hosting this modal bottom sheet"
         }
         val view = LocalView.current
+        SheetWindowBlur(view, blurBehindRadius)
         val sheetWindowOwner =
             remember(view, inheritedScreenOwner) {
                 val resolved = view.findViewTreeNavigationEventDispatcherOwner()
@@ -95,3 +99,19 @@ fun BackAwareModalBottomSheet(
 }
 
 private const val SheetBackTag = "BackAwareModalBottomSheet"
+
+/** Blurs whatever the sheet window covers (Android 12+); a no-op elsewhere or when [radius] is 0. */
+@Composable
+private fun SheetWindowBlur(
+    view: android.view.View,
+    radius: Int,
+) {
+    androidx.compose.runtime.DisposableEffect(view, radius) {
+        val window = (view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
+        if (window != null && radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+            window.attributes = window.attributes.also { it.blurBehindRadius = radius }
+        }
+        onDispose {}
+    }
+}

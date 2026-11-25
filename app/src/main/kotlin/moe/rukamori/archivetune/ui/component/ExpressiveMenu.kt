@@ -105,6 +105,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.LocalAnimationsDisabled
 import moe.rukamori.archivetune.R
+import moe.rukamori.archivetune.constants.ListStyle
 import moe.rukamori.archivetune.ui.player.EditorialMorphShape
 import kotlin.math.ceil
 
@@ -571,7 +572,7 @@ private fun MenuQuickActionTile(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val corner by animateFloatAsState(
-        targetValue = if (pressed || action.active) 50f else 30f,
+        targetValue = if (pressed || action.active || LocalListStyle.current == ListStyle.ICONS_PILL) 50f else 30f,
         animationSpec = motion.fastSpatialSpec(),
         label = "quickActionCorner",
     )
@@ -852,7 +853,7 @@ fun MenuSection(
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
+            verticalArrangement = Arrangement.spacedBy(listRowGap()),
             modifier = Modifier.animateContentSize(motion.defaultSpatialSpec()),
         ) {
             rows.forEachIndexed { index, row ->
@@ -879,7 +880,7 @@ private fun MenuActionRow(
     SegmentedListItem(
         onClick = row.onClick,
         enabled = row.enabled,
-        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        shapes = listRowShapes(index = index, count = count),
         colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier =
             Modifier
@@ -944,7 +945,7 @@ private fun MenuToggleRow(
         checked = row.checked,
         onCheckedChange = row.onCheckedChange,
         enabled = row.enabled,
-        shapes = ListItemDefaults.segmentedShapes(index = index, count = count),
+        shapes = listRowShapes(index = index, count = count),
         colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier =
             Modifier

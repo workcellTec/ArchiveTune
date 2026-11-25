@@ -56,6 +56,8 @@ import moe.rukamori.archivetune.extensions.SilentHandler
 import moe.rukamori.archivetune.utils.reportException
 import moe.rukamori.archivetune.widget.WidgetMediaItem
 import moe.rukamori.archivetune.widget.encodeWidgetMediaItems
+import timber.log.Timber
+import kotlinx.coroutines.CoroutineExceptionHandler
 import java.io.File
 
 internal class MusicServiceWidgetUpdater(
@@ -71,9 +73,10 @@ internal class MusicServiceWidgetUpdater(
     private var progressJob: Job? = null
 
     fun update() {
+        Timber.tag(TAG).i("update requested")
         stateJob?.cancel()
         stateJob =
-            scopeProvider().launch(SilentHandler) {
+            scopeProvider().launch(WidgetErrorHandler) {
                 pushState()
             }
     }
@@ -98,6 +101,7 @@ internal class MusicServiceWidgetUpdater(
 
     private suspend fun pushState() {
         val installedTargets = findInstalledTargets(playbackWidgets)
+        Timber.tag(TAG).i("pushState: %d widget types installed", installedTargets.size)
         if (installedTargets.isEmpty()) return
 
         val mediaItem = player.currentMediaItem
@@ -111,10 +115,7 @@ internal class MusicServiceWidgetUpdater(
 
         val artFile = meta?.artworkUri?.let { cacheAlbumArt(it) }
         val dominantColor = artFile?.let { extractDominantColor(it) }
-        Log.d(
-            TAG,
-            "pushState media=${mediaItem?.mediaId} art=${meta?.artworkUri} file=${artFile?.name} targets=${installedTargets.size}",
-        )
+        Timber.tag(TAG).i("pushState: media=%s art=%s file=%s", mediaItem?.mediaId, meta?.artworkUri, artFile?.name)
         // First pass only uses covers that are already on disk so the new track shows up right away;
         // missing up-next covers are downloaded afterwards and pushed in a second pass.
         val upNext = queueEntries?.map { entry -> entry.toWidgetMediaItem(download = false) }
@@ -139,7 +140,7 @@ internal class MusicServiceWidgetUpdater(
             )
 
         installedTargets.forEach { target ->
-            updateWidget(target, snapshot)
+            updateWidgetSafely(target, snapshot)
         }
 
         var finalSnapshot = snapshot
@@ -151,7 +152,7 @@ internal class MusicServiceWidgetUpdater(
             val completed = queueEntries.map { entry -> entry.toWidgetMediaItem(download = true) }
             finalSnapshot = snapshot.copy(upNext = completed)
             installedTargets.forEach { target ->
-                updateWidget(target, finalSnapshot)
+                updateWidgetSafely(target, finalSnapshot)
             }
         }
         pruneArtCache(finalSnapshot.referencedArtPaths())
@@ -225,6 +226,20 @@ internal class MusicServiceWidgetUpdater(
         }
     }
 
+    /** One widget failing must not stop the others, and the reason is logged instead of lost. */
+    private suspend fun updateWidgetSafely(
+        installedTarget: InstalledWidgetTarget,
+        snapshot: WidgetSnapshot,
+    ) {
+        try {
+            updateWidget(installedTarget, snapshot)
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Throwable) {
+            Timber.tag(TAG).e(error, "Widget update failed: %s", installedTarget.target.widgetClass.simpleName)
+        }
+    }
+
     private suspend fun updateWidget(
         installedTarget: InstalledWidgetTarget,
         snapshot: WidgetSnapshot,
@@ -241,10 +256,17 @@ internal class MusicServiceWidgetUpdater(
 
     private suspend fun findInstalledTargets(targets: List<WidgetTarget>): List<InstalledWidgetTarget> =
         targets.mapNotNull { target ->
-            widgetManager
-                .getGlanceIds(target.widgetClass)
-                .takeIf { ids -> ids.isNotEmpty() }
-                ?.let { ids -> InstalledWidgetTarget(target, ids) }
+            try {
+                widgetManager
+                    .getGlanceIds(target.widgetClass)
+                    .takeIf { ids -> ids.isNotEmpty() }
+                    ?.let { ids -> InstalledWidgetTarget(target, ids) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                Timber.tag(TAG).e(error, "Widget lookup failed: %s", target.widgetClass.simpleName)
+                null
+            }
         }
 
     private fun Preferences.toMutableWidgetPreferences(): MutablePreferences =
@@ -446,6 +468,9 @@ internal class MusicServiceWidgetUpdater(
         const val MAX_CACHED_ART_FILES = 64
         const val ART_FILE_PREFIX = "widget_art_"
         const val TAG = "WidgetUpdater"
+
+        val WidgetErrorHandler =
+            CoroutineExceptionHandler { _, error -> Timber.tag(TAG).e(error, "Widget state push failed") }
 
         val playbackWidgets =
             listOf(

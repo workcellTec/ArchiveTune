@@ -17,9 +17,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -85,12 +83,7 @@ private fun GlassMiniContent(
             val contentHeight = size.height - inset
             val cards = if (state.isAvailable) upNext else emptyList()
             Box(
-                modifier =
-                    GlanceModifier
-                        .fillMaxSize()
-                        .cornerRadius(CardRadius)
-                        .background(GlassFill)
-                        .padding(layout.cardPadding),
+                modifier = GlanceModifier.fillMaxSize().padding(layout.cardPadding),
             ) {
                 when (layout) {
                     GlassMiniLayout.Slim -> SlimBody(state, palette, context, cards, contentWidth, contentHeight)
@@ -180,55 +173,84 @@ private fun StackedBody(
     width: Dp,
     height: Dp,
 ) {
-    // Controls sit under the text when the widget is narrow, beside it when there is room.
-    val stacked = layout == GlassMiniLayout.Compact || width < 190.dp
-    val button = if (stacked) 26.dp else 28.dp
-    val play = if (stacked) 32.dp else 34.dp
-    val titleSize = if (stacked) 13.sp else 14.sp
-    val textHeight = 36.dp
-    val bottomHeight = if (stacked) textHeight + 6.dp + play else maxOf(textHeight, play)
-    val topHeight = (height - bottomHeight - 8.dp).coerceAtLeast(MinCover)
-    val coverSize = minOf(topHeight, width * 0.45f)
-    val plan = fitCards(width - coverSize - 8.dp, minOf(coverSize, 76.dp), upNext.size, layout.maxCards)
+    val compact = layout == GlassMiniLayout.Compact
+    val button = if (compact) 30.dp else 32.dp
+    val play = if (compact) 40.dp else 44.dp
+    val topHeight = (height - play - 8.dp).coerceAtLeast(MinCover)
+    val coverSize = minOf(topHeight, width * 0.46f)
+    val textHeight = if (compact) 30.dp else 36.dp
+    val rightWidth = width - coverSize - 10.dp
+    // Cards sit above the title in the column right of the cover, so they only get what the text leaves.
+    val plan =
+        fitCards(
+            rightWidth,
+            minOf(topHeight - textHeight - 4.dp, coverSize * 0.62f, 60.dp),
+            upNext.size,
+            3,
+        )
     Column(modifier = GlanceModifier.fillMaxSize()) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth().height(topHeight),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(modifier = GlanceModifier.fillMaxWidth().height(topHeight)) {
             WidgetArtwork(
                 artPath = state.artPath,
                 context = context,
                 contentDescription = null,
                 targetSize = coverSize,
                 shape = WidgetArtShape.Rounded,
-                cornerRadius = if (stacked) 14.dp else 18.dp,
+                cornerRadius = if (compact) 14.dp else 18.dp,
                 palette = palette,
                 modifier = GlanceModifier.size(coverSize),
             )
-            if (plan.count > 0) {
-                Spacer(GlanceModifier.width(8.dp))
-                WidgetNextCards(upNext.take(plan.count), palette, context, plan.size)
+            Spacer(GlanceModifier.width(10.dp))
+            Column(modifier = GlanceModifier.defaultWeight().fillMaxHeight()) {
+                if (plan.count > 0) {
+                    WidgetNextCards(upNext.take(plan.count), palette, context, plan.size)
+                }
+                Spacer(GlanceModifier.defaultWeight())
+                WidgetTrackText(
+                    state,
+                    palette,
+                    GlanceModifier.fillMaxWidth(),
+                    titleSize = if (compact) 12.sp else 14.sp,
+                )
             }
         }
         Spacer(GlanceModifier.defaultWeight())
-        if (stacked) {
-            WidgetTrackText(state, palette, GlanceModifier.fillMaxWidth(), titleSize = titleSize)
-            Spacer(GlanceModifier.height(6.dp))
-            WidgetGlassTransport(state, palette, context, buttonSize = button, playSize = play)
-        } else {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                WidgetTrackText(state, palette, GlanceModifier.defaultWeight(), titleSize = titleSize)
-                Spacer(GlanceModifier.width(6.dp))
-                WidgetGlassTransport(state, palette, context, buttonSize = button, playSize = play)
+        // Previous at the left edge, pause in the middle, next at the right edge.
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (state.isAvailable) {
+                Box(modifier = GlanceModifier.defaultWeight(), contentAlignment = Alignment.CenterStart) {
+                    WidgetSkipButton(
+                        forward = false,
+                        palette = palette,
+                        context = context,
+                        modifier = GlanceModifier.size(button),
+                        container = GlassFill,
+                        cornerRadius = button / 2,
+                        iconSize = button * 0.5f,
+                    )
+                }
+            }
+            WidgetPlayCircle(state, palette, context, play)
+            if (state.isAvailable) {
+                Box(modifier = GlanceModifier.defaultWeight(), contentAlignment = Alignment.CenterEnd) {
+                    WidgetSkipButton(
+                        forward = true,
+                        palette = palette,
+                        context = context,
+                        modifier = GlanceModifier.size(button),
+                        container = GlassFill,
+                        cornerRadius = button / 2,
+                        iconSize = button * 0.5f,
+                    )
+                }
             }
         }
     }
 }
 
-private val CardRadius = 24.dp
 private val MinCover = 40.dp
 private val MinButton = 24.dp
 private val MinCardSize = 28.dp

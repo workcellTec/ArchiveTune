@@ -37,15 +37,17 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 /** Smaller scales of the glass widget: same blurred cover, frosted card and up-next cards. */
 enum class GlassMiniLayout(
     val maxCards: Int,
+    internal val surfacePadding: Dp,
+    internal val cardPadding: Dp,
 ) {
     /** 4x1: cover, text and controls in a row, up-next cards on the right. */
-    Slim(maxCards = 3),
+    Slim(maxCards = 3, surfacePadding = 4.dp, cardPadding = 6.dp),
 
     /** 3x2: cover and cards on top, title with controls below. */
-    Medium(maxCards = 3),
+    Medium(maxCards = 3, surfacePadding = 6.dp, cardPadding = 8.dp),
 
     /** 2x2: small cover and cards on top, title and compact controls below. */
-    Compact(maxCards = 2),
+    Compact(maxCards = 2, surfacePadding = 6.dp, cardPadding = 8.dp),
 }
 
 open class GlassMiniWidget(
@@ -77,10 +79,10 @@ private fun GlassMiniContent(
     val upNext = rememberWidgetUpNext()
     val size = LocalSize.current
     WidgetTheme(state.dominantColor, WidgetSurfaceStyle.Ambient, context) { palette ->
-        WidgetSurface(state, palette, context, contentPadding = SurfacePadding, backdrop = true) {
-            // Surface padding + card padding on each side.
-            val contentWidth = size.width - (SurfacePadding + CardPadding) * 2
-            val contentHeight = size.height - (SurfacePadding + CardPadding) * 2
+        WidgetSurface(state, palette, context, contentPadding = layout.surfacePadding, backdrop = true) {
+            val inset = (layout.surfacePadding + layout.cardPadding) * 2
+            val contentWidth = size.width - inset
+            val contentHeight = size.height - inset
             val cards = if (state.isAvailable) upNext else emptyList()
             Box(
                 modifier =
@@ -88,18 +90,34 @@ private fun GlassMiniContent(
                         .fillMaxSize()
                         .cornerRadius(CardRadius)
                         .background(GlassFill)
-                        .padding(CardPadding),
+                        .padding(layout.cardPadding),
             ) {
                 when (layout) {
                     GlassMiniLayout.Slim -> SlimBody(state, palette, context, cards, contentWidth, contentHeight)
-                    GlassMiniLayout.Medium ->
-                        StackedBody(state, palette, context, cards, layout, contentWidth, contentHeight)
-                    GlassMiniLayout.Compact ->
-                        StackedBody(state, palette, context, cards, layout, contentWidth, contentHeight)
+                    else -> StackedBody(state, palette, context, cards, layout, contentWidth, contentHeight)
                 }
             }
         }
     }
+}
+
+/**
+ * Picks the biggest card size that lets as many cards as possible (up to [maxCards]) fan out in
+ * [areaWidth], so a wider widget shows more covers instead of leaving the space empty.
+ */
+private fun fitCards(
+    areaWidth: Dp,
+    maxSize: Dp,
+    available: Int,
+    maxCards: Int,
+): NextCardPlan {
+    var n = minOf(maxCards, available)
+    while (n >= 1) {
+        val size = minOf(maxSize, areaWidth / (1f + (n - 1) * CardStep))
+        if (size >= MinCardSize) return NextCardPlan(size, n)
+        n--
+    }
+    return NextCardPlan(0.dp, 0)
 }
 
 @Composable
@@ -112,12 +130,13 @@ private fun SlimBody(
     height: Dp,
 ) {
     val coverSize = height.coerceAtLeast(MinCover)
-    val button = (height * 0.44f).coerceIn(MinButton, 30.dp)
+    val button = (height * 0.46f).coerceIn(MinButton, 30.dp)
     val play = button + 6.dp
-    val cardSize = (height * 0.62f).coerceIn(MinCardSize, 46.dp)
-    val cardCount =
-        nextCardsFit(width * 0.3f, cardSize, upNext.size).coerceAtMost(GlassMiniLayout.Slim.maxCards)
-    val showArtist = height >= 56.dp
+    val transportWidth = button * 2 + play + 16.dp
+    // Cards only get what is left once the cover and the controls have their room.
+    val cardsArea = width - coverSize - transportWidth - 20.dp
+    val plan = fitCards(cardsArea, minOf(height * 0.7f, 48.dp), upNext.size, GlassMiniLayout.Slim.maxCards)
+    val showArtist = height >= 58.dp
     Row(modifier = GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
         WidgetArtwork(
             artPath = state.artPath,
@@ -141,12 +160,12 @@ private fun SlimBody(
                 titleSize = 14.sp,
                 showArtist = showArtist,
             )
-            Spacer(GlanceModifier.height(6.dp))
+            Spacer(GlanceModifier.height(if (showArtist) 6.dp else 4.dp))
             WidgetGlassTransport(state, palette, context, buttonSize = button, playSize = play)
         }
-        if (cardCount > 0) {
+        if (plan.count > 0) {
             Spacer(GlanceModifier.width(8.dp))
-            WidgetNextCards(upNext.take(cardCount), palette, context, cardSize)
+            WidgetNextCards(upNext.take(plan.count), palette, context, plan.size)
         }
     }
 }
@@ -161,18 +180,16 @@ private fun StackedBody(
     width: Dp,
     height: Dp,
 ) {
-    val compact = layout == GlassMiniLayout.Compact
-    val button = if (compact) 26.dp else 28.dp
-    val play = if (compact) 32.dp else 34.dp
-    val titleSize = if (compact) 13.sp else 14.sp
-    // Title + artist block (compact stacks the controls under it, medium puts them beside it).
+    // Controls sit under the text when the widget is narrow, beside it when there is room.
+    val stacked = layout == GlassMiniLayout.Compact || width < 190.dp
+    val button = if (stacked) 26.dp else 28.dp
+    val play = if (stacked) 32.dp else 34.dp
+    val titleSize = if (stacked) 13.sp else 14.sp
     val textHeight = 36.dp
-    val bottomHeight = if (compact) textHeight + 6.dp + play else maxOf(textHeight, play)
+    val bottomHeight = if (stacked) textHeight + 6.dp + play else maxOf(textHeight, play)
     val topHeight = (height - bottomHeight - 8.dp).coerceAtLeast(MinCover)
-    val coverSize = minOf(topHeight, width * 0.5f)
-    val cardSize = (coverSize * if (compact) 0.8f else 0.7f).coerceAtLeast(MinCardSize)
-    val cardCount =
-        nextCardsFit(width - coverSize - 8.dp, cardSize, upNext.size).coerceAtMost(layout.maxCards)
+    val coverSize = minOf(topHeight, width * 0.45f)
+    val plan = fitCards(width - coverSize - 8.dp, minOf(coverSize, 76.dp), upNext.size, layout.maxCards)
     Column(modifier = GlanceModifier.fillMaxSize()) {
         Row(
             modifier = GlanceModifier.fillMaxWidth().height(topHeight),
@@ -184,17 +201,17 @@ private fun StackedBody(
                 contentDescription = null,
                 targetSize = coverSize,
                 shape = WidgetArtShape.Rounded,
-                cornerRadius = if (compact) 14.dp else 18.dp,
+                cornerRadius = if (stacked) 14.dp else 18.dp,
                 palette = palette,
                 modifier = GlanceModifier.size(coverSize),
             )
-            if (cardCount > 0) {
+            if (plan.count > 0) {
                 Spacer(GlanceModifier.width(8.dp))
-                WidgetNextCards(upNext.take(cardCount), palette, context, cardSize)
+                WidgetNextCards(upNext.take(plan.count), palette, context, plan.size)
             }
         }
         Spacer(GlanceModifier.defaultWeight())
-        if (compact) {
+        if (stacked) {
             WidgetTrackText(state, palette, GlanceModifier.fillMaxWidth(), titleSize = titleSize)
             Spacer(GlanceModifier.height(6.dp))
             WidgetGlassTransport(state, palette, context, buttonSize = button, playSize = play)
@@ -211,9 +228,8 @@ private fun StackedBody(
     }
 }
 
-private val SurfacePadding = 6.dp
-private val CardPadding = 8.dp
 private val CardRadius = 24.dp
 private val MinCover = 40.dp
 private val MinButton = 24.dp
-private val MinCardSize = 30.dp
+private val MinCardSize = 28.dp
+private const val CardStep = 0.74f

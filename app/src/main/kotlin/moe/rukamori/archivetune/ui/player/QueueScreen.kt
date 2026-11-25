@@ -83,6 +83,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.materialkolor.ktx.toColor
 import com.materialkolor.ktx.toHct
+import moe.rukamori.archivetune.ui.component.LocalListBackdrop
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.utils.joinByBullet
 import sh.calvin.reorderable.DragGestureDetector
@@ -114,9 +115,11 @@ fun QueueScreen(
         is QueueScreenState.Error -> screenState.previous
         else -> null
     }
+    val backdrop = LocalListBackdrop.current
     val background = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface
+    val backdropModifier = if (backdrop != null) Modifier.background(backdrop) else Modifier.background(background)
     if (model == null) {
-        Column(modifier.fillMaxSize().background(background).then(headerModifier), horizontalAlignment = Alignment.CenterHorizontally,
+        Column(modifier.fillMaxSize().then(backdropModifier).then(headerModifier), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
             BottomSheetDefaults.DragHandle()
             when (screenState) {
@@ -135,7 +138,7 @@ fun QueueScreen(
         return
     }
     BackHandler(enabled = visible && model.selectionCount > 0) { onAction(QueueAction.ClearSelection) }
-    BoxWithConstraints(modifier.fillMaxSize().background(background)) {
+    BoxWithConstraints(modifier.fillMaxSize().then(backdropModifier)) {
         val scrollingHeader = maxHeight < 560.dp || LocalDensity.current.fontScale >= 1.5f
         val currentIndex = remember(model.entries) { model.entries.values.indexOfFirst { it.current } }
         val listState = rememberLazyListState()
@@ -153,7 +156,7 @@ fun QueueScreen(
         Scaffold(
             modifier = Modifier.align(Alignment.TopCenter).widthIn(max = 720.dp).fillMaxSize()
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
-            containerColor = background,
+            containerColor = if (backdrop != null) Color.Transparent else background,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 if (model.selectionCount > 0) {

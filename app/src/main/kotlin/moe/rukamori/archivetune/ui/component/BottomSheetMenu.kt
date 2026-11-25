@@ -40,6 +40,9 @@ class MenuState(
 ) {
     var isVisible by mutableStateOf(isVisible)
     var content by mutableStateOf(content)
+    /** Set by the player menu while it is open so the sheet follows the list style. */
+    var listStyled by mutableStateOf(false)
+
     internal var dialogContent by mutableStateOf<(@Composable () -> Unit)?>(null)
         private set
 
@@ -78,32 +81,46 @@ fun BottomSheetMenu(
     state.dialogContent?.invoke()
 
     if (state.isVisible) {
-        BackAwareModalBottomSheet(
-            onDismissRequest = {
-                if (!isTvDevice) focusManager.clearFocus()
-                state.isVisible = false
-            },
-            containerColor = background,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            dragHandle = {
-                Box(
+        ListStyleTheme(enabled = state.listStyled) { backdrop ->
+            BackAwareModalBottomSheet(
+                onDismissRequest = {
+                    if (!isTvDevice) focusManager.clearFocus()
+                    state.isVisible = false
+                },
+                containerColor =
+                    when {
+                        backdrop != null -> Color.Transparent
+                        LocalListStyled.current -> MaterialTheme.colorScheme.surface
+                        else -> background
+                    },
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                dragHandle = {
+                    Box(
+                        modifier =
+                            Modifier
+                                .padding(vertical = 12.dp)
+                                .size(width = 40.dp, height = 4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
+                    )
+                },
+                modifier =
+                    modifier.fillMaxHeight().then(
+                        if (backdrop != null) {
+                            Modifier.background(backdrop, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
+                Column(
                     modifier =
                         Modifier
-                            .padding(vertical = 12.dp)
-                            .size(width = 40.dp, height = 4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
-                )
-            },
-            modifier = modifier.fillMaxHeight(),
-        ) {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-            ) {
-                state.content(this)
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                ) {
+                    state.content(this)
+                }
             }
         }
     }

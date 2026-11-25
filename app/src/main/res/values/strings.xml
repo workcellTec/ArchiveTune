@@ -1559,4 +1559,14 @@
     <string name="style_decade">%1$ds</string>
     <string name="style_ai_progress">Classifying with AI… %1$d/%2$d</string>
     <string name="mix_started_style">Mix: %1$s</string>
+    <string name="list_style">Playlist style</string>
+    <string name="list_style_description">Look of the queue and the player menu.</string>
+    <string name="list_style_default">Default</string>
+    <string name="list_style_connected">Connected</string>
+    <string name="list_style_standalone">Standalone</string>
+    <string name="list_style_apple_music">Apple Music</string>
+    <string name="list_style_cover_color">Cover color</string>
+    <string name="list_style_single_piece">Single piece</string>
+    <string name="list_style_icons_pill">Icons pill</string>
+    <string name="list_style_gradient">Gradient</string>
 </resources>

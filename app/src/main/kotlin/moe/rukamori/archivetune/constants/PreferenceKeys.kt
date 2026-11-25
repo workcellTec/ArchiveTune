@@ -141,6 +141,7 @@ val MiniPlayerLastAnchorKey = intKey("miniPlayerLastAnchor")
 val MiniPlayerBackgroundStyleKey = stringKey("miniPlayerBackgroundStyle")
 val NavigationBarBackgroundStyleKey = stringKey("navigationBarBackgroundStyle")
 val NavigationBarModeKey = stringKey("navigationBarMode")
+val ListStyleKey = stringKey("listStyle")
 
 enum class AodThumbnailShape {
     ROUNDED,
@@ -1053,3 +1054,15 @@ val ShowCodecOnPlayerKey = booleanKey("show_codec_on_player")
 val DevShowDiscordDebugKey = booleanKey("dev_show_discord_debug")
 val DevShowNerdStatsKey = booleanKey("dev_show_nerd_stats")
 val SongStyleTagsKey = stringKey("songStyleTags")
+
+/** Look of the queue and of the player "more" menu; mirrors the navigation bar styles. */
+enum class ListStyle {
+    DEFAULT,
+    CONNECTED,
+    STANDALONE,
+    APPLE_MUSIC,
+    COVER_COLOR,
+    SINGLE_PIECE,
+    ICONS_PILL,
+    GRADIENT,
+}

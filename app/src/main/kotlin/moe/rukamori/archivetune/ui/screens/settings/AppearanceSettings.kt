@@ -97,6 +97,8 @@ import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyle
 import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyleKey
 import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyle
 import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyleKey
+import moe.rukamori.archivetune.constants.ListStyle
+import moe.rukamori.archivetune.constants.ListStyleKey
 import moe.rukamori.archivetune.constants.NavigationBarMode
 import moe.rukamori.archivetune.constants.NavigationBarModeKey
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyle
@@ -222,6 +224,11 @@ fun AppearanceSettings(navController: NavController) {
         rememberEnumPreference(
             NavigationBarModeKey,
             defaultValue = NavigationBarMode.CONNECTED,
+        )
+    val (listStyle, onListStyleChange) =
+        rememberEnumPreference(
+            ListStyleKey,
+            defaultValue = ListStyle.DEFAULT,
         )
     val onMiniPlayerBackgroundSelected = remember(glassConfirmationViewModel, onMiniPlayerBackgroundChange) {
         { style: MiniPlayerBackgroundStyle ->
@@ -963,6 +970,13 @@ fun AppearanceSettings(navController: NavController) {
                     NavigationBarStylePreference(
                         selectedMode = navigationBarMode,
                         onModeSelected = onNavigationBarModeChange,
+                    )
+                }
+
+                item {
+                    ListStylePreference(
+                        selected = listStyle,
+                        onSelected = onListStyleChange,
                     )
                 }
 

@@ -41,6 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
+import moe.rukamori.archivetune.ui.component.ListStyleTheme
+import moe.rukamori.archivetune.ui.component.LocalListStyled
 import moe.rukamori.archivetune.ui.component.BackAwareModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.SnackbarDuration
@@ -187,30 +189,37 @@ fun Queue(
     }
     if (queueVisible) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        BackAwareModalBottomSheet(
-            onDismissRequest = viewModel::dismissQueue,
-            sheetState = sheetState,
-            sheetMaxWidth = Dp.Unspecified,
-            modifier = Modifier.fillMaxSize(),
-            containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface,
-            contentColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface,
-            dragHandle = null,
-            contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
-        ) {
-            Box(Modifier.fillMaxSize()) {
-                QueueScreen(
-                    screenState = screenState,
-                    visible = true,
-                    pureBlack = pureBlack,
-                    onAction = onAction,
-                )
-                SnackbarHost(
-                    hostState = snackbar,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(
-                        bottom = (if ((model?.selectionCount ?: 0) > 0) 128.dp else 24.dp) +
-                            WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
-                    ),
-                )
+        ListStyleTheme { backdrop ->
+            BackAwareModalBottomSheet(
+                onDismissRequest = viewModel::dismissQueue,
+                sheetState = sheetState,
+                sheetMaxWidth = Dp.Unspecified,
+                modifier = Modifier.fillMaxSize(),
+                containerColor =
+                    when {
+                        backdrop != null -> Color.Transparent
+                        pureBlack && !LocalListStyled.current -> Color.Black
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+                contentColor = if (pureBlack && !LocalListStyled.current) Color.White else MaterialTheme.colorScheme.onSurface,
+                dragHandle = null,
+                contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
+            ) {
+                Box(Modifier.fillMaxSize()) {
+                    QueueScreen(
+                        screenState = screenState,
+                        visible = true,
+                        pureBlack = pureBlack && !LocalListStyled.current,
+                        onAction = onAction,
+                    )
+                    SnackbarHost(
+                        hostState = snackbar,
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(
+                            bottom = (if ((model?.selectionCount ?: 0) > 0) 128.dp else 24.dp) +
+                                WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+                        ),
+                    )
+                }
             }
         }
     }

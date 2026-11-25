@@ -1569,4 +1569,14 @@
     <string name="style_decade">Anos %1$d</string>
     <string name="style_ai_progress">Classificando com IA… %1$d/%2$d</string>
     <string name="mix_started_style">Mix: %1$s</string>
+    <string name="list_style">Estilo da Lista de reprodução</string>
+    <string name="list_style_description">Visual da fila e do menu “…” do player.</string>
+    <string name="list_style_default">Padrão</string>
+    <string name="list_style_connected">Conectada</string>
+    <string name="list_style_standalone">Independente</string>
+    <string name="list_style_apple_music">Apple Music</string>
+    <string name="list_style_cover_color">Cor da capa</string>
+    <string name="list_style_single_piece">Peça única</string>
+    <string name="list_style_icons_pill">Pílula de ícones</string>
+    <string name="list_style_gradient">Gradiente</string>
 </resources>

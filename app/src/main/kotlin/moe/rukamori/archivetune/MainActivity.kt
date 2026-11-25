@@ -294,7 +294,6 @@ import moe.rukamori.archivetune.ui.component.IconButton
 import moe.rukamori.archivetune.ui.component.LocalBottomSheetPageState
 import moe.rukamori.archivetune.ui.component.LocalMenuState
 import moe.rukamori.archivetune.ui.component.NetworkStatusBanner
-import moe.rukamori.archivetune.ui.component.StarDialog
 import moe.rukamori.archivetune.ui.component.TopAppBarOverflowMenu
 import moe.rukamori.archivetune.ui.component.TopSearch
 import moe.rukamori.archivetune.ui.component.TvNavigationRail
@@ -1608,8 +1607,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    var showStarDialog by remember { mutableStateOf(false) }
-                    var starPromptPending by remember { mutableStateOf(false) }
                     var whatsNewPresented by remember { mutableStateOf(false) }
                     val whatsNewPending = whatsNewState is WhatsNewState.Checking || whatsNewState is WhatsNewState.Showing
                     val blockingStartupModal =
@@ -1617,7 +1614,7 @@ class MainActivity : ComponentActivity() {
                             menuState.isVisible || menuState.dialogContent != null || bottomSheetPageState.isVisible ||
                             playerBottomSheetState.isExpandedOrExpanding || active || topAppBarOverflowExpanded
                     val canPresentStartupPrompt =
-                        LocalWindowInfo.current.isWindowFocused && !blockingStartupModal && !showStarDialog && !isAppUpdateScreen
+                        LocalWindowInfo.current.isWindowFocused && !blockingStartupModal && !isAppUpdateScreen
 
                     LaunchedEffect(whatsNewState is WhatsNewState.Showing, canPresentStartupPrompt) {
                         if (whatsNewState !is WhatsNewState.Showing) {
@@ -1647,72 +1644,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    LaunchedEffect(starPromptPending, pendingUpdateVersion, whatsNewPending, canPresentStartupPrompt) {
-                        if (starPromptPending && pendingUpdateVersion == null && !whatsNewPending && canPresentStartupPrompt) {
-                            starPromptPending = false
-                            showStarDialog = true
-                        }
-                    }
-
-                    LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(3000)
-
-                        withContext(Dispatchers.IO) {
-                            val current = dataStore[LaunchCountKey] ?: 0
-                            val newCount = current + 1
-                            dataStore.edit { prefs ->
-                                prefs[LaunchCountKey] = newCount
-                            }
-                        }
-
-                        val shouldShow =
-                            withContext(Dispatchers.IO) {
-                                val hasPressed = dataStore[HasPressedStarKey] ?: false
-                                val remindAfter = dataStore[RemindAfterKey] ?: 3
-                                !hasPressed && (dataStore[LaunchCountKey] ?: 0) >= remindAfter
-                            }
-
-                        starPromptPending = shouldShow
-                    }
-
-                    if (showStarDialog) {
-                        StarDialog(
-                            onDismissRequest = { showStarDialog = false },
-                            onSupport = {
-                                coroutineScope.launch {
-                                    try {
-                                        withContext(Dispatchers.IO) {
-                                            dataStore.edit { prefs ->
-                                                prefs[HasPressedStarKey] = true
-                                                prefs[RemindAfterKey] = Int.MAX_VALUE
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        reportException(e)
-                                    } finally {
-                                        showStarDialog = false
-                                    }
-                                }
-                            },
-                            onLater = {
-                                coroutineScope.launch {
-                                    try {
-                                        val launch = withContext(Dispatchers.IO) { dataStore[LaunchCountKey] ?: 0 }
-                                        withContext(Dispatchers.IO) {
-                                            dataStore.edit { prefs ->
-                                                prefs[RemindAfterKey] = launch + 20
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        reportException(e)
-                                    } finally {
-                                        showStarDialog = false
-                                    }
-                                }
-                            },
-                        )
-                    }
-
                     val currentTitleRes =
                         remember(navBackStackEntry) {
                             when (navBackStackEntry?.destination?.route) {

@@ -98,7 +98,7 @@ private fun GlassMiniContent(
  * Picks the biggest card size that lets as many cards as possible (up to [maxCards]) fan out in
  * [areaWidth], so a wider widget shows more covers instead of leaving the space empty.
  */
-private fun fitCards(
+internal fun fitCards(
     areaWidth: Dp,
     maxSize: Dp,
     available: Int,
@@ -251,7 +251,7 @@ private fun StackedBody(
     }
 }
 
-private val MinCover = 40.dp
-private val MinButton = 24.dp
-private val MinCardSize = 28.dp
-private const val CardStep = 0.74f
+internal val MinCover = 40.dp
+internal val MinButton = 24.dp
+internal val MinCardSize = 28.dp
+internal const val CardStep = 0.74f

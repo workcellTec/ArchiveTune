@@ -1571,4 +1571,6 @@
     <string name="list_style_gradient">Gradient</string>
     <string name="list_style_blur">Blur level</string>
     <string name="list_style_blur_value">Blur radius behind the menu and queue: %1$d</string>
+    <string name="widget_glass_center_name">Glass centered</string>
+    <string name="widget_glass_center_description">Medium glass card with bigger next-song cards, centered title and grouped controls.</string>
 </resources>

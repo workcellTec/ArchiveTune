@@ -408,6 +408,18 @@
         </receiver>
 
         <receiver
+            android:name=".widget.GlassCenterWidgetReceiver"
+            android:label="@string/widget_glass_center_name"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_glass_center_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.GlassCompactWidgetReceiver"
             android:label="@string/widget_glass_compact_name"
             android:exported="true">

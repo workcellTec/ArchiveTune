@@ -117,6 +117,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import moe.rukamori.archivetune.LocalAnimationsDisabled
+import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.canvas.CanvasSource
 import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
@@ -1065,6 +1066,14 @@ private fun V11ActionToolbar(
                         scaleX = likeScale.value
                         scaleY = likeScale.value
                     },
+            )
+        }
+        val dislikeConnection = LocalPlayerConnection.current
+        val disliked = rememberCurrentDisliked()
+        IconButton(onClick = { dislikeConnection?.toggleDislike() }, shapes = IconButtonDefaults.shapes(), colors = iconColors) {
+            Icon(
+                painterResource(if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken),
+                contentDescription = stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
             )
         }
         IconButton(onClick = onAddToPlaylistClick, shapes = IconButtonDefaults.shapes(), colors = iconColors) {

@@ -103,6 +103,7 @@ class MediaLibrarySessionCallback
         private val searchResultCache = ConcurrentHashMap<String, CachedSearchResult>()
         private val spotifyTracksCache = ConcurrentHashMap<String, CachedSpotifyTracks>()
         var toggleLike: () -> Unit = {}
+        var toggleDislike: () -> Unit = {}
         var toggleStartRadio: () -> Unit = {}
         var toggleLibrary: () -> Unit = {}
         var toggleDownload: () -> Unit = {}
@@ -166,6 +167,7 @@ class MediaLibrarySessionCallback
             val availableSessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
                 .buildUpon()
                 .add(MediaSessionConstants.CommandToggleLike)
+                .add(MediaSessionConstants.CommandToggleDislike)
                 .add(MediaSessionConstants.CommandToggleStartRadio)
                 .add(MediaSessionConstants.CommandToggleLibrary)
                 .add(MediaSessionConstants.CommandToggleShuffle)
@@ -258,6 +260,11 @@ class MediaLibrarySessionCallback
             val handled = when (customCommand.customAction) {
                 MediaSessionConstants.ACTION_TOGGLE_LIKE -> {
                     toggleLike()
+                    true
+                }
+
+                MediaSessionConstants.ACTION_TOGGLE_DISLIKE -> {
+                    toggleDislike()
                     true
                 }
 

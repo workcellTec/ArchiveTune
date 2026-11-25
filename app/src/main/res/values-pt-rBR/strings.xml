@@ -283,6 +283,10 @@
     <string name="error_unknown">Erro desconhecido</string>
     <string name="action_like">Curtir</string>
     <string name="action_remove_like">Remover curtida</string>
+    <string name="action_dislike">Não gostar</string>
+    <string name="action_remove_dislike">Desfazer não gostar</string>
+    <string name="dislike_added">Música evitada por 30 dias</string>
+    <string name="dislike_removed">Música liberada de novo</string>
     <string name="action_shuffle_on">Aleatório ativado</string>
     <string name="action_shuffle_off">Aleatório desativado</string>
     <string name="repeat_mode_off">Modo repetir desativado</string>

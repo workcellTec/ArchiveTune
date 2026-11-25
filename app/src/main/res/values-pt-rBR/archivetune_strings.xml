@@ -1084,6 +1084,7 @@
     <string name="media_notification_move_button">Reordenar %1$s</string>
     <string name="media_notification_action_repeat">Repetir</string>
     <string name="media_notification_action_like_desc">Curtir ou descurtir a música atual</string>
+    <string name="media_notification_action_dislike_desc">Pula a música e evita ela por 30 dias</string>
     <string name="media_notification_action_repeat_desc">Alternar entre repetição desativada, repetir tudo e repetir uma</string>
     <string name="media_notification_action_shuffle_desc">Ativar ou desativar o modo aleatório da fila</string>
     <string name="media_notification_action_radio_desc">Iniciar um rádio com base na música atual</string>

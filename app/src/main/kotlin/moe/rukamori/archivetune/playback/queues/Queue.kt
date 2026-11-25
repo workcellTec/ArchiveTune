@@ -7,6 +7,7 @@
 
 package moe.rukamori.archivetune.playback.queues
 
+import moe.rukamori.archivetune.playback.DislikeStore
 import androidx.media3.common.MediaItem
 import moe.rukamori.archivetune.extensions.ExtraIsMusicVideo
 import moe.rukamori.archivetune.extensions.metadata
@@ -53,6 +54,17 @@ interface Queue {
             } else {
                 filterItems { !it.hasBlockedArtist(blockedArtistIds) }
             }
+
+        /** Drops avoided songs but never the item the user explicitly picked to start with. */
+        fun filterDisliked(snapshot: DislikeStore.Snapshot): Status {
+            if (snapshot.songIds.isEmpty() && snapshot.artistIds.isEmpty()) return this
+            val currentIndex = mediaItemIndex
+            var position = -1
+            return filterItems { item ->
+                position++
+                position == currentIndex || !item.isAvoided(snapshot)
+            }
+        }
 
         private inline fun filterItems(keep: (MediaItem) -> Boolean): Status {
             if (items.isEmpty()) return this
@@ -110,3 +122,16 @@ fun List<MediaItem>.filterBlockedArtists(blockedArtistIds: Set<String>) =
 
 fun MediaItem.hasBlockedArtist(blockedArtistIds: Set<String>): Boolean =
     metadata?.artists?.any { artist -> artist.id != null && artist.id in blockedArtistIds } == true
+
+fun List<MediaItem>.filterDisliked(snapshot: DislikeStore.Snapshot) =
+    if (snapshot.songIds.isEmpty() && snapshot.artistIds.isEmpty()) {
+        this
+    } else {
+        filterNot { it.isAvoided(snapshot) }
+    }
+
+fun MediaItem.isAvoided(snapshot: DislikeStore.Snapshot): Boolean =
+    snapshot.isAvoided(
+        songId = mediaId,
+        artistIds = metadata?.artists?.mapNotNull { it.id }.orEmpty(),
+    )

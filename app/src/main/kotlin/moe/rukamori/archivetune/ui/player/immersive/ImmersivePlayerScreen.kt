@@ -7,6 +7,8 @@
 
 package moe.rukamori.archivetune.ui.player.immersive
 
+import moe.rukamori.archivetune.ui.player.DislikeIconButton
+import moe.rukamori.archivetune.ui.player.heartPop
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -633,9 +635,16 @@ private fun MetadataRow(
                 painter = painterResource(if (isLiked) R.drawable.favorite else R.drawable.favorite_border),
                 contentDescription = stringResource(if (isLiked) R.string.action_remove_like else R.string.action_like),
                 tint = ImmersiveContentColor,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.heartPop(isLiked).size(28.dp),
             )
         }
+        DislikeIconButton(
+            size = 48.dp,
+            iconSize = 26.dp,
+            shape = androidx.compose.foundation.shape.CircleShape,
+            tint = ImmersiveContentColor,
+            activeTint = ImmersiveContentColor,
+        )
         IconButton(onClick = { onAction(ImmersivePlayerAction.OpenMenu) }) {
             Icon(
                 painter = painterResource(R.drawable.more_horiz),

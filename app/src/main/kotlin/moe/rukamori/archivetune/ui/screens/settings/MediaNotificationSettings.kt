@@ -1096,6 +1096,13 @@ private fun MediaNotificationAction.previewVisual(preview: NotificationPreviewSt
                 enabled = preview.hasSong,
             )
 
+        MediaNotificationAction.DISLIKE ->
+            PreviewActionVisual(
+                iconRes = R.drawable.heart_broken,
+                active = false,
+                enabled = preview.hasSong,
+            )
+
         MediaNotificationAction.REPEAT ->
             PreviewActionVisual(
                 iconRes =
@@ -1481,6 +1488,7 @@ private val MediaNotificationAction.slotKey: String
 private fun MediaNotificationAction.labelRes(): Int =
     when (this) {
         MediaNotificationAction.LIKE -> R.string.action_like
+        MediaNotificationAction.DISLIKE -> R.string.action_dislike
         MediaNotificationAction.REPEAT -> R.string.media_notification_action_repeat
         MediaNotificationAction.SHUFFLE -> R.string.shuffle
         MediaNotificationAction.START_RADIO -> R.string.start_radio
@@ -1494,6 +1502,7 @@ private fun MediaNotificationAction.labelRes(): Int =
 private fun MediaNotificationAction.descriptionRes(): Int =
     when (this) {
         MediaNotificationAction.LIKE -> R.string.media_notification_action_like_desc
+        MediaNotificationAction.DISLIKE -> R.string.media_notification_action_dislike_desc
         MediaNotificationAction.REPEAT -> R.string.media_notification_action_repeat_desc
         MediaNotificationAction.SHUFFLE -> R.string.media_notification_action_shuffle_desc
         MediaNotificationAction.START_RADIO -> R.string.media_notification_action_radio_desc
@@ -1507,6 +1516,7 @@ private fun MediaNotificationAction.descriptionRes(): Int =
 private fun MediaNotificationAction.iconRes(): Int =
     when (this) {
         MediaNotificationAction.LIKE -> R.drawable.favorite_border
+        MediaNotificationAction.DISLIKE -> R.drawable.heart_broken
         MediaNotificationAction.REPEAT -> R.drawable.repeat
         MediaNotificationAction.SHUFFLE -> R.drawable.shuffle
         MediaNotificationAction.START_RADIO -> R.drawable.radio

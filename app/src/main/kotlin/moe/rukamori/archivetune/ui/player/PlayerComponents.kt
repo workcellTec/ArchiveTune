@@ -141,6 +141,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import moe.rukamori.archivetune.canvas.CanvasSource
+import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.constants.EnableHapticFeedbackKey
 import moe.rukamori.archivetune.constants.PlayerBackgroundStyle
@@ -381,9 +382,18 @@ fun PlayerTopActions(
                         modifier =
                             Modifier
                                 .align(Alignment.Center)
+                                .heartPop(currentSongLiked)
                                 .size(24.dp),
                     )
                 }
+
+                DislikeIconButton(
+                    size = 42.dp,
+                    iconSize = 24.dp,
+                    shape = CircleShape,
+                    tint = iconButtonColor,
+                    containerColor = textButtonColor,
+                )
             }
         }
 
@@ -442,9 +452,15 @@ fun PlayerTopActions(
                             } else {
                                 textBackgroundColor.copy(alpha = 0.7f)
                             },
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.heartPop(currentSongLiked).size(20.dp),
                     )
                 }
+                DislikeIconButton(
+                    size = 36.dp,
+                    iconSize = 20.dp,
+                    tint = textBackgroundColor.copy(alpha = 0.7f),
+                    activeTint = MaterialTheme.colorScheme.error.copy(alpha = 0.9f),
+                )
             }
         }
 
@@ -514,10 +530,19 @@ fun PlayerTopActions(
                                 } else {
                                     textBackgroundColor
                                 },
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.heartPop(currentSongLiked).size(22.dp),
                         )
                     }
                 }
+
+                DislikeIconButton(
+                    size = 44.dp,
+                    iconSize = 22.dp,
+                    shape = RoundedCornerShape(14.dp),
+                    tint = textBackgroundColor,
+                    containerColor = textBackgroundColor.copy(alpha = 0.12f),
+                    activeContainerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.25f),
+                )
 
                 // More menu button - cinematic glass card
                 Surface(
@@ -695,10 +720,19 @@ fun PlayerTopActions(
                                 } else {
                                     textBackgroundColor
                                 },
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.heartPop(currentSongLiked).size(20.dp),
                         )
                     }
                 }
+
+                DislikeIconButton(
+                    size = 42.dp,
+                    iconSize = 20.dp,
+                    shape = RoundedCornerShape(50),
+                    tint = textBackgroundColor,
+                    containerColor = textBackgroundColor.copy(alpha = 0.12f),
+                    activeContainerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.18f),
+                )
 
                 Surface(
                     onClick = {
@@ -1589,8 +1623,23 @@ fun PlayerPlaybackControls(
                             Modifier
                                 .size(32.dp)
                                 .padding(4.dp)
+                                .heartPop(currentSongLiked)
                                 .align(Alignment.Center),
                         onClick = playerConnection::toggleLike,
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    val currentDisliked = rememberCurrentDisliked()
+                    ResizableIconButton(
+                        icon = if (currentDisliked) R.drawable.heart_broken_on else R.drawable.heart_broken,
+                        color = if (currentDisliked) MaterialTheme.colorScheme.error else textBackgroundColor,
+                        modifier =
+                            Modifier
+                                .size(32.dp)
+                                .padding(4.dp)
+                                .align(Alignment.Center),
+                        onClick = playerConnection::toggleDislike,
                     )
                 }
             }
@@ -2758,6 +2807,17 @@ private fun V8MetadataActions(
                 containerColor = foreground.copy(alpha = 0.16f),
                 iconSize = 26.dp,
                 onClick = onToggleLike,
+                popped = liked,
+            )
+            val disliked = rememberCurrentDisliked()
+            val dislikeConnection = LocalPlayerConnection.current
+            V8ActionButton(
+                iconRes = if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken,
+                contentDescription = stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
+                foreground = foreground,
+                containerColor = foreground.copy(alpha = 0.16f),
+                iconSize = 26.dp,
+                onClick = { dislikeConnection?.toggleDislike() },
             )
         }
     }
@@ -2771,6 +2831,7 @@ private fun V8ActionButton(
     containerColor: Color,
     iconSize: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit,
+    popped: Boolean? = null,
 ) {
     Surface(
         onClick = onClick,
@@ -2786,7 +2847,7 @@ private fun V8ActionButton(
                 painter = painterResource(iconRes),
                 contentDescription = contentDescription,
                 tint = foreground,
-                modifier = Modifier.size(iconSize),
+                modifier = (if (popped != null) Modifier.heartPop(popped) else Modifier).size(iconSize),
             )
         }
     }
@@ -3394,9 +3455,16 @@ private fun V9PortraitContent(
                         painter = painterResource(if (liked) R.drawable.favorite else R.drawable.favorite_border),
                         contentDescription = stringResource(if (liked) R.string.action_remove_like else R.string.action_like),
                         tint = if (liked) MaterialTheme.colorScheme.primary else textBackgroundColor,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.heartPop(liked).size(32.dp)
                     )
                 }
+                DislikeIconButton(
+                    size = 48.dp,
+                    iconSize = 30.dp,
+                    shape = CircleShape,
+                    tint = textBackgroundColor,
+                    activeTint = MaterialTheme.colorScheme.primary,
+                )
             }
 
             Spacer(Modifier.height(headerGap))
@@ -4604,6 +4672,16 @@ fun V10PlayerContent(
                             field = field,
                             iconResId = if (liked) R.drawable.favorite else R.drawable.favorite_border,
                             contentDescription = stringResource(if (liked) R.string.action_remove_like else R.string.action_like),
+                        )
+                        val disliked = rememberCurrentDisliked()
+                        val dislikeConnection = LocalPlayerConnection.current
+                        V10ToggleButton(
+                            checked = disliked,
+                            onClick = { dislikeConnection?.toggleDislike() },
+                            accent = accent,
+                            field = field,
+                            iconResId = if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken,
+                            contentDescription = stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
                         )
                         V10ToggleButton(
                             checked = false,

@@ -77,6 +77,10 @@ class PlayerConnection(
         mediaMetadata.flatMapLatest {
             database.song(it?.id)
         }
+    val isCurrentDisliked =
+        kotlinx.coroutines.flow.combine(mediaMetadata, service.dislikedSongIds) { metadata, disliked ->
+            metadata?.id?.let { it in disliked } == true
+        }
     val currentLyrics =
         mediaMetadata.flatMapLatest { mediaMetadata ->
             database.lyrics(mediaMetadata?.id)
@@ -278,6 +282,10 @@ class PlayerConnection(
 
     fun toggleLike() {
         service.toggleLike()
+    }
+
+    fun toggleDislike() {
+        service.toggleDislike()
     }
 
     internal suspend fun refetchCanvasArtwork(

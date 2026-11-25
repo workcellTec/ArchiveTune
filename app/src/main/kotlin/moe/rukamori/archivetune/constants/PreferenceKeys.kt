@@ -252,6 +252,7 @@ val EnablePaxsenixMusixmatchLyricsKey = booleanKey("enablePaxsenixMusixmatchLyri
 val EnableUnisonLyricsKey = booleanKey("enableUnisonLyrics")
 val HideExplicitKey = booleanKey("hideExplicit")
 val HideVideoKey = booleanKey("hideVideo")
+val DislikedSongsKey = stringKey("dislikedSongs")
 val PlayVideoAsOfficialAudioKey = booleanKey("playVideoAsOfficialAudio")
 val AiContentFilterEnabledKey = booleanKey("aiContentFilterEnabled")
 val AiContentFilterIncludeModerateKey = booleanKey("aiContentFilterIncludeModerate")

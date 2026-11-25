@@ -182,6 +182,7 @@ import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandSeekBackI
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandSeekForwardIncrement
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleDownload
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleLibrary
+import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleDislike
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleLike
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleRepeatMode
 import moe.rukamori.archivetune.constants.MediaSessionConstants.CommandToggleShuffle
@@ -284,6 +285,8 @@ import moe.rukamori.archivetune.playback.queues.ListQueue
 import moe.rukamori.archivetune.playback.queues.Queue
 import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.playback.queues.filterBlockedArtists
+import moe.rukamori.archivetune.playback.queues.filterDisliked
+import moe.rukamori.archivetune.playback.queues.isAvoided
 import moe.rukamori.archivetune.playback.queues.filterExplicit
 import moe.rukamori.archivetune.playback.queues.filterVideo
 import moe.rukamori.archivetune.playback.queues.hasBlockedArtist
@@ -570,6 +573,11 @@ class MusicService :
     val queueRecommendations = MutableStateFlow(QueueRecommendations())
     var queueTitle: String? = null
     private var blockedArtistIds: Set<String> = emptySet()
+    private val dislikeStore by lazy { DislikeStore(dataStore) }
+    @Volatile
+    private var dislikeSnapshot = DislikeStore.Snapshot()
+    private val _dislikedSongIds = MutableStateFlow<Set<String>>(emptySet())
+    val dislikedSongIds = _dislikedSongIds.asStateFlow()
     private var hideMusicVideos = false
     private var infiniteQueueJob: Job? = null
     private var infiniteQueueGeneration = 0L
@@ -1331,6 +1339,14 @@ class MusicService :
                 blockedArtistIds = updatedBlockedArtistIds
                 removeBlockedArtistItems(updatedBlockedArtistIds)
             }
+        dislikeStore.snapshots
+            .distinctUntilChanged()
+            .flowOn(Dispatchers.IO)
+            .collect(scope) { snapshot ->
+                dislikeSnapshot = snapshot
+                _dislikedSongIds.value = snapshot.songIds
+                updateNotification()
+            }
         dataStore.data
             .map { preferences -> preferences[HideVideoKey] ?: false }
             .distinctUntilChanged()
@@ -1376,6 +1392,7 @@ class MusicService :
 
         mediaLibrarySessionCallback.apply {
             toggleLike = ::toggleLike
+            toggleDislike = ::toggleDislike
             toggleStartRadio = ::toggleStartRadio
             toggleLibrary = ::toggleLibrary
             toggleDownload = ::toggleCurrentDownload
@@ -2334,6 +2351,7 @@ class MusicService :
         filterExplicit(hideExplicit)
             .filterVideo(hideVideo)
             .filterBlockedArtists(loadBlockedArtistIds())
+            .filterDisliked(dislikeSnapshot)
 
     private suspend fun List<MediaItem>.filterPlaybackContent(
         hideExplicit: Boolean,
@@ -2342,6 +2360,7 @@ class MusicService :
         filterExplicit(hideExplicit)
             .filterVideo(hideVideo)
             .filterBlockedArtists(loadBlockedArtistIds())
+            .filterDisliked(dislikeSnapshot)
 
     private suspend fun loadBlockedArtistIds(): Set<String> =
         withContext(Dispatchers.IO) {
@@ -3720,6 +3739,16 @@ class MusicService :
                     iconResId = if (liked) R.drawable.favorite else R.drawable.favorite_border,
                     command = CommandToggleLike,
                     enabled = song != null,
+                )
+            }
+
+            MediaNotificationAction.DISLIKE -> {
+                val disliked = mediaMetadata?.id?.let { it in dislikeSnapshot.songIds } == true
+                customNotificationButton(
+                    displayName = getString(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
+                    iconResId = if (disliked) R.drawable.heart_broken_on else R.drawable.heart_broken,
+                    command = CommandToggleDislike,
+                    enabled = mediaMetadata != null,
                 )
             }
 
@@ -6368,6 +6397,41 @@ class MusicService :
         }
     }
 
+    /**
+     * "Don't like": avoids the current song (and, after repeated dislikes, its artist) for 30 days and
+     * skips it. Tapping again while the song is still current undoes it. A liked song is unliked first.
+     */
+    fun toggleDislike() {
+        val mediaMetadata = currentMediaMetadata.value ?: return
+        ioScope.launch(SilentHandler) {
+            if (mediaMetadata.id in dislikeSnapshot.songIds) {
+                dislikeStore.remove(mediaMetadata.id)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MusicService, R.string.dislike_removed, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+            dislikeStore.add(mediaMetadata.id, mediaMetadata.artists.mapNotNull { it.id })
+            if (database.getSongById(mediaMetadata.id)?.song?.liked == true) toggleLike()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@MusicService, R.string.dislike_added, Toast.LENGTH_SHORT).show()
+                if (player.currentMediaItem?.mediaId == mediaMetadata.id) {
+                    if (player.hasNextMediaItem()) player.seekToNext() else player.pause()
+                }
+            }
+        }
+    }
+
+    /** Natural transitions into an avoided song (queue built before the dislike) are skipped. */
+    private fun skipAvoidedItem(
+        mediaItem: MediaItem?,
+        reason: Int,
+    ) {
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_AUTO || mediaItem == null) return
+        if (!mediaItem.isAvoided(dislikeSnapshot)) return
+        if (player.hasNextMediaItem()) player.seekToNext()
+    }
+
     fun toggleLike() {
         val mediaMetadata = currentMediaMetadata.value ?: return
         ioScope.launch {
@@ -6397,6 +6461,9 @@ class MusicService :
                         }
                         return@launch
                     }
+
+                // Liking a song cancels a previous "don't like" so the two states never coexist.
+                if (song.liked) dislikeStore.remove(song.id)
 
                 // Check if auto-download on like is enabled and the song is now liked
                 if (!song.isLocal && dataStore.get(AutoDownloadOnLikeKey, false) && song.liked) {
@@ -7068,6 +7135,7 @@ class MusicService :
     ) {
         super.onMediaItemTransition(mediaItem, reason)
         widgetUpdater.update()
+        skipAvoidedItem(mediaItem, reason)
 
         if (sleepTimer.pauseWhenSongEnd) {
             pauseFromSleepTimer()

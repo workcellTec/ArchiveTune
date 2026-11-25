@@ -2488,12 +2488,23 @@ private fun LittlePlayerContent(
                         },
                     modifier =
                         Modifier
+                            .heartPop(liked)
                             .size(iconSize)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = tvFocusIndicationOrNull(),
                                 onClick = onToggleLike,
                             ),
+                )
+
+                Spacer(Modifier.width((18f * scale).dp))
+
+                DislikeIconButton(
+                    size = iconSize,
+                    iconSize = iconSize,
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    tint = textColor.copy(alpha = 0.78f),
+                    activeTint = MaterialTheme.colorScheme.error.copy(alpha = 0.9f),
                 )
 
                 Spacer(Modifier.width((18f * scale).dp))

@@ -1113,6 +1113,7 @@
     <string name="media_notification_move_button">Reorder %1$s</string>
     <string name="media_notification_action_repeat">Repeat</string>
     <string name="media_notification_action_like_desc">Like or unlike the current song</string>
+    <string name="media_notification_action_dislike_desc">Skip the song and avoid it for 30 days</string>
     <string name="media_notification_action_repeat_desc">Cycle between repeat off, repeat all and repeat one</string>
     <string name="media_notification_action_shuffle_desc">Turn shuffle on or off for the queue</string>
     <string name="media_notification_action_radio_desc">Start a radio based on the current song</string>

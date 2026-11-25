@@ -11,6 +11,7 @@ import androidx.compose.runtime.Immutable
 
 enum class MediaNotificationAction {
     LIKE,
+    DISLIKE,
     REPEAT,
     SHUFFLE,
     START_RADIO,

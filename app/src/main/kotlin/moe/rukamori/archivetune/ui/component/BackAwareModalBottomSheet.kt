@@ -100,43 +100,31 @@ fun BackAwareModalBottomSheet(
 
 private const val SheetBackTag = "BackAwareModalBottomSheet"
 
-/** Blurs whatever the sheet window covers (Android 12+); a no-op elsewhere or when [radius] is 0. */
+/**
+ * Blurs the screen behind the sheet (Android 12+). The sheet lives in its own window, so a
+ * RenderEffect on the activity's content view blurs only what is behind it, on every device
+ * (window blur-behind is switched off by some vendors).
+ */
 @Composable
 private fun SheetWindowBlur(
     view: android.view.View,
     radius: Int,
 ) {
     androidx.compose.runtime.DisposableEffect(view, radius) {
+        var target: android.view.View? = null
         if (radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            applyWindowBlur(view, radius)
+            var ctx = view.context
+            while (ctx is android.content.ContextWrapper && ctx !is android.app.Activity) ctx = ctx.baseContext
+            target = (ctx as? android.app.Activity)?.findViewById(android.R.id.content)
+            val r = radius.toFloat().coerceAtLeast(1f)
+            target?.setRenderEffect(
+                android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.CLAMP),
+            )
         }
-        onDispose {}
-    }
-}
-
-/**
- * The sheet may live in a Dialog window or in a bare window added straight to the WindowManager
- * (newer Material3), so try the dialog's Window first and fall back to the root view's layout params.
- */
-@android.annotation.SuppressLint("NewApi")
-private fun applyWindowBlur(
-    view: android.view.View,
-    radius: Int,
-) {
-    var node: android.view.View? = view
-    while (node != null) {
-        val window = (node as? androidx.compose.ui.window.DialogWindowProvider)?.window
-        if (window != null) {
-            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            window.attributes = window.attributes.also { it.blurBehindRadius = radius }
-            return
+        onDispose {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                target?.setRenderEffect(null)
+            }
         }
-        node = node.parent as? android.view.View
     }
-    val root = view.rootView
-    val params = root.layoutParams as? android.view.WindowManager.LayoutParams ?: return
-    params.flags = params.flags or android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND
-    params.blurBehindRadius = radius
-    val wm = view.context.getSystemService(android.content.Context.WINDOW_SERVICE) as android.view.WindowManager
-    wm.updateViewLayout(root, params)
 }

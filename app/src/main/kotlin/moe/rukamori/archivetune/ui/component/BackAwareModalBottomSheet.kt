@@ -112,19 +112,33 @@ private fun SheetWindowBlur(
 ) {
     androidx.compose.runtime.DisposableEffect(view, radius) {
         var target: android.view.View? = null
-        if (radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        val active = radius > 0 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+        if (active) {
             var ctx = view.context
             while (ctx is android.content.ContextWrapper && ctx !is android.app.Activity) ctx = ctx.baseContext
             target = (ctx as? android.app.Activity)?.findViewById(android.R.id.content)
-            val r = radius.toFloat().coerceAtLeast(1f)
-            target?.setRenderEffect(
-                android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.CLAMP),
-            )
+            SheetBlurStack.radii.add(radius)
+            SheetBlurStack.apply(target)
         }
         onDispose {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                target?.setRenderEffect(null)
+            if (active) {
+                SheetBlurStack.radii.remove(radius)
+                SheetBlurStack.apply(target)
             }
         }
+    }
+}
+
+/** Sheets can stack (queue, then a song menu); the screen keeps the blur of the strongest open one. */
+private object SheetBlurStack {
+    val radii = mutableListOf<Int>()
+
+    @android.annotation.SuppressLint("NewApi")
+    fun apply(target: android.view.View?) {
+        if (target == null || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
+        val r = radii.maxOrNull()?.toFloat()
+        target.setRenderEffect(
+            if (r == null) null else android.graphics.RenderEffect.createBlurEffect(r, r, android.graphics.Shader.TileMode.CLAMP),
+        )
     }
 }

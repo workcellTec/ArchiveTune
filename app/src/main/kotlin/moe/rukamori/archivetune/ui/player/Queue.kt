@@ -193,6 +193,11 @@ fun Queue(
         )
     }
     if (queueVisible) {
+        // Menus opened from the queue (song "…" options) follow the same list style and blur.
+        DisposableEffect(menuState) {
+            menuState.listStyled = true
+            onDispose { menuState.listStyled = false }
+        }
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ListStyleTheme { backdrop ->
             val blurRadius = LocalListBlurRadius.current

@@ -1569,4 +1569,6 @@
     <string name="list_style_single_piece">Single piece</string>
     <string name="list_style_icons_pill">Icons pill</string>
     <string name="list_style_gradient">Gradient</string>
+    <string name="list_style_blur">Blur level</string>
+    <string name="list_style_blur_value">Blur radius behind the menu and queue: %1$d</string>
 </resources>

@@ -142,6 +142,10 @@ val MiniPlayerBackgroundStyleKey = stringKey("miniPlayerBackgroundStyle")
 val NavigationBarBackgroundStyleKey = stringKey("navigationBarBackgroundStyle")
 val NavigationBarModeKey = stringKey("navigationBarMode")
 val ListStyleKey = stringKey("listStyle")
+val ListStyleBlurKey = intKey("listStyleBlur")
+
+/** Blur radius (px) behind the sheet when the Gradient list style is on. */
+const val DefaultListStyleBlur = 110
 
 enum class AodThumbnailShape {
     ROUNDED,

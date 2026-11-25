@@ -1040,4 +1040,6 @@
     <string name="list_style_single_piece">Peça única</string>
     <string name="list_style_icons_pill">Pílula de ícones</string>
     <string name="list_style_gradient">Gradiente</string>
+    <string name="list_style_blur">Nível de desfoque</string>
+    <string name="list_style_blur_value">Desfoque atrás do menu e da fila: %1$d</string>
 </resources>

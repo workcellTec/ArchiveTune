@@ -99,6 +99,8 @@ import moe.rukamori.archivetune.constants.MiniPlayerBackgroundStyleKey
 import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyle
 import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyleKey
 import moe.rukamori.archivetune.constants.ListStyle
+import moe.rukamori.archivetune.constants.DefaultListStyleBlur
+import moe.rukamori.archivetune.constants.ListStyleBlurKey
 import moe.rukamori.archivetune.constants.ListStyleKey
 import moe.rukamori.archivetune.constants.NavigationBarMode
 import moe.rukamori.archivetune.constants.NavigationBarModeKey
@@ -231,6 +233,7 @@ fun AppearanceSettings(navController: NavController) {
             ListStyleKey,
             defaultValue = ListStyle.DEFAULT,
         )
+    val (listStyleBlur, onListStyleBlurChange) = rememberPreference(ListStyleBlurKey, defaultValue = DefaultListStyleBlur)
     val onMiniPlayerBackgroundSelected = remember(glassConfirmationViewModel, onMiniPlayerBackgroundChange) {
         { style: MiniPlayerBackgroundStyle ->
             if (style == MiniPlayerBackgroundStyle.GLASS) {
@@ -982,10 +985,44 @@ fun AppearanceSettings(navController: NavController) {
                 }
 
                 item {
-                    ListStylePreference(
-                        selected = listStyle,
-                        onSelected = onListStyleChange,
+                    ListPreference(
+                        title = { Text(stringResource(R.string.list_style)) },
+                        icon = { Icon(painterResource(R.drawable.palette), null) },
+                        selectedValue = listStyle,
+                        values = ListStyle.entries,
+                        onValueSelected = onListStyleChange,
+                        valueText = {
+                            when (it) {
+                                ListStyle.DEFAULT -> stringResource(R.string.list_style_default)
+                                ListStyle.CONNECTED -> stringResource(R.string.list_style_connected)
+                                ListStyle.STANDALONE -> stringResource(R.string.list_style_standalone)
+                                ListStyle.APPLE_MUSIC -> stringResource(R.string.list_style_apple_music)
+                                ListStyle.COVER_COLOR -> stringResource(R.string.list_style_cover_color)
+                                ListStyle.SINGLE_PIECE -> stringResource(R.string.list_style_single_piece)
+                                ListStyle.ICONS_PILL -> stringResource(R.string.list_style_icons_pill)
+                                ListStyle.GRADIENT -> stringResource(R.string.list_style_gradient)
+                            }
+                        },
                     )
+                }
+
+                if (listStyle == ListStyle.GRADIENT) {
+                    item {
+                        PreferenceEntry(
+                            title = { Text(stringResource(R.string.list_style_blur)) },
+                            description = stringResource(R.string.list_style_blur_value, listStyleBlur),
+                            icon = { Icon(painterResource(R.drawable.blur_on), null) },
+                            content = {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Slider(
+                                    value = listStyleBlur.toFloat(),
+                                    onValueChange = { onListStyleBlurChange(it.roundToInt()) },
+                                    valueRange = 0f..300f,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            },
+                        )
+                    }
                 }
 
                 item {

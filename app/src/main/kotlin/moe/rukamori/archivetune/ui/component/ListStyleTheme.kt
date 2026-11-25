@@ -24,9 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import moe.rukamori.archivetune.constants.DefaultListStyleBlur
 import moe.rukamori.archivetune.constants.ListStyle
+import moe.rukamori.archivetune.constants.ListStyleBlurKey
 import moe.rukamori.archivetune.constants.ListStyleKey
 import moe.rukamori.archivetune.utils.rememberEnumPreference
+import moe.rukamori.archivetune.utils.rememberPreference
 
 /** Full-sheet gradient of the "Gradiente" list style; null for every other style. */
 val LocalListBackdrop = compositionLocalOf<Brush?> { null }
@@ -55,11 +58,12 @@ fun ListStyleTheme(
     content: @Composable (backdrop: Brush?) -> Unit,
 ) {
     val style by rememberEnumPreference(ListStyleKey, defaultValue = ListStyle.DEFAULT)
+    val (gradientBlur) = rememberPreference(ListStyleBlurKey, defaultValue = DefaultListStyleBlur)
     val scheme = MaterialTheme.colorScheme
     val gradient = rememberCoverGradient()
     val styled =
-        remember(style, enabled, scheme, gradient) {
-            if (enabled) scheme.styledFor(style, gradient) else null
+        remember(style, enabled, scheme, gradient, gradientBlur) {
+            if (enabled) scheme.styledFor(style, gradient, gradientBlur) else null
         }
     val shapes = MaterialTheme.shapes
     val styledShapes =
@@ -129,6 +133,7 @@ private fun ColorScheme.tinted(
 private fun ColorScheme.styledFor(
     style: ListStyle,
     gradient: CoverGradient?,
+    gradientBlur: Int,
 ): StyledScheme? =
     when (style) {
         ListStyle.DEFAULT -> null
@@ -200,7 +205,7 @@ private fun ColorScheme.styledFor(
                             gradient.colorAt(1f).copy(alpha = 0.92f),
                         ),
                     ),
-                blurRadius = 110,
+                blurRadius = gradientBlur,
             )
         }
     }

@@ -10,6 +10,7 @@ package moe.rukamori.archivetune.widget
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,9 +21,7 @@ abstract class PlaybackWidgetReceiver : GlanceAppWidgetReceiver() {
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
-        scope.launch {
-            requestPlaybackWidgetUpdate(context)
-        }
+        refresh(context)
     }
 
     override fun onUpdate(
@@ -31,8 +30,23 @@ abstract class PlaybackWidgetReceiver : GlanceAppWidgetReceiver() {
         appWidgetIds: IntArray,
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
+        refresh(context)
+    }
+
+    /**
+     * Redraws from the last saved state first, so a widget the launcher re-inflated (after the app
+     * process was killed) leaves the loading spinner even when MusicService is not running, then
+     * asks the service for fresh data.
+     */
+    private fun refresh(context: Context) {
+        val pending = goAsync()
         scope.launch {
-            requestPlaybackWidgetUpdate(context)
+            try {
+                runCatching { glanceAppWidget.updateAll(context) }
+                requestPlaybackWidgetUpdate(context)
+            } finally {
+                pending.finish()
+            }
         }
     }
 }

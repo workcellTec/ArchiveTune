@@ -1070,7 +1070,7 @@
     <string name="widget_dark_square_name">Cartão escuro</string>
     <string name="widget_dark_square_description">Cartão quadrado com curtir, timer de sono, controles, progresso, aleatório e repetir.</string>
     <string name="widget_light_wave_name">Onda clara</string>
-    <string name="widget_light_wave_description">Cartão creme com onda de áudio, play laranja, aleatório e curtir.</string>
+    <string name="widget_light_wave_description">Cartão claro com onda de áudio, aleatório e curtir. As cores seguem a capa do álbum.</string>
     <string name="podcast">Podcast</string>
     <string name="your_shows">Seus programas</string>
     <string name="browse_empty_description">Ainda não há nada para mostrar aqui.</string>
@@ -1562,4 +1562,5 @@
     <string name="style_tag_explicit">Explícitas</string>
     <string name="style_decade">Anos %1$d</string>
     <string name="style_ai_progress">Classificando com IA… %1$d/%2$d</string>
+    <string name="mix_started_style">Mix: %1$s</string>
 </resources>

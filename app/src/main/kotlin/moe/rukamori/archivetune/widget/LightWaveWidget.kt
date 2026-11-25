@@ -10,6 +10,9 @@ package moe.rukamori.archivetune.widget
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +61,7 @@ class LightWaveWidget : GlanceAppWidget() {
 @Composable
 private fun LightWaveContent(context: Context) {
     val state = rememberPlaybackState(context)
+    val colors = remember(state.dominantColor) { lightWaveColors(state.dominantColor) }
     val size = LocalSize.current
     val contentWidth = size.width - 28.dp
     val showTimes = size.height >= TimesMinHeight
@@ -69,7 +73,7 @@ private fun LightWaveContent(context: Context) {
                 .fillMaxSize()
                 .appWidgetBackground()
                 .widgetRootCorners()
-                .background(LightCardSurface)
+                .background(colors.palette.surface)
                 .clickable(openArchiveTuneAction(context))
                 .padding(14.dp),
     ) {
@@ -82,28 +86,28 @@ private fun LightWaveContent(context: Context) {
                     targetSize = coverSize,
                     shape = WidgetArtShape.Rounded,
                     cornerRadius = 18.dp,
-                    palette = LightCardPalette,
+                    palette = colors.palette,
                     modifier = GlanceModifier.size(coverSize),
                 )
                 Spacer(GlanceModifier.width(12.dp))
                 Column(modifier = GlanceModifier.defaultWeight()) {
                     Text(
                         text = context.getString(R.string.widget_now_playing),
-                        style = TextStyle(color = LightCardAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold),
+                        style = TextStyle(color = colors.accent, fontSize = 11.sp, fontWeight = FontWeight.Bold),
                         maxLines = 1,
                     )
                     Spacer(GlanceModifier.height(2.dp))
                     Text(
                         text = state.title,
                         modifier = GlanceModifier.fillMaxWidth(),
-                        style = TextStyle(color = LightCardText, fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        style = TextStyle(color = colors.text, fontSize = 20.sp, fontWeight = FontWeight.Bold),
                         maxLines = titleLines,
                     )
                     Spacer(GlanceModifier.height(2.dp))
                     Text(
                         text = state.artist,
                         modifier = GlanceModifier.fillMaxWidth(),
-                        style = TextStyle(color = LightCardDim, fontSize = 12.sp),
+                        style = TextStyle(color = colors.dim, fontSize = 12.sp),
                         maxLines = 1,
                     )
                 }
@@ -115,19 +119,19 @@ private fun LightWaveContent(context: Context) {
                 progress = state.playbackPosition,
                 width = contentWidth,
                 height = if (showTimes) 34.dp else 28.dp,
-                playedColor = LightCardAccentArgb,
-                restColor = LightCardWaveRestArgb,
+                playedColor = colors.accentArgb,
+                restColor = colors.waveRestArgb,
             )
             if (showTimes) {
                 Row(modifier = GlanceModifier.fillMaxWidth().padding(top = 2.dp)) {
                     Text(
                         text = formatWidgetTime((state.durationMs * state.playbackPosition).toLong()),
-                        style = TextStyle(color = LightCardDim, fontSize = 11.sp),
+                        style = TextStyle(color = colors.dim, fontSize = 11.sp),
                     )
                     Spacer(GlanceModifier.defaultWeight())
                     Text(
                         text = formatWidgetTime(state.durationMs),
-                        style = TextStyle(color = LightCardDim, fontSize = 11.sp),
+                        style = TextStyle(color = colors.dim, fontSize = 11.sp),
                     )
                 }
             }
@@ -136,24 +140,24 @@ private fun LightWaveContent(context: Context) {
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                WidgetShuffleButton(state, context, LightCardAccent, LightCardIcon, GlanceModifier.size(36.dp))
+                WidgetShuffleButton(state, context, colors.accent, colors.icon, GlanceModifier.size(36.dp))
                 Spacer(GlanceModifier.defaultWeight())
                 if (state.isAvailable) {
                     WidgetSkipButton(
                         forward = false,
-                        palette = LightCardPalette,
+                        palette = colors.palette,
                         context = context,
                         modifier = GlanceModifier.size(40.dp),
                         iconSize = 24.dp,
                     )
                     Spacer(GlanceModifier.defaultWeight())
                 }
-                WidgetPlayCircle(state, LightCardPalette, context, 48.dp)
+                WidgetPlayCircle(state, colors.palette, context, 48.dp)
                 Spacer(GlanceModifier.defaultWeight())
                 if (state.isAvailable) {
                     WidgetSkipButton(
                         forward = true,
-                        palette = LightCardPalette,
+                        palette = colors.palette,
                         context = context,
                         modifier = GlanceModifier.size(40.dp),
                         iconSize = 24.dp,
@@ -164,7 +168,7 @@ private fun LightWaveContent(context: Context) {
                     icon = if (state.isLiked) R.drawable.favorite else R.drawable.favorite_border,
                     contentDescription = context.getString(if (state.isLiked) R.string.action_remove_like else R.string.action_like),
                     action = toggleLikeAction(),
-                    tint = LightCardAccent,
+                    tint = colors.accent,
                     modifier = GlanceModifier.size(36.dp),
                     iconSize = 22.dp,
                 )
@@ -174,23 +178,65 @@ private fun LightWaveContent(context: Context) {
 }
 
 private val TimesMinHeight = 190.dp
-private val LightCardAccentColor = Color(0xFFF26A2E)
-private val LightCardAccentArgb = LightCardAccentColor.toArgb()
-private val LightCardWaveRestArgb = Color(0xFFE8D6C8).toArgb()
-private val LightCardSurface = ColorProvider(Color(0xFFFFF4EC))
-private val LightCardAccent = ColorProvider(LightCardAccentColor)
-private val LightCardText = ColorProvider(Color(0xFF2A1F1A))
-private val LightCardDim = ColorProvider(Color(0xFF7A6A60))
-private val LightCardIcon = ColorProvider(Color(0xFF5A4A40))
 
-private val LightCardPalette =
-    fixedWidgetPalette(
-        surface = LightCardSurface,
-        onSurface = LightCardIcon,
-        onSurfaceVariant = LightCardDim,
-        accent = LightCardAccent,
-        onAccent = ColorProvider(Color.White),
-        container = ColorProvider(Color(0xFFFFE6D6)),
-        track = ColorProvider(Color(0xFFE8D6C8)),
-        artworkFallback = ColorProvider(Color(0xFFFBD9BE)),
+/** Colors of the light card, tinted by the cover's dominant color (orange when there is no cover). */
+private class LightWaveColors(
+    surface: Color,
+    container: Color,
+    track: Color,
+    accent: Color,
+    text: Color,
+    dim: Color,
+    icon: Color,
+) {
+    val accentArgb = accent.toArgb()
+    val waveRestArgb = track.toArgb()
+    val accent = ColorProvider(accent)
+    val text = ColorProvider(text)
+    val dim = ColorProvider(dim)
+    val icon = ColorProvider(icon)
+    val palette =
+        fixedWidgetPalette(
+            surface = ColorProvider(surface),
+            onSurface = this.icon,
+            onSurfaceVariant = this.dim,
+            accent = this.accent,
+            onAccent = ColorProvider(if (accent.luminance() > 0.5f) Color.Black else Color.White),
+            container = ColorProvider(container),
+            track = ColorProvider(track),
+            artworkFallback = ColorProvider(container),
+        )
+}
+
+private fun lightWaveColors(dominantColor: Int?): LightWaveColors {
+    val base = dominantColor?.let { Color(it).copy(alpha = 1f) } ?: Color(0xFFF26A2E)
+    val surface = base.mix(Color.White, 0.90f)
+    var accent = base.mix(Color.Black, 0.22f)
+    var step = 0
+    while (accent.contrastWith(surface) < MinAccentContrast && step < 5) {
+        accent = accent.mix(Color.Black, 0.25f)
+        step++
+    }
+    return LightWaveColors(
+        surface = surface,
+        container = base.mix(Color.White, 0.78f),
+        track = base.mix(Color.White, 0.70f),
+        accent = accent,
+        text = base.mix(Color.Black, 0.84f),
+        dim = base.mix(Color.Black, 0.55f),
+        icon = base.mix(Color.Black, 0.65f),
     )
+}
+
+private const val MinAccentContrast = 3f
+
+private fun Color.mix(
+    other: Color,
+    fraction: Float,
+): Color = lerp(this, other, fraction)
+
+private fun Color.contrastWith(other: Color): Float {
+    val lighter = maxOf(luminance(), other.luminance())
+    val darker = minOf(luminance(), other.luminance())
+    return (lighter + 0.05f) / (darker + 0.05f)
+}

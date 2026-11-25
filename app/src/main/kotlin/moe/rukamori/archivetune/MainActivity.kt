@@ -9,6 +9,13 @@
 
 package moe.rukamori.archivetune
 
+import moe.rukamori.archivetune.styles.PersonalMixPicker
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -369,6 +376,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var syncUtils: SyncUtils
+
+    @Inject
+    lateinit var personalMix: PersonalMixPicker
 
     @Inject
     lateinit var observeUpdateSettings: ObserveUpdateSettingsUseCase
@@ -1844,7 +1854,44 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
 
+                                val dislikeSnackbarState = remember { SnackbarHostState() }
+                                val dislikeContext = LocalContext.current
+                                val dislikeLifecycleOwner = LocalLifecycleOwner.current
+                                LaunchedEffect(playerConnection) {
+                                    val connection = playerConnection ?: return@LaunchedEffect
+                                    // Only while the app is visible, so the service falls back to a toast in the background.
+                                    dislikeLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                                        connection.service.dislikeEvents.collectLatest { event ->
+                                            val result =
+                                                dislikeSnackbarState.showSnackbar(
+                                                    message =
+                                                        dislikeContext.getString(
+                                                            if (event.strikes >= 2) {
+                                                                R.string.dislike_added_until_undone
+                                                            } else {
+                                                                R.string.dislike_added
+                                                            },
+                                                        ),
+                                                    actionLabel = dislikeContext.getString(R.string.undo),
+                                                    duration = SnackbarDuration.Short,
+                                                )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                connection.service.undoDislike(event)
+                                            }
+                                        }
+                                    }
+                                }
+
                                 Scaffold(
+                                    snackbarHost = {
+                                        SnackbarHost(
+                                            hostState = dislikeSnackbarState,
+                                            modifier =
+                                                Modifier.windowInsetsPadding(
+                                                    LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+                                                ),
+                                        )
+                                    },
                                     topBar = {
                                         if (shouldShowTopBar) {
                                             val shouldUseFloatingTopBar =
@@ -2445,9 +2492,17 @@ class MainActivity : ComponentActivity() {
                                                         coroutineScope.launch(Dispatchers.Main) {
                                                             // Personal mix first: a radio seeded from what I play and like the most.
                                                             val avoidedIds = playerConnection?.service?.dislikedSongIds?.value.orEmpty()
-                                                            val seed = withContext(Dispatchers.IO) { pickPersonalMixSeed(database, avoidedIds) }
-                                                            if (seed != null) {
-                                                                playerConnection?.playQueue(YouTubeQueue.radio(seed.toMediaMetadata()))
+                                                            val pick = personalMix.pick(avoidedIds)
+                                                            if (pick != null) {
+                                                                playerConnection?.playQueue(YouTubeQueue.radio(pick.seed.toMediaMetadata()))
+                                                                pick.styleLabel?.let { label ->
+                                                                    Toast
+                                                                        .makeText(
+                                                                            this@MainActivity,
+                                                                            getString(R.string.mix_started_style, label),
+                                                                            Toast.LENGTH_SHORT,
+                                                                        ).show()
+                                                                }
                                                                 return@launch
                                                             }
                                                             if (useLocalSource) {
@@ -3265,24 +3320,6 @@ private fun HomeMixFab(onClick: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )
-}
-
-/** Picks a seed song from recent most-played and liked songs (online songs only, skipping avoided ones). */
-private suspend fun pickPersonalMixSeed(
-    database: MusicDatabase,
-    avoidedSongIds: Set<String>,
-): Song? {
-    val since =
-        java.time.LocalDateTime
-            .now()
-            .minusDays(60)
-            .toInstant(java.time.ZoneOffset.UTC)
-            .toEpochMilli()
-    val mostPlayed = database.mostPlayedSongs(fromTimeStamp = since, limit = 25).first()
-    val liked = database.likedSongsByCreateDateAscNoVideo().first().shuffled().take(25)
-    return (mostPlayed + liked)
-        .filter { !it.song.isLocal && it.id !in avoidedSongIds }
-        .randomOrNull()
 }
 
 private const val TopAppBarIconButtonContainerAlpha = 0.48f

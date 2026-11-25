@@ -1545,11 +1545,12 @@
     <string name="widget_dark_square_name">Dark card</string>
     <string name="widget_dark_square_description">Square card with like, sleep timer, controls, progress, shuffle and repeat.</string>
     <string name="widget_light_wave_name">Light wave</string>
-    <string name="widget_light_wave_description">Cream card with an audio wave, orange play button, shuffle and like.</string>
+    <string name="widget_light_wave_description">Light card with an audio wave, shuffle and like. Its colors follow the album cover.</string>
     <string name="style_tag_live">Live</string>
     <string name="style_tag_acoustic">Acoustic</string>
     <string name="style_tag_remix">Remix</string>
     <string name="style_tag_explicit">Explicit</string>
     <string name="style_decade">%1$ds</string>
     <string name="style_ai_progress">Classifying with AI… %1$d/%2$d</string>
+    <string name="mix_started_style">Mix: %1$s</string>
 </resources>

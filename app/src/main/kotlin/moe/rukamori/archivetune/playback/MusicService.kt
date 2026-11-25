@@ -110,6 +110,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -6404,6 +6406,31 @@ class MusicService :
      * "Don't like": avoids the current song (and, after repeated dislikes, its artist) for 30 days and
      * skips it. Tapping again while the song is still current undoes it. A liked song is unliked first.
      */
+    /** A song was just marked "don't like"; the UI offers an undo. */
+    data class DislikeEvent(
+        val songId: String,
+        val strikes: Int,
+        val wasLiked: Boolean,
+    )
+
+    private val _dislikeEvents = MutableSharedFlow<DislikeEvent>(extraBufferCapacity = 1)
+    val dislikeEvents = _dislikeEvents.asSharedFlow()
+
+    /** Undoes a [DislikeEvent]: the song stops being avoided and gets its like back if it had one. */
+    fun undoDislike(event: DislikeEvent) {
+        ioScope.launch(SilentHandler) {
+            dislikeStore.undoLast(event.songId)
+            if (!event.wasLiked) return@launch
+            toggleLikeMutex.withLock {
+                val restored =
+                    database.withTransaction {
+                        getSongById(event.songId)?.takeIf { !it.song.liked }?.song?.toggleLike()
+                    }
+                if (restored != null) syncUtils.likeSong(restored)
+            }
+        }
+    }
+
     fun toggleDislike() {
         val mediaMetadata = currentMediaMetadata.value ?: return
         ioScope.launch(SilentHandler) {
@@ -6415,14 +6442,20 @@ class MusicService :
                 return@launch
             }
             val strikes = dislikeStore.add(mediaMetadata.id, mediaMetadata.artists.mapNotNull { it.id })
-            if (database.getSongById(mediaMetadata.id)?.song?.liked == true) toggleLike()
+            val wasLiked = database.getSongById(mediaMetadata.id)?.song?.liked == true
+            if (wasLiked) toggleLike()
             withContext(Dispatchers.Main) {
-                Toast
-                    .makeText(
-                        this@MusicService,
-                        if (strikes >= 2) R.string.dislike_added_until_undone else R.string.dislike_added,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                // With the app open the UI shows a snackbar with "Undo"; otherwise (notification button) a toast.
+                if (_dislikeEvents.subscriptionCount.value > 0) {
+                    _dislikeEvents.tryEmit(DislikeEvent(mediaMetadata.id, strikes, wasLiked))
+                } else {
+                    Toast
+                        .makeText(
+                            this@MusicService,
+                            if (strikes >= 2) R.string.dislike_added_until_undone else R.string.dislike_added,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                }
                 if (player.currentMediaItem?.mediaId == mediaMetadata.id) {
                     if (player.hasNextMediaItem()) player.seekToNext() else player.pause()
                 }

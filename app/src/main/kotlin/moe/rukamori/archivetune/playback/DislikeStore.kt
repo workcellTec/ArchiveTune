@@ -76,6 +76,23 @@ class DislikeStore(
         return result
     }
 
+    /**
+     * Reverts the last [add] for this song: back to the previous dislike count with the avoidance already
+     * expired, or no entry at all when it was the first dislike.
+     */
+    suspend fun undoLast(songId: String) {
+        val now = System.currentTimeMillis()
+        dataStore.edit { preferences ->
+            val current = parse(preferences[DislikedSongsKey])
+            val entry = current.firstOrNull { it.songId == songId } ?: return@edit
+            val rest = current.filter { it.songId != songId }
+            preferences[DislikedSongsKey] =
+                encode(
+                    if (entry.strikes <= 1) rest else rest + entry.copy(expiresAt = now - 1, strikes = entry.strikes - 1),
+                )
+        }
+    }
+
     suspend fun remove(songId: String) {
         dataStore.edit { preferences ->
             val current = parse(preferences[DislikedSongsKey])

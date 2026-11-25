@@ -70,14 +70,30 @@ internal class MusicServiceWidgetUpdater(
 ) {
     private val widgetManager = GlanceAppWidgetManager(service)
     private var stateJob: Job? = null
+    private val pendingUpdate = java.util.concurrent.atomic.AtomicBoolean(false)
+    private val pushRunning = java.util.concurrent.atomic.AtomicBoolean(false)
     private var progressJob: Job? = null
 
+    /**
+     * Requests are coalesced instead of cancelling the running push: cancelling on every player
+     * event meant a slow cover download was restarted forever and the widget never got the new track.
+     * If a push is running, it is simply repeated once it finishes so it always ends on the latest state.
+     */
     fun update() {
         Timber.tag(TAG).i("update requested")
-        stateJob?.cancel()
+        pendingUpdate.set(true)
+        if (!pushRunning.compareAndSet(false, true)) return
         stateJob =
             scopeProvider().launch(WidgetErrorHandler) {
-                pushState()
+                try {
+                    while (pendingUpdate.getAndSet(false)) {
+                        pushState()
+                    }
+                } finally {
+                    pushRunning.set(false)
+                    // A request that arrived right after the loop check must not be lost.
+                    if (pendingUpdate.get()) update()
+                }
             }
     }
 

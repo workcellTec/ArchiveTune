@@ -232,6 +232,12 @@ import moe.rukamori.archivetune.constants.AodModeEnabledKey
 import moe.rukamori.archivetune.constants.LaunchCountKey
 import moe.rukamori.archivetune.constants.MiniPlayerBottomSpacing
 import moe.rukamori.archivetune.constants.MiniPlayerHeight
+import moe.rukamori.archivetune.constants.MiniPlayerPillHeight
+import moe.rukamori.archivetune.constants.RetractedBarsBottomPadding
+import moe.rukamori.archivetune.constants.RetractedBarsEndPadding
+import moe.rukamori.archivetune.constants.RetractedBarsGap
+import moe.rukamori.archivetune.ui.utils.BarsCollapseState
+import moe.rukamori.archivetune.ui.utils.rememberBarsCollapseConnection
 import moe.rukamori.archivetune.constants.MiniPlayerLastAnchorKey
 import moe.rukamori.archivetune.constants.NavigationBarAnimationSpec
 import moe.rukamori.archivetune.constants.NavigationBarBackgroundStyle
@@ -1189,6 +1195,8 @@ class MainActivity : ComponentActivity() {
                                 !active
                         }
 
+                    val barsCollapse = remember { BarsCollapseState() }
+
                     val shouldShowHomeShuffleButton =
                         currentRoute == Screens.Home.route &&
                             (allLocalItems.isNotEmpty() || allYtItems.isNotEmpty())
@@ -1204,7 +1212,7 @@ class MainActivity : ComponentActivity() {
                     val navVisibleHeight = NavigationBarHeight
 
                     val bottomNavigationBarHeightState = animateDpAsState(
-                        targetValue = if (shouldShowNavigationBar && !useRail) navVisibleHeight else 0.dp,
+                        targetValue = if (shouldShowNavigationBar && !useRail && !barsCollapse.collapsed) navVisibleHeight else 0.dp,
                         animationSpec = if (disableAnimations) snap() else NavigationBarAnimationSpec,
                         label = "",
                     )
@@ -1221,6 +1229,17 @@ class MainActivity : ComponentActivity() {
                                     MiniPlayerHeight,
                             expandedBound = maxHeight,
                         )
+                    val barsCollapseConnection =
+                        rememberBarsCollapseConnection(
+                            state = barsCollapse,
+                            enabled = {
+                                shouldShowNavigationBar && !useRail && !playerBottomSheetState.isExpandedOrExpanding
+                            },
+                        )
+                    LaunchedEffect(currentRoute, shouldShowNavigationBar, useRail, playerBottomSheetState.isExpandedOrExpanding) {
+                        barsCollapse.collapsed = false
+                    }
+                    val barsRetracted = barsCollapse.collapsed && shouldShowNavigationBar && !useRail
                     val showHomeOverflowFab =
                         shouldShowHomeShuffleButton &&
                             !useRail &&
@@ -2358,6 +2377,8 @@ class MainActivity : ComponentActivity() {
                                                     navigationBarMode = navigationBarMode,
                                                     focusRequester = playerFocusRequester,
                                                     exitLeftFocusRequester = if (isTvDevice && useRail) tvRailFocusRequester else null,
+                                                    miniPillMode = barsRetracted,
+                                                    onRestoreBars = { barsCollapse.collapsed = false },
                                                 )
                                             }
 
@@ -2435,27 +2456,48 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             }
 
-                                            val homeOverflowFabBottomPadding =
-                                                bottomInset +
-                                                    floatingBarsBottomPadding +
-                                                    navVisibleHeight +
-                                                    HomeOverflowFabSpacing +
-                                                    if (playerBottomSheetState.isCollapsed) {
-                                                        MiniPlayerHeight + MiniPlayerBottomSpacing
-                                                    } else {
-                                                        0.dp
-                                                    }
+                                            val homeOverflowFabBottomPaddingTarget =
+                                                if (barsRetracted) {
+                                                    bottomInset +
+                                                        RetractedBarsBottomPadding +
+                                                        if (playerBottomSheetState.isCollapsed) {
+                                                            MiniPlayerPillHeight + RetractedBarsGap
+                                                        } else {
+                                                            0.dp
+                                                        }
+                                                } else {
+                                                    bottomInset +
+                                                        floatingBarsBottomPadding +
+                                                        navVisibleHeight +
+                                                        HomeOverflowFabSpacing +
+                                                        if (playerBottomSheetState.isCollapsed) {
+                                                            MiniPlayerHeight + MiniPlayerBottomSpacing
+                                                        } else {
+                                                            0.dp
+                                                        }
+                                                }
+                                            val homeOverflowFabBottomPadding by animateDpAsState(
+                                                targetValue = homeOverflowFabBottomPaddingTarget,
+                                                animationSpec = if (disableAnimations) snap() else spring(),
+                                                label = "homeOverflowFabBottomPadding",
+                                            )
+                                            val homeOverflowFabEndPadding by animateDpAsState(
+                                                targetValue = if (barsRetracted) RetractedBarsEndPadding else NavigationBarHorizontalPadding,
+                                                animationSpec = if (disableAnimations) snap() else spring(),
+                                                label = "homeOverflowFabEndPadding",
+                                            )
                                             HomeOverflowFabVisibility(
                                                 visible = showHomeOverflowFab,
                                                 modifier =
                                                     Modifier
                                                         .align(Alignment.BottomEnd)
                                                         .padding(
-                                                            end = NavigationBarHorizontalPadding,
+                                                            end = homeOverflowFabEndPadding,
                                                             bottom = homeOverflowFabBottomPadding,
                                                         ),
                                             ) {
                                                 HomeMixFab(
+                                                    compact = barsRetracted,
                                                     onClick = {
                                                         val useLocalSource =
                                                             when {
@@ -2704,7 +2746,7 @@ class MainActivity : ComponentActivity() {
                                                     },
                                                 ).nestedScroll(
                                                     topAppBarScrollBehavior.nestedScrollConnection,
-                                                ),
+                                                ).nestedScroll(barsCollapseConnection),
                                     ) {
                                         navigationBuilder(
                                             navController,
@@ -3295,9 +3337,13 @@ private fun HomeOverflowFabVisibility(
 /** One-tap personal mix: plays a radio seeded from the songs I play and like the most. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun HomeMixFab(onClick: () -> Unit) {
+private fun HomeMixFab(
+    compact: Boolean,
+    onClick: () -> Unit,
+) {
     ExtendedFloatingActionButton(
         onClick = onClick,
+        expanded = !compact,
         icon = { Icon(painterResource(R.drawable.auto_awesome), contentDescription = null) },
         text = { Text(stringResource(R.string.home_mix_for_you)) },
         containerColor = MaterialTheme.colorScheme.primaryContainer,

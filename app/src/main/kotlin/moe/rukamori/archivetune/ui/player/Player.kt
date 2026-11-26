@@ -181,6 +181,8 @@ import moe.rukamori.archivetune.constants.PlayerCustomImageUriKey
 import moe.rukamori.archivetune.constants.PlayerDesignStyle
 import moe.rukamori.archivetune.constants.PlayerDesignStyleKey
 import moe.rukamori.archivetune.constants.QueuePeekHeight
+import moe.rukamori.archivetune.constants.RetractedBarsBottomPadding
+import moe.rukamori.archivetune.constants.RetractedBarsEndPadding
 import moe.rukamori.archivetune.constants.ShowCodecOnPlayerKey
 import moe.rukamori.archivetune.constants.ShowPlayerVolumeBarKey
 import moe.rukamori.archivetune.constants.SliderStyle
@@ -199,6 +201,7 @@ import moe.rukamori.archivetune.ui.menu.AddToPlaylistDialog
 import moe.rukamori.archivetune.ui.menu.PlayerMenu
 import moe.rukamori.archivetune.ui.player.immersive.ImmersivePlayerEvent
 import moe.rukamori.archivetune.ui.player.immersive.ImmersivePlayerScreen
+import moe.rukamori.archivetune.ui.player.immersive.ImmersiveDetailedScreen
 import moe.rukamori.archivetune.ui.screens.LOGIN_ROUTE
 import moe.rukamori.archivetune.ui.screens.buildLoginRoute
 import moe.rukamori.archivetune.ui.screens.settings.DarkMode
@@ -313,6 +316,8 @@ fun BottomSheetPlayer(
     pureBlack: Boolean,
     navigationProximityProvider: () -> Float = { 0f },
     navigationBarMode: NavigationBarMode = NavigationBarMode.CONNECTED,
+    miniPillMode: Boolean = false,
+    onRestoreBars: () -> Unit = {},
     canvasViewModel: CanvasPlaybackViewModel = hiltViewModel(),
     immersivePlayerViewModel: ImmersivePlayerViewModel = hiltViewModel(),
     queueViewModel: QueueViewModel = hiltViewModel(),
@@ -471,7 +476,8 @@ fun BottomSheetPlayer(
         mediaMetadata?.takeIf {
             !aodModeEnabled &&
                 playerDesignStyle != PlayerDesignStyle.V5 &&
-                playerDesignStyle != PlayerDesignStyle.V7
+                playerDesignStyle != PlayerDesignStyle.V7 &&
+                playerDesignStyle != PlayerDesignStyle.V12
         }?.let { metadata ->
             val country = Locale.getDefault().country
             CanvasPlaybackRequest(
@@ -545,6 +551,7 @@ fun BottomSheetPlayer(
         if (aodModeEnabled) return@LaunchedEffect
         if (playerDesignStyle == PlayerDesignStyle.V9 || playerDesignStyle == PlayerDesignStyle.V10 ||
             playerDesignStyle == PlayerDesignStyle.V11 ||
+            playerDesignStyle == PlayerDesignStyle.V12 ||
             playerBackground == PlayerBackgroundStyle.GRADIENT || playerBackground == PlayerBackgroundStyle.COLORING ||
             playerBackground == PlayerBackgroundStyle.BLUR_GRADIENT ||
             playerBackground == PlayerBackgroundStyle.GLOW ||
@@ -714,6 +721,17 @@ fun BottomSheetPlayer(
         }
     val v11Palette = animateV11Palette(targetV11Palette)
 
+    val targetV12Accent =
+        remember(artworkSeeds) {
+            val seed = artworkSeeds?.first ?: Color(0xFF7FB2FF)
+            if (seed.luminance() < 0.3f) androidx.compose.ui.graphics.lerp(seed, Color.White, 0.35f) else seed
+        }
+    val v12Accent by animateColorAsState(
+        targetValue = targetV12Accent,
+        animationSpec = tween(durationMillis = 600),
+        label = "v12Accent",
+    )
+
     val targetTextColor = remember(dominantColor, useDarkTheme) {
         val hsv = FloatArray(3)
         android.graphics.Color.colorToHSV(dominantColor.toArgb(), hsv)
@@ -749,7 +767,7 @@ fun BottomSheetPlayer(
             dynamicV10AccentColor
         } else if (playerDesignStyle == PlayerDesignStyle.V9) {
             dynamicTextColor
-        } else if (playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8) {
+        } else if (playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V12) {
             Color.White
         } else {
             when (playerBackground) {
@@ -769,7 +787,7 @@ fun BottomSheetPlayer(
             v11Palette.field
         } else if (playerDesignStyle == PlayerDesignStyle.V9 || playerDesignStyle == PlayerDesignStyle.V10) {
             dynamicBgColor
-        } else if (playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8) {
+        } else if (playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V12) {
             Color.Black
         } else {
             when (playerBackground) {
@@ -786,7 +804,7 @@ fun BottomSheetPlayer(
 
     val (textButtonColor, iconButtonColor) =
         when (playerDesignStyle) {
-            PlayerDesignStyle.V7, PlayerDesignStyle.V8 -> {
+            PlayerDesignStyle.V7, PlayerDesignStyle.V8, PlayerDesignStyle.V12 -> {
                 Pair(Color.White, Color.Black)
             }
 
@@ -1177,7 +1195,7 @@ fun BottomSheetPlayer(
                         playerDesignStyle == PlayerDesignStyle.V9 -> dynamicBgColor
                         playerDesignStyle == PlayerDesignStyle.V10 -> dynamicV10FieldColor
                         playerDesignStyle == PlayerDesignStyle.V11 -> v11Palette.field
-                        playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8 -> Color.Black
+                        playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V8 || playerDesignStyle == PlayerDesignStyle.V12 -> Color.Black
                         playerBackground == PlayerBackgroundStyle.BLUR || playerBackground == PlayerBackgroundStyle.GRADIENT ->
                             MaterialTheme.colorScheme.surface
                         useBlackBackground -> Color.Black
@@ -1189,15 +1207,27 @@ fun BottomSheetPlayer(
             playerConnection.service.stopAndClearPlayback(clearPersistentState = true)
         },
         backHandlerEnabled = false,
+        pillMode = miniPillMode,
         collapsedContent = {
-            MiniPlayer(
-                position = position,
-                duration = duration,
-                hazeState = hazeState,
-                pureBlack = pureBlack,
-                navigationProximityProvider = navigationProximityProvider,
-                navigationBarMode = navigationBarMode,
-            )
+            if (miniPillMode && state.isCollapsed) {
+                MiniPlayerPill(
+                    onRestore = onRestoreBars,
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomEnd)
+                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
+                            .padding(end = RetractedBarsEndPadding, bottom = RetractedBarsBottomPadding),
+                )
+            } else {
+                MiniPlayer(
+                    position = position,
+                    duration = duration,
+                    hazeState = hazeState,
+                    pureBlack = pureBlack,
+                    navigationProximityProvider = navigationProximityProvider,
+                    navigationBarMode = navigationBarMode,
+                )
+            }
         },
     ) {
         val onSliderValueChange: (Long) -> Unit = {
@@ -1325,7 +1355,8 @@ fun BottomSheetPlayer(
             playerDesignStyle != PlayerDesignStyle.V8 &&
             playerDesignStyle != PlayerDesignStyle.V9 &&
             playerDesignStyle != PlayerDesignStyle.V10 &&
-            playerDesignStyle != PlayerDesignStyle.V11
+            playerDesignStyle != PlayerDesignStyle.V11 &&
+            playerDesignStyle != PlayerDesignStyle.V12
         ) {
             PlayerBackground(
                 playerBackground = playerBackground,
@@ -1355,7 +1386,7 @@ fun BottomSheetPlayer(
                         (if (sleepTimerEnabled) 42.dp else 0.dp)
                 } else if (playerDesignStyle == PlayerDesignStyle.V10) {
                     if (isPortrait) (if (showCodecOnPlayer) 94.dp else 78.dp) else 0.dp
-                } else if (playerDesignStyle == PlayerDesignStyle.V7) {
+                } else if (playerDesignStyle == PlayerDesignStyle.V7 || playerDesignStyle == PlayerDesignStyle.V12) {
                     72.dp
                 } else if (showCodecOnPlayer) {
                     88.dp
@@ -1503,6 +1534,18 @@ fun BottomSheetPlayer(
                         showVolumeBar = showPlayerVolumeBar,
                         showCodecOnPlayer = showCodecOnPlayer,
                         contentBottomPadding = queueCollapsedHeight,
+                        onAction = immersivePlayerViewModel::onAction,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .nestedScroll(state.preUpPostDownNestedScrollConnection),
+                    )
+                } else if (playerDesignStyle == PlayerDesignStyle.V12) {
+                    ImmersiveDetailedScreen(
+                        state = immersivePlayerState,
+                        accent = v12Accent,
+                        contentBottomPadding = queueCollapsedHeight,
+                        onCollapse = { state.collapseSoft() },
                         onAction = immersivePlayerViewModel::onAction,
                         modifier =
                             Modifier
@@ -1799,6 +1842,18 @@ fun BottomSheetPlayer(
                         showVolumeBar = showPlayerVolumeBar,
                         showCodecOnPlayer = showCodecOnPlayer,
                         contentBottomPadding = queueCollapsedHeight,
+                        onAction = immersivePlayerViewModel::onAction,
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .nestedScroll(state.preUpPostDownNestedScrollConnection),
+                    )
+                } else if (playerDesignStyle == PlayerDesignStyle.V12) {
+                    ImmersiveDetailedScreen(
+                        state = immersivePlayerState,
+                        accent = v12Accent,
+                        contentBottomPadding = queueCollapsedHeight,
+                        onCollapse = { state.collapseSoft() },
                         onAction = immersivePlayerViewModel::onAction,
                         modifier =
                             Modifier

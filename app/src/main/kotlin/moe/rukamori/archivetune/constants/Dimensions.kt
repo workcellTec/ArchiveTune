@@ -61,3 +61,9 @@ val BottomSheetSoftAnimationSpec =
         dampingRatio = Spring.DampingRatioNoBouncy,
         stiffness = Spring.StiffnessLow,
     )
+
+/** Retracted mini player ("pill") and the Mix button stacked right above it, both flush to the right corner. */
+val MiniPlayerPillHeight = 52.dp
+val RetractedBarsEndPadding = 8.dp
+val RetractedBarsBottomPadding = 8.dp
+val RetractedBarsGap = 10.dp

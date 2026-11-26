@@ -90,6 +90,7 @@ fun BottomSheet(
     onDismiss: (() -> Unit)? = null,
     onCollapsedContentClick: (() -> Unit)? = null,
     backHandlerEnabled: Boolean = true,
+    pillMode: Boolean = false,
     collapsedContent: @Composable BoxScope.() -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -103,7 +104,7 @@ fun BottomSheet(
                             .roundToPx()
                             .coerceAtLeast(0)
                     IntOffset(x = 0, y = y)
-                }.bottomSheetDraggable(state, onDismiss)
+                }.then(if (pillMode && state.isCollapsed) Modifier else Modifier.bottomSheetDraggable(state, onDismiss))
                 .clip(
                     RoundedCornerShape(
                         topStart = if (!state.isExpanded) 16.dp else 0.dp,
@@ -137,10 +138,16 @@ fun BottomSheet(
                     Modifier
                         .graphicsLayer {
                             alpha = 1f - (state.progress * 4).coerceAtMost(1f)
-                        }.clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = tvFocusIndicationOrNull(),
-                            onClick = onCollapsedContentClick ?: state::expandSoft,
+                        }.then(
+                            if (pillMode && state.isCollapsed) {
+                                Modifier
+                            } else {
+                                Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = tvFocusIndicationOrNull(),
+                                    onClick = onCollapsedContentClick ?: state::expandSoft,
+                                )
+                            },
                         ).fillMaxWidth()
                         .height(state.collapsedBound),
                 content = collapsedContent,

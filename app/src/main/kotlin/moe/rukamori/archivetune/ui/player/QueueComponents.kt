@@ -1066,6 +1066,71 @@ fun QueueCollapsedContentV7(
 }
 
 @Composable
+fun QueueCollapsedContentV12(
+    onExpandQueue: () -> Unit,
+    onShowLyrics: () -> Unit,
+    onDeviceClick: () -> Unit,
+    device: ActiveOutputDevice,
+    modifier: Modifier = Modifier,
+) {
+    val content = Color.White
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
+                ).padding(horizontal = 24.dp, vertical = 4.dp),
+    ) {
+        IconButton(onClick = onShowLyrics, modifier = Modifier.size(48.dp)) {
+            Icon(
+                painter = painterResource(R.drawable.lyrics),
+                contentDescription = stringResource(R.string.lyrics),
+                tint = content,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+        Surface(
+            onClick = onDeviceClick,
+            shape = CircleShape,
+            color = content.copy(alpha = 0.16f),
+            modifier = Modifier.weight(1f, fill = false).padding(horizontal = 12.dp).height(40.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Icon(
+                    imageVector = device.type.imageVector,
+                    contentDescription = null,
+                    tint = content,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = device.name,
+                    color = content,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+        IconButton(onClick = onExpandQueue, modifier = Modifier.size(48.dp)) {
+            Icon(
+                painter = painterResource(R.drawable.queue_music),
+                contentDescription = stringResource(R.string.queue),
+                tint = content,
+                modifier = Modifier.size(25.dp),
+            )
+        }
+    }
+}
+
+@Composable
 fun QueueCollapsedContentV8(
     showCodecOnPlayer: Boolean,
     currentFormat: FormatEntity?,

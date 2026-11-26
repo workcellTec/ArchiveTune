@@ -7,12 +7,9 @@
 
 package moe.rukamori.archivetune.styles
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.db.MusicDatabase
 import moe.rukamori.archivetune.db.entities.Song
 import java.time.LocalDateTime
@@ -22,27 +19,18 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 /**
- * Chooses the seed song of the home "Mix pra você". It picks a style that exists in the liked songs
- * (weighted by how many songs have it, optionally refined with a second style), then a seed inside that
- * style, favoring what is played often and never repeating the last few seeds.
+ * Builds the queue of the home "Mix pra você": a shuffled blend of songs the user likes (liked + played
+ * often) across every style, skipping disliked songs and avoiding what the last mixes already used.
  */
 @Singleton
 class PersonalMixPicker
     @Inject
     constructor(
-        @ApplicationContext private val context: Context,
         private val database: MusicDatabase,
-        private val styleTagger: SongStyleTagger,
     ) {
-        data class Pick(
-            val seed: Song,
-            /** Styles the mix follows (e.g. "Pop · Romântica"), or null when no style was used. */
-            val styleLabel: String?,
-        )
+        private val recentIds = ArrayDeque<String>()
 
-        private val recentSeeds = ArrayDeque<String>()
-
-        suspend fun pick(avoidedSongIds: Set<String>): Pick? =
+        suspend fun pick(avoidedSongIds: Set<String>): List<Song>? =
             withContext(Dispatchers.IO) {
                 val since =
                     LocalDateTime
@@ -56,72 +44,27 @@ class PersonalMixPicker
                         .first()
                         .usable(avoidedSongIds)
                 val liked = database.likedSongsByCreateDateAscNoVideo().first().usable(avoidedSongIds)
-                if (played.isEmpty() && liked.isEmpty()) return@withContext null
+                val pool = (liked + played).distinctBy { it.id }
+                if (pool.isEmpty()) return@withContext null
 
-                val playedIds = played.mapTo(HashSet()) { it.id }
-                var pool = (liked + played).distinctBy { it.id }
-                var label: String? = null
-
-                if (liked.size >= MIN_LIKED_FOR_STYLE) {
-                    val labels =
-                        StyleLabels(
-                            live = context.getString(R.string.style_tag_live),
-                            acoustic = context.getString(R.string.style_tag_acoustic),
-                            remix = context.getString(R.string.style_tag_remix),
-                            explicit = context.getString(R.string.style_tag_explicit),
-                            decade = { context.getString(R.string.style_decade, it) },
-                        )
-                    val index = buildStyleIndex(pool, styleTagger.tags.first(), labels)
-                    val path = ArrayList<String>(2)
-                    var matching = pool
-                    repeat(MAX_STYLE_DEPTH) { depth ->
-                        if (depth == 1 && Random.nextFloat() > REFINE_CHANCE) return@repeat
-                        val options = styleOptions(matching, index, path)
-                        val tag = options.weightedRandom { it.count.toDouble() }?.tag ?: return@repeat
-                        val narrowed = filterByStylePath(matching, index, path + tag)
-                        if (narrowed.size >= MIN_POOL_SIZE) {
-                            path += tag
-                            matching = narrowed
-                        }
+                val fresh = pool.filter { it.id !in recentIds }.shuffled()
+                val picked =
+                    if (fresh.size >= QUEUE_SIZE) {
+                        fresh.take(QUEUE_SIZE)
+                    } else {
+                        (fresh + pool.filter { it.id in recentIds }.shuffled()).take(QUEUE_SIZE)
                     }
-                    if (path.isNotEmpty()) {
-                        pool = matching
-                        label = path.joinToString(" · ") { styleTagLabel(it) }
-                    }
-                }
-
-                var candidates = pool.filter { it.id !in recentSeeds }
-                if (candidates.isEmpty()) {
-                    recentSeeds.clear()
-                    candidates = pool
-                }
-                // Songs played often are likelier seeds, but every candidate keeps a chance.
-                val seed = candidates.weightedRandom { if (it.id in playedIds) 3.0 else 1.0 } ?: return@withContext null
-                recentSeeds.addLast(seed.id)
-                while (recentSeeds.size > RECENT_SEEDS) recentSeeds.removeFirst()
-                Pick(seed, label)
+                picked.forEach { recentIds.addLast(it.id) }
+                while (recentIds.size > RECENT_LIMIT) recentIds.removeFirst()
+                picked
             }
 
         private fun List<Song>.usable(avoided: Set<String>): List<Song> = filter { !it.song.isLocal && it.id !in avoided }
 
-        private fun <T> List<T>.weightedRandom(weight: (T) -> Double): T? {
-            if (isEmpty()) return null
-            val total = sumOf { weight(it) }
-            var roll = Random.nextDouble() * total
-            for (item in this) {
-                roll -= weight(item)
-                if (roll <= 0) return item
-            }
-            return last()
-        }
-
         private companion object {
             const val PLAYED_WINDOW_DAYS = 60L
             const val PLAYED_LIMIT = 25
-            const val MIN_LIKED_FOR_STYLE = 8
-            const val MIN_POOL_SIZE = 3
-            const val MAX_STYLE_DEPTH = 2
-            const val REFINE_CHANCE = 0.6f
-            const val RECENT_SEEDS = 10
+            const val QUEUE_SIZE = 50
+            const val RECENT_LIMIT = 150
         }
     }

@@ -2515,19 +2515,16 @@ class MainActivity : ComponentActivity() {
                                                             }
 
                                                         coroutineScope.launch(Dispatchers.Main) {
-                                                            // Personal mix first: a radio seeded from what I play and like the most.
+                                                            // Personal mix first: a shuffled blend of songs I like, from every style.
                                                             val avoidedIds = playerConnection?.service?.dislikedSongIds?.value.orEmpty()
-                                                            val pick = personalMix.pick(avoidedIds)
-                                                            if (pick != null) {
-                                                                playerConnection?.playQueue(YouTubeQueue.radio(pick.seed.toMediaMetadata()))
-                                                                pick.styleLabel?.let { label ->
-                                                                    Toast
-                                                                        .makeText(
-                                                                            this@MainActivity,
-                                                                            getString(R.string.mix_started_style, label),
-                                                                            Toast.LENGTH_SHORT,
-                                                                        ).show()
-                                                                }
+                                                            val mixSongs = personalMix.pick(avoidedIds)
+                                                            if (mixSongs != null) {
+                                                                playerConnection?.playQueue(
+                                                                    ListQueue(
+                                                                        title = getString(R.string.home_mix_for_you),
+                                                                        items = mixSongs.map { it.toMediaItem() },
+                                                                    ),
+                                                                )
                                                                 return@launch
                                                             }
                                                             if (useLocalSource) {

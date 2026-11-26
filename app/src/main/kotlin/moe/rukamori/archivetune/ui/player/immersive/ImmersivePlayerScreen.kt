@@ -380,7 +380,7 @@ private fun ImmersiveLandscape(
 }
 
 @Composable
-private fun ImmersiveBackdrop(
+internal fun ImmersiveBackdrop(
     mediaId: String,
     canvasFrame: ImageBitmap?,
     onAction: (ImmersivePlayerAction) -> Unit,

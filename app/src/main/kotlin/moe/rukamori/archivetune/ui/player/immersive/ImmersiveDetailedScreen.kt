@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -55,7 +56,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -70,14 +70,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
 import androidx.media3.common.Player
-import coil3.compose.AsyncImage
 import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.extensions.toggleRepeatMode
 import moe.rukamori.archivetune.ui.component.ListDialog
 import moe.rukamori.archivetune.ui.player.DislikeIconButton
 import moe.rukamori.archivetune.ui.player.heartPop
-import moe.rukamori.archivetune.ui.player.rememberOfflineArtworkImageRequest
 import moe.rukamori.archivetune.utils.makeTimeString
 
 private val DetailedContent = Color.White
@@ -88,6 +86,8 @@ private val DetailedFrost = Color.White.copy(alpha = 0.16f)
 fun ImmersiveDetailedScreen(
     state: ImmersivePlayerScreenState,
     accent: Color,
+    disableBlur: Boolean,
+    backdropBlurAmount: Int,
     contentBottomPadding: Dp,
     onCollapse: () -> Unit,
     onAction: (ImmersivePlayerAction) -> Unit,
@@ -119,33 +119,24 @@ fun ImmersiveDetailedScreen(
             }
         }
     }
-    val artworkRequest = rememberOfflineArtworkImageRequest(model.artworkUrl)
-    val placeholder = painterResource(R.drawable.immersive_artwork_placeholder)
-    val shade = remember(accent) { lerp(accent, Color.Black, 0.78f) }
-
     BoxWithConstraints(modifier = modifier.background(Color.Black)) {
         val landscape = maxWidth > maxHeight
-        AsyncImage(
-            model = artworkRequest,
-            placeholder = placeholder,
-            error = placeholder,
-            fallback = placeholder,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
-        Box(
-            modifier =
-                Modifier.fillMaxSize().background(
-                    Brush.verticalGradient(
-                        0f to Color.Black.copy(alpha = 0.28f),
-                        0.22f to Color.Transparent,
-                        0.5f to Color.Transparent,
-                        0.74f to shade.copy(alpha = 0.72f),
-                        1f to shade.copy(alpha = 0.97f),
-                    ),
-                ),
-        )
+        val stageHeight = maxHeight * 0.64f
+        key(model.mediaId, model.canvas) {
+            ImmersiveBackdrop(
+                mediaId = model.mediaId,
+                canvasFrame = model.canvasFrame,
+                onAction = onAction,
+                artworkUrl = model.artworkUrl,
+                canvas = model.canvas,
+                isPlaying = model.isPlaying,
+                artWidth = if (landscape) maxWidth * 0.48f else maxWidth,
+                artHeight = if (landscape) maxHeight else stageHeight,
+                backdropOffsetY = if (landscape) 0.dp else stageHeight,
+                disableBlur = disableBlur,
+                backdropBlurAmount = backdropBlurAmount,
+            )
+        }
         DetailedHeader(
             sourceTitle = model.sourceTitle,
             onCollapse = onCollapse,

@@ -1544,6 +1544,8 @@ fun BottomSheetPlayer(
                     ImmersiveDetailedScreen(
                         state = immersivePlayerState,
                         accent = v12Accent,
+                        disableBlur = disableBlur,
+                        backdropBlurAmount = backdropBlurAmount,
                         contentBottomPadding = queueCollapsedHeight,
                         onCollapse = { state.collapseSoft() },
                         onAction = immersivePlayerViewModel::onAction,
@@ -1852,6 +1854,8 @@ fun BottomSheetPlayer(
                     ImmersiveDetailedScreen(
                         state = immersivePlayerState,
                         accent = v12Accent,
+                        disableBlur = disableBlur,
+                        backdropBlurAmount = backdropBlurAmount,
                         contentBottomPadding = queueCollapsedHeight,
                         onCollapse = { state.collapseSoft() },
                         onAction = immersivePlayerViewModel::onAction,

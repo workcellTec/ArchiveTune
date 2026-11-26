@@ -8,6 +8,20 @@
 package moe.rukamori.archivetune.ui.screens
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.zIndex
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -65,9 +79,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
-import androidx.compose.material3.carousel.CarouselItemScope
-import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
-import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -274,66 +285,47 @@ fun QuickPicksSection(
 
     when (displayMode) {
         QuickPicksDisplayMode.CARD -> {
-            BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-                val heroHeight =
-                    when {
-                        maxWidth >= 840.dp -> 380.dp
-                        maxWidth >= 600.dp -> 356.dp
-                        else -> 332.dp
-                    }
-                val heroMaxWidth =
-                    (maxWidth - 48.dp)
-                        .coerceAtLeast(232.dp)
-                        .coerceAtMost(440.dp)
-                val density = LocalDensity.current
-                val requestWidthPx = with(density) { heroMaxWidth.roundToPx().coerceAtLeast(1) }
-                val requestHeightPx = with(density) { heroHeight.roundToPx().coerceAtLeast(1) }
-
-                HorizontalCenteredHeroCarousel(
-                    state = rememberCarouselState { distinctQuickPicks.size },
-                    preferredItemWidth = heroMaxWidth,
-                    itemSpacing = 10.dp,
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(heroHeight),
-                ) { index ->
-                    val song = distinctQuickPicks[index]
-                    val isActive = song.id == mediaMetadata?.id
-                    QuickPickHeroCard(
-                        title = song.song.title,
-                        subtitle = song.artists.joinToString { it.name },
-                        thumbnailUrl = song.song.thumbnailUrl,
-                        requestWidthPx = requestWidthPx,
-                        requestHeightPx = requestHeightPx,
-                        isActive = isActive,
-                        isPlaying = isPlaying,
-                        onClick = {
-                            if (isActive) {
-                                playerConnection.player.togglePlayPause()
-                            } else {
-                                playerConnection.playQueue(
-                                    if (song.song.isLocal) {
-                                        ListQueue(items = listOf(song.toMediaItem()))
-                                    } else {
-                                        YouTubeQueue.radio(song.toMediaMetadata())
-                                    },
-                                )
-                            }
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            menuState.show {
-                                SongMenu(
-                                    originalSong = song,
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss,
-                                )
-                            }
-                        },
-                    )
-                }
+            QuickPickStack(
+                count = distinctQuickPicks.size,
+                modifier = modifier,
+            ) { index, isFront, frontness, select, requestWidthPx, requestHeightPx ->
+                val song = distinctQuickPicks[index]
+                val isActive = song.id == mediaMetadata?.id
+                QuickPickHeroCard(
+                    title = song.song.title,
+                    subtitle = song.artists.joinToString { it.name },
+                    thumbnailUrl = song.song.thumbnailUrl,
+                    requestWidthPx = requestWidthPx,
+                    requestHeightPx = requestHeightPx,
+                    isActive = isActive,
+                    isPlaying = isPlaying,
+                    frontness = frontness,
+                    onClick = {
+                        if (!isFront) {
+                            select()
+                        } else if (isActive) {
+                            playerConnection.player.togglePlayPause()
+                        } else {
+                            playerConnection.playQueue(
+                                if (song.song.isLocal) {
+                                    ListQueue(items = listOf(song.toMediaItem()))
+                                } else {
+                                    YouTubeQueue.radio(song.toMediaMetadata())
+                                },
+                            )
+                        }
+                    },
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        menuState.show {
+                            SongMenu(
+                                originalSong = song,
+                                navController = navController,
+                                onDismiss = menuState::dismiss,
+                            )
+                        }
+                    },
+                )
             }
         }
 
@@ -426,65 +418,46 @@ fun RemoteQuickPicksSection(
 
     when (displayMode) {
         QuickPicksDisplayMode.CARD -> {
-            BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-                val heroHeight =
-                    when {
-                        maxWidth >= 840.dp -> 380.dp
-                        maxWidth >= 600.dp -> 356.dp
-                        else -> 332.dp
-                    }
-                val heroMaxWidth =
-                    (maxWidth - 48.dp)
-                        .coerceAtLeast(232.dp)
-                        .coerceAtMost(440.dp)
-                val density = LocalDensity.current
-                val requestWidthPx = with(density) { heroMaxWidth.roundToPx().coerceAtLeast(1) }
-                val requestHeightPx = with(density) { heroHeight.roundToPx().coerceAtLeast(1) }
-
-                HorizontalCenteredHeroCarousel(
-                    state = rememberCarouselState { songs.size },
-                    preferredItemWidth = heroMaxWidth,
-                    itemSpacing = 10.dp,
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(heroHeight),
-                ) { index ->
-                    val song = songs[index]
-                    val isActive = song.id == mediaMetadata?.id
-                    QuickPickHeroCard(
-                        title = song.title,
-                        subtitle = song.artists.joinToString { artist -> artist.name },
-                        thumbnailUrl = song.thumbnail,
-                        requestWidthPx = requestWidthPx,
-                        requestHeightPx = requestHeightPx,
-                        isActive = isActive,
-                        isPlaying = isPlaying,
-                        onClick = {
-                            if (isActive) {
-                                playerConnection.player.togglePlayPause()
-                            } else {
-                                playerConnection.playQueue(
-                                    YouTubeQueue(
-                                        endpoint = song.endpoint ?: WatchEndpoint(videoId = song.id),
-                                        preloadItem = song.toMediaMetadata(),
-                                    ),
-                                )
-                            }
-                        },
-                        onLongClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            menuState.show {
-                                YouTubeSongMenu(
-                                    song = song,
-                                    navController = navController,
-                                    onDismiss = menuState::dismiss,
-                                )
-                            }
-                        },
-                    )
-                }
+            QuickPickStack(
+                count = songs.size,
+                modifier = modifier,
+            ) { index, isFront, frontness, select, requestWidthPx, requestHeightPx ->
+                val song = songs[index]
+                val isActive = song.id == mediaMetadata?.id
+                QuickPickHeroCard(
+                    title = song.title,
+                    subtitle = song.artists.joinToString { artist -> artist.name },
+                    thumbnailUrl = song.thumbnail,
+                    requestWidthPx = requestWidthPx,
+                    requestHeightPx = requestHeightPx,
+                    isActive = isActive,
+                    isPlaying = isPlaying,
+                    frontness = frontness,
+                    onClick = {
+                        if (!isFront) {
+                            select()
+                        } else if (isActive) {
+                            playerConnection.player.togglePlayPause()
+                        } else {
+                            playerConnection.playQueue(
+                                YouTubeQueue(
+                                    endpoint = song.endpoint ?: WatchEndpoint(videoId = song.id),
+                                    preloadItem = song.toMediaMetadata(),
+                                ),
+                            )
+                        }
+                    },
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        menuState.show {
+                            YouTubeSongMenu(
+                                song = song,
+                                navController = navController,
+                                onDismiss = menuState::dismiss,
+                            )
+                        }
+                    },
+                )
             }
         }
 
@@ -551,13 +524,118 @@ fun RemoteQuickPicksSection(
     }
 }
 
+/**
+ * Pilha estilo "App Switcher": o card da frente fica em tamanho cheio e os demais ficam
+ * atrás dele, menores e mais escuros, sem redimensionar uns aos outros.
+ * [content] recebe o índice, se é o card da frente, o quanto ele está na frente (0..1),
+ * um callback para trazê-lo à frente e o tamanho de imagem a pedir.
+ */
+@Composable
+private fun QuickPickStack(
+    count: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable (
+        index: Int,
+        isFront: Boolean,
+        frontness: () -> Float,
+        select: () -> Unit,
+        requestWidthPx: Int,
+        requestHeightPx: Int,
+    ) -> Unit,
+) {
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
+    val maxIndex = (count - 1).coerceAtLeast(0)
+    var position by rememberSaveable { mutableFloatStateOf(0f) }
+    val front by remember { derivedStateOf { position.roundToInt().coerceIn(0, maxIndex) } }
+    val shape = MaterialTheme.shapes.extraLarge
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val cardWidth = (maxWidth * 0.62f).coerceIn(200.dp, 320.dp)
+        val cardHeight = cardWidth * 1.38f
+        val stepPx = with(density) { cardWidth.toPx() * 0.27f }
+        val requestWidthPx = with(density) { cardWidth.roundToPx().coerceAtLeast(1) }
+        val requestHeightPx = with(density) { cardHeight.roundToPx().coerceAtLeast(1) }
+
+        fun settle(target: Int) {
+            scope.launch {
+                animate(
+                    initialValue = position,
+                    targetValue = target.coerceIn(0, maxIndex).toFloat(),
+                    animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow),
+                ) { value, _ -> position = value }
+            }
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(cardHeight)
+                    .draggable(
+                        orientation = Orientation.Horizontal,
+                        state =
+                            rememberDraggableState { delta ->
+                                position = (position - delta / stepPx).coerceIn(0f, maxIndex.toFloat())
+                            },
+                        onDragStopped = { velocity ->
+                            val projected = position - velocity / stepPx * 0.25f
+                            settle(projected.roundToInt())
+                        },
+                    ),
+        ) {
+            val first = (front - StackVisibleDepth).coerceAtLeast(0)
+            val last = (front + StackVisibleDepth).coerceAtMost(maxIndex)
+            for (index in first..last) {
+                key(index) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .size(cardWidth, cardHeight)
+                                .zIndex(-abs(index - front).toFloat())
+                                .graphicsLayer {
+                                    val offset = index - position
+                                    val distance = abs(offset)
+                                    translationX = offset * stepPx
+                                    val scale = 1f - 0.1f * distance.coerceAtMost(3f)
+                                    scaleX = scale
+                                    scaleY = scale
+                                    alpha = (StackVisibleDepth + 1f - distance).coerceIn(0f, 1f)
+                                }.clip(shape),
+                    ) {
+                        content(
+                            index,
+                            index == front,
+                            { (1f - abs(index - position)).coerceIn(0f, 1f) },
+                            { settle(index) },
+                            requestWidthPx,
+                            requestHeightPx,
+                        )
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        alpha = (abs(index - position).coerceAtMost(2f) * 0.38f)
+                                    }.background(Color.Black),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val StackVisibleDepth = 2
+
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class,
 )
 @Composable
-private fun CarouselItemScope.QuickPickHeroCard(
+private fun QuickPickHeroCard(
     title: String,
     subtitle: String,
     thumbnailUrl: String?,
@@ -565,6 +643,7 @@ private fun CarouselItemScope.QuickPickHeroCard(
     requestHeightPx: Int,
     isActive: Boolean,
     isPlaying: Boolean,
+    frontness: () -> Float,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
@@ -598,7 +677,7 @@ private fun CarouselItemScope.QuickPickHeroCard(
         modifier =
             Modifier
                 .fillMaxSize()
-                .maskClip(MaterialTheme.shapes.extraLarge)
+                .clip(MaterialTheme.shapes.extraLarge)
                 .focusable()
                 .combinedClickable(
                     onClick = onClick,
@@ -634,10 +713,7 @@ private fun CarouselItemScope.QuickPickHeroCard(
                     .fillMaxWidth()
                     .padding(start = 20.dp, end = 16.dp, bottom = 16.dp)
                     .graphicsLayer {
-                        val drawInfo = carouselItemDrawInfo
-                        val visibleFraction =
-                            if (drawInfo.maxSize > 0f) drawInfo.size / drawInfo.maxSize else 1f
-                        alpha = ((visibleFraction - 0.6f) / 0.4f).coerceIn(0f, 1f)
+                        alpha = ((frontness() - 0.6f) / 0.4f).coerceIn(0f, 1f)
                     },
         ) {
             Column(

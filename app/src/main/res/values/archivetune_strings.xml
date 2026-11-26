@@ -883,7 +883,7 @@
     <string name="ai_api_connected">API connected</string>
     <string name="ai_api_test_failed">API test failed</string>
     <string name="ai_translation_menu">AI Translation</string>
-    <string name="about_lead_developer">Lead Developer</string>
+    <string name="about_lead_developer">ArchiveTune Creator</string>
     <string name="about_archive_tune_team">Team</string>
     <string name="about_respecter">Respecter</string>
     <string name="about_contributors">Contributors</string>
@@ -891,7 +891,7 @@
     <string name="about_contributor_translation">Contributor Translation</string>
     <string name="about_license">LICENSE</string>
     <string name="about_license_unknown">Unknown license</string>
-    <string name="about_position_lead_dev">Eh?</string>
+    <string name="about_position_lead_dev">The original app Perfect Music is based on</string>
     <string name="about_position_developers">Developer | Team</string>
     <string name="about_position_yuki">dummy reze | Admin</string>
     <string name="about_position_mo_agamy">Base Framework | Metrolist</string>
@@ -902,6 +902,10 @@
     <string name="about_content_desc_website">Website</string>
     <string name="about_content_desc_discord">Discord</string>
     <string name="about_content_desc_telegram">Telegram</string>
+    <string name="about_content_desc_instagram">Instagram</string>
+    <string name="about_creator_label">Perfect Music Creator</string>
+    <string name="about_creator_phrase">Made to listen my way</string>
+    <string name="about_gpl_credit">Perfect Music is a customized version of ArchiveTune (GPL-3.0).</string>
     <string name="about_content_desc_donate">Donate</string>
     <string name="about_section_links">Links</string>
     <string name="about_section_project">Project</string>

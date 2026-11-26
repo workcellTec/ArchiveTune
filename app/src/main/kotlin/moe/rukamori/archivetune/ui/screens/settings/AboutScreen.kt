@@ -11,19 +11,17 @@ package moe.rukamori.archivetune.ui.screens.settings
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -95,10 +93,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -113,14 +116,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.graphics.ColorUtils
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
+import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -145,7 +151,6 @@ import moe.rukamori.archivetune.viewmodels.AboutUiModel
 import moe.rukamori.archivetune.viewmodels.AboutViewModel
 import moe.rukamori.archivetune.viewmodels.TeamMember
 import moe.rukamori.archivetune.viewmodels.TeamMemberCollection
-import kotlin.math.floor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -766,20 +771,45 @@ private fun AboutSuccessContent(
             }
         }
 
-        item(key = AboutSection.PROJECT.name, contentType = "about_project") {
-            AboutContentContainer(modifier = Modifier.aboutEntrance(entrance[AboutSection.PROJECT.ordinal])) {
-                AboutProjectSection(
-                    onOpenTranslationContributors = onOpenTranslationContributors,
-                    onOpenDependencyLicenses = onOpenDependencyLicenses,
+        item(key = AboutSection.CREATOR.name, contentType = "about_creator") {
+            AboutContentContainer(modifier = Modifier.aboutEntrance(entrance[AboutSection.CREATOR.ordinal])) {
+                LeadDeveloperSpotlight(
+                    label = stringResource(R.string.about_creator_label),
+                    member = model.creator,
+                    onOpenUri = onOpenUri,
                 )
             }
         }
 
         item(key = AboutSection.LEAD_DEVELOPER.name, contentType = "about_lead_developer") {
             AboutContentContainer(modifier = Modifier.aboutEntrance(entrance[AboutSection.LEAD_DEVELOPER.ordinal])) {
-                LeadDeveloperSpotlight(
-                    member = model.leadDeveloper,
-                    onOpenUri = onOpenUri,
+                Column(verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs)) {
+                    LeadDeveloperSpotlight(
+                        label = stringResource(R.string.about_lead_developer),
+                        member = model.leadDeveloper,
+                        onOpenUri = onOpenUri,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = stringResource(R.string.about_gpl_credit),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = AboutSpacing.sm),
+                    )
+                }
+            }
+        }
+
+        item(key = AboutSection.PROJECT.name, contentType = "about_project") {
+            AboutContentContainer(modifier = Modifier.aboutEntrance(entrance[AboutSection.PROJECT.ordinal])) {
+                AboutProjectSection(
+                    onOpenTranslationContributors = onOpenTranslationContributors,
+                    onOpenDependencyLicenses = onOpenDependencyLicenses,
                 )
             }
         }
@@ -912,47 +942,23 @@ private fun AboutHero(
 
 @Composable
 private fun AboutHeroEmblem(modifier: Modifier = Modifier) {
-    val motion = MaterialTheme.motionScheme
-    val morphs =
-        remember {
-            List(EmblemPolygons.size) { index ->
-                Morph(EmblemPolygons[index], EmblemPolygons[(index + 1) % EmblemPolygons.size])
-            }
-        }
-    val backdropShape = MaterialShapes.SoftBurst.toShape()
-    var shapeStep by rememberSaveable { mutableIntStateOf(0) }
-    val morphProgress = remember { Animatable(shapeStep.toFloat()) }
     var pressed by remember { mutableStateOf(false) }
     val pressScale by animateFloatAsState(
         targetValue = if (pressed) AboutMotion.EmblemPressedScale else 1f,
-        animationSpec = motion.fastSpatialSpec(),
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "aboutEmblemPress",
     )
-    val rotationTransition = rememberInfiniteTransition(label = "aboutEmblemRotation")
-    val rotation by rotationTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(durationMillis = AboutMotion.EmblemRotationMillis, easing = LinearEasing),
-            ),
-        label = "aboutEmblemRotationValue",
+    val accent by animateColorAsState(
+        targetValue = perfectLogoAccent(MaterialTheme.colorScheme.primary),
+        animationSpec = tween(durationMillis = AboutMotion.EmblemColorMillis),
+        label = "aboutEmblemAccent",
     )
-    val morphSpec = motion.slowSpatialSpec<Float>()
 
-    LaunchedEffect(shapeStep) {
-        morphProgress.animateTo(shapeStep.toFloat(), morphSpec)
-    }
-
-    val backdropColor = MaterialTheme.colorScheme.tertiaryContainer
-    val emblemColor = MaterialTheme.colorScheme.primary
-    val iconTint = MaterialTheme.colorScheme.onPrimary
-    val iconColorFilter = remember(iconTint) { ColorFilter.tint(iconTint) }
-
-    Box(
+    PerfectMusicLogo(
+        accent = accent,
         modifier =
             modifier
-                .size(AboutDimensions.EmblemBackdropSize)
+                .size(AboutDimensions.EmblemSize)
                 .graphicsLayer {
                     scaleX = pressScale
                     scaleY = pressScale
@@ -963,39 +969,63 @@ private fun AboutHeroEmblem(modifier: Modifier = Modifier) {
                             tryAwaitRelease()
                             pressed = false
                         },
-                        onTap = { shapeStep += 1 },
                     )
                 },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        rotationZ = -rotation
-                        shape = backdropShape
-                        clip = true
-                    }.background(backdropColor),
-        )
-        Box(
-            modifier =
-                Modifier
-                    .size(AboutDimensions.EmblemSize)
-                    .graphicsLayer {
-                        val value = morphProgress.value
-                        val segment = floor(value).toInt()
-                        rotationZ = rotation
-                        shape = EditorialMorphShape(morphs[segment.mod(morphs.size)], value - segment)
-                        clip = true
-                    }.background(emblemColor),
-        )
-        Image(
-            painter = painterResource(R.drawable.about_splash),
-            contentDescription = null,
-            colorFilter = iconColorFilter,
-            modifier = Modifier.size(AboutDimensions.EmblemIconSize),
-        )
+    )
+}
+
+/** Cor de destaque da logo: mantém o matiz do tema (que acompanha o álbum) com saturação/brilho fixos. */
+private fun perfectLogoAccent(themeColor: Color): Color {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(themeColor.toArgb(), hsl)
+    val saturation = lerp(0.12f, 0.88f, (hsl[1] / 0.5f).coerceIn(0f, 1f))
+    return Color.hsl(hsl[0], saturation, 0.54f)
+}
+
+@Composable
+private fun PerfectMusicLogo(
+    accent: Color,
+    modifier: Modifier = Modifier,
+) {
+    val hsl = FloatArray(3).also { ColorUtils.colorToHSL(accent.toArgb(), it) }
+    val light = Color.hsl(hsl[0], hsl[1], 0.64f)
+    val mid = Color.hsl(hsl[0], hsl[1] * 0.88f, 0.38f)
+    val back = Color.hsl(hsl[0], hsl[1] * 0.66f, 0.19f)
+    val reflection = Color.hsl(hsl[0], hsl[1] * 0.62f, 0.28f).copy(alpha = 0.6f)
+
+    Canvas(modifier = modifier) {
+        val unit = size.minDimension / LogoViewport
+        withTransform({
+            scale(unit, unit, pivot = Offset.Zero)
+            translate(-LogoOriginX, -LogoOriginY)
+        }) {
+            drawRoundRect(back, Offset(130f, 80f), Size(215f, 215f), CornerRadius(56f))
+            drawRoundRect(mid, Offset(102f, 112f), Size(213f, 213f), CornerRadius(56f))
+            drawRoundRect(LogoFrontPlate, Offset(75f, 148f), Size(210f, 207f), CornerRadius(54f))
+            drawRoundRect(
+                color = accent,
+                topLeft = Offset(75f, 148f),
+                size = Size(210f, 207f),
+                cornerRadius = CornerRadius(54f),
+                style = Stroke(width = 7f),
+            )
+            LogoBarCenters.forEachIndexed { index, centerX ->
+                val barHeight = LogoBarHeights[index]
+                val barWidth = if (index % 8 == 0) 12f else 13f
+                drawRoundRect(
+                    color = if (index == LogoPeakBar) light else accent,
+                    topLeft = Offset(centerX - barWidth / 2f, LogoBaseline - barHeight),
+                    size = Size(barWidth, barHeight),
+                    cornerRadius = CornerRadius(6f),
+                )
+                drawRoundRect(
+                    color = reflection,
+                    topLeft = Offset(centerX - barWidth / 2f, LogoBaseline + 6f),
+                    size = Size(barWidth, (barHeight * 0.72f).roundToInt().toFloat()),
+                    cornerRadius = CornerRadius(6f),
+                )
+            }
+        }
     }
 }
 
@@ -1326,9 +1356,12 @@ private fun AboutProjectTile(
 
 @Composable
 private fun LeadDeveloperSpotlight(
+    label: String,
     member: TeamMember,
     onOpenUri: (String) -> Unit,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -1339,8 +1372,8 @@ private fun LeadDeveloperSpotlight(
         enabled = !profileUrl.isNullOrBlank(),
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLargeIncreased,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        color = containerColor,
+        contentColor = contentColor,
         interactionSource = interactionSource,
     ) {
         Column(
@@ -1352,7 +1385,7 @@ private fun LeadDeveloperSpotlight(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AboutMorphAvatar(
-                    avatarUrl = member.avatarUrl,
+                    avatar = member.avatarModel,
                     pressed = pressed,
                     restPolygon = MaterialShapes.Cookie12Sided,
                     pressedPolygon = MaterialShapes.Circle,
@@ -1363,9 +1396,9 @@ private fun LeadDeveloperSpotlight(
                     verticalArrangement = Arrangement.spacedBy(AboutSpacing.xxs / 2),
                 ) {
                     Text(
-                        text = stringResource(R.string.about_lead_developer),
+                        text = label,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        color = contentColor.copy(alpha = 0.8f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.semantics { heading() },
@@ -1479,7 +1512,7 @@ private fun TeamMemberCard(
             verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
         ) {
             AboutMorphAvatar(
-                avatarUrl = member.avatarUrl,
+                avatar = member.avatarModel,
                 pressed = pressed,
                 restPolygon = restPolygon,
                 pressedPolygon = MaterialShapes.Circle,
@@ -1567,7 +1600,7 @@ private fun RespecterCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AboutMorphAvatar(
-                avatarUrl = member.avatarUrl,
+                avatar = member.avatarModel,
                 pressed = pressed,
                 restPolygon = MaterialShapes.Circle,
                 pressedPolygon = MaterialShapes.Cookie9Sided,
@@ -1633,7 +1666,7 @@ private fun MemberLinkButtons(
 
 @Composable
 private fun AboutMorphAvatar(
-    avatarUrl: String,
+    avatar: Any,
     pressed: Boolean,
     restPolygon: RoundedPolygon,
     pressedPolygon: RoundedPolygon,
@@ -1648,7 +1681,7 @@ private fun AboutMorphAvatar(
     )
 
     AsyncImage(
-        model = avatarUrl,
+        model = avatar,
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier =
@@ -1916,7 +1949,7 @@ private fun ContributorCell(
         verticalArrangement = Arrangement.spacedBy(AboutSpacing.xs),
     ) {
         AboutMorphAvatar(
-            avatarUrl = avatarUrl,
+            avatar = avatarUrl,
             pressed = pressed,
             restPolygon = MaterialShapes.Circle,
             pressedPolygon = MaterialShapes.Cookie9Sided,
@@ -1958,20 +1991,22 @@ private fun AboutLeadingIcon(
 private enum class AboutSection {
     HERO,
     LINKS,
-    PROJECT,
+    CREATOR,
     LEAD_DEVELOPER,
+    PROJECT,
     TEAM,
     RESPECTERS,
     CONTRIBUTORS,
 }
 
-private val EmblemPolygons =
-    listOf(
-        MaterialShapes.Cookie9Sided,
-        MaterialShapes.Clover8Leaf,
-        MaterialShapes.Sunny,
-        MaterialShapes.Cookie12Sided,
-    )
+private const val LogoViewport = 300f
+private const val LogoOriginX = 60f
+private const val LogoOriginY = 70f
+private const val LogoBaseline = 246f
+private const val LogoPeakBar = 4
+private val LogoFrontPlate = Color(0xFF19191C)
+private val LogoBarCenters = floatArrayOf(104f, 124f, 144f, 164f, 184f, 204f, 224f, 242f, 262f)
+private val LogoBarHeights = floatArrayOf(10f, 24f, 44f, 68f, 88f, 60f, 76f, 36f, 18f)
 
 private val TeamAvatarPolygons =
     listOf(
@@ -1989,9 +2024,7 @@ private object AboutDimensions {
     val TitleRevealOffset = 160.dp
     val TitleRevealTravel = 8.dp
     val EntranceTravel = 40.dp
-    val EmblemBackdropSize = 184.dp
-    val EmblemSize = 136.dp
-    val EmblemIconSize = 72.dp
+    val EmblemSize = 144.dp
     val MetadataPillHeight = 32.dp
     val TileCorner = 28.dp
     val ProjectTileCorner = 32.dp
@@ -2024,7 +2057,7 @@ private object AboutMotion {
     const val ContributorStaggerMillis = 28L
     const val ContributorStartScale = 0.6f
     const val HeroParallaxFactor = 0.4f
-    const val EmblemRotationMillis = 24_000
+    const val EmblemColorMillis = 600
     const val EmblemPressedScale = 0.92f
     const val BadgePressedRotation = 45f
 }

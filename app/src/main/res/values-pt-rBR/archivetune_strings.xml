@@ -523,14 +523,14 @@
     <string name="ai_api_connected">API conectada</string>
     <string name="ai_api_test_failed">Falha no teste da API</string>
     <string name="ai_translation_menu">Tradução por IA</string>
-    <string name="about_lead_developer">Desenvolvedor principal</string>
+    <string name="about_lead_developer">Criador do ArchiveTune</string>
     <string name="about_archive_tune_team">Equipe</string>
     <string name="about_respecter">Respeito</string>
     <string name="about_contributors">Contribuidores</string>
     <string name="about_contributor_translation">Contribuidores da Tradução</string>
     <string name="about_license">LICENÇA</string>
     <string name="about_license_unknown">Licença desconhecida</string>
-    <string name="about_position_lead_dev">Eh?</string>
+    <string name="about_position_lead_dev">O app original em que o Perfect Music foi baseado</string>
     <string name="about_position_developers">Desenvolvedor | Equipe</string>
     <string name="about_position_yuki">reze idiota | Admin</string>
     <string name="about_position_mo_agamy">Framework base | Metrolist</string>
@@ -539,6 +539,10 @@
     <string name="about_content_desc_website">Site</string>
     <string name="about_content_desc_discord">Discord</string>
     <string name="about_content_desc_telegram">Telegram</string>
+    <string name="about_content_desc_instagram">Instagram</string>
+    <string name="about_creator_label">Criador do Perfect Music</string>
+    <string name="about_creator_phrase">Feito pra ouvir do meu jeito</string>
+    <string name="about_gpl_credit">Perfect Music é uma versão personalizada do ArchiveTune (GPL-3.0).</string>
     <string name="about_content_desc_donate">Doar</string>
     <string name="music_recognition_settings">Configurações de reconhecimento de música</string>
     <string name="music_recognition_notification_channel_name">Reconhecimento de músicas</string>

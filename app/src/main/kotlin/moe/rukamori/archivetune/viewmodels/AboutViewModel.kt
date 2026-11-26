@@ -56,6 +56,7 @@ data class AboutUiModel(
     val buildHash: String?,
     val buildVariant: String,
     val primaryLinks: AboutLinkCollection,
+    val creator: TeamMember,
     val leadDeveloper: TeamMember,
     val collaborators: TeamMemberCollection,
     val respecters: TeamMemberCollection,
@@ -73,7 +74,10 @@ data class TeamMember(
     @StringRes val positionResId: Int,
     val profileUrl: String?,
     val links: AboutLinkCollection,
-)
+    @DrawableRes val avatarResId: Int = 0,
+) {
+    val avatarModel: Any get() = if (avatarResId != 0) avatarResId else avatarUrl
+}
 
 @Immutable
 data class TeamMemberCollection private constructor(
@@ -419,44 +423,21 @@ class AboutViewModel
                 buildVariant = if (BuildConfig.DEBUG) DebugBuildBadge else BuildConfig.ARCHITECTURE.uppercase(),
                 primaryLinks =
                     AboutLinkCollection.of(
-                        AboutLinkUiModel(
-                            id = "github",
-                            iconResId = R.drawable.github,
-                            labelResId = R.string.about_content_desc_github,
-                            url = "https://github.com/rukamori/ArchiveTune",
-                            emphasis = AboutLinkEmphasis.PRIMARY,
-                        ),
-                        AboutLinkUiModel(
-                            id = "website",
-                            iconResId = R.drawable.website,
-                            labelResId = R.string.about_content_desc_website,
-                            url = "https://archivetune.miuka.moe",
-                        ),
-                        AboutLinkUiModel(
-                            id = "telegram",
-                            iconResId = R.drawable.telegram,
-                            labelResId = R.string.about_content_desc_telegram,
-                            url = "https://t.me/ArchiveTuneGC",
-                        ),
-                        AboutLinkUiModel(
-                            id = "donate",
-                            iconResId = R.drawable.coffee,
-                            labelResId = R.string.about_content_desc_donate,
-                            url = "https://miuka.moe/donate",
-                            emphasis = AboutLinkEmphasis.ACCENT,
-                        ),
-                        AboutLinkUiModel(
-                            id = "discord",
-                            iconResId = R.drawable.discord,
-                            labelResId = R.string.discord,
-                            url = "https://discord.gg/archivetune",
-                        ),
-                        AboutLinkUiModel(
-                            id = "privacy_policy",
-                            iconResId = R.drawable.lock,
-                            labelResId = R.string.privacy,
-                            url = "https://archivetune.miuka.moe/privacy",
-                        ),
+                        creatorInstagramLink(emphasis = AboutLinkEmphasis.PRIMARY),
+                        creatorTelegramLink(),
+                    ),
+                creator =
+                    TeamMember(
+                        avatarUrl = "",
+                        avatarResId = R.drawable.brendon_avatar,
+                        name = "Brendon",
+                        positionResId = R.string.about_creator_phrase,
+                        profileUrl = CreatorInstagramUrl,
+                        links =
+                            AboutLinkCollection.of(
+                                creatorInstagramLink(),
+                                creatorTelegramLink(),
+                            ),
                     ),
                 leadDeveloper =
                     TeamMember(
@@ -681,8 +662,27 @@ class AboutViewModel
                 licenses = licenses,
             )
 
+        private fun creatorInstagramLink(emphasis: AboutLinkEmphasis = AboutLinkEmphasis.STANDARD) =
+            AboutLinkUiModel(
+                id = "instagram",
+                iconResId = R.drawable.instagram,
+                labelResId = R.string.about_content_desc_instagram,
+                url = CreatorInstagramUrl,
+                emphasis = emphasis,
+            )
+
+        private fun creatorTelegramLink() =
+            AboutLinkUiModel(
+                id = "telegram",
+                iconResId = R.drawable.telegram,
+                labelResId = R.string.about_content_desc_telegram,
+                url = CreatorTelegramUrl,
+            )
+
         private companion object {
             const val MaxDisplayedContributors = 20
+            const val CreatorInstagramUrl = "https://instagram.com/brendon_iury"
+            const val CreatorTelegramUrl = "https://t.me/Fsociedade"
             const val DebugBuildBadge = "DEBUG"
             const val ContributorsReadMoreUrl = "https://github.com/rukamori/ArchiveTune/graphs/contributors"
             const val LrcRedUrl = "https://lrc.red"

@@ -221,15 +221,15 @@ private fun DetailedBody(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 GlassCircle(size = 32.dp, emphasized = disliked, onClick = { connection?.toggleDislike() }) {
                     Icon(
-                        painterResource(R.drawable.v12_heart_broken),
+                        painterResource(if (disliked) R.drawable.v12_heart_broken else R.drawable.v12_heart_broken_border),
                         stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
-                        tint = DetailedContent.copy(alpha = if (disliked) 1f else 0.9f),
+                        tint = DetailedContent,
                         modifier = Modifier.size(17.dp),
                     )
                 }
                 GlassCircle(size = 32.dp, emphasized = model.isLiked, onClick = { onAction(ImmersivePlayerAction.ToggleLike) }) {
                     Icon(
-                        painter = painterResource(if (model.isLiked) R.drawable.v12_favorite else R.drawable.favorite_border),
+                        painter = painterResource(if (model.isLiked) R.drawable.v12_favorite else R.drawable.v12_favorite_border),
                         contentDescription = stringResource(if (model.isLiked) R.string.action_remove_like else R.string.action_like),
                         tint = DetailedContent,
                         modifier = Modifier.heartPop(model.isLiked).size(17.dp),

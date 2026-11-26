@@ -57,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -1095,8 +1096,20 @@ fun QueueCollapsedContentV12(
         Surface(
             onClick = onDeviceClick,
             shape = CircleShape,
-            color = content.copy(alpha = 0.16f),
-            modifier = Modifier.weight(1f, fill = false).padding(horizontal = 12.dp).height(40.dp),
+            color = Color.Transparent,
+            modifier =
+                Modifier
+                    .weight(1f, fill = false)
+                    .padding(horizontal = 12.dp)
+                    .height(32.dp)
+                    .border(
+                        1.dp,
+                        Brush.linearGradient(listOf(content.copy(alpha = 0.3f), content.copy(alpha = 0.04f))),
+                        CircleShape,
+                    ).background(
+                        Brush.linearGradient(listOf(content.copy(alpha = 0.18f), content.copy(alpha = 0.08f))),
+                        CircleShape,
+                    ),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1107,12 +1120,12 @@ fun QueueCollapsedContentV12(
                     imageVector = device.type.imageVector,
                     contentDescription = null,
                     tint = content,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(15.dp),
                 )
                 Text(
                     text = device.name,
-                    color = content,
-                    style = MaterialTheme.typography.labelLarge,
+                    color = content.copy(alpha = 0.92f),
+                    fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(start = 8.dp),

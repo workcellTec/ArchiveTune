@@ -724,7 +724,7 @@ fun BottomSheetPlayer(
     val targetV12Accent =
         remember(artworkSeeds) {
             val seed = artworkSeeds?.first ?: Color(0xFF7FB2FF)
-            if (seed.luminance() < 0.3f) androidx.compose.ui.graphics.lerp(seed, Color.White, 0.35f) else seed
+            androidx.compose.ui.graphics.lerp(seed, Color.White, if (seed.luminance() < 0.3f) 0.4f else 0.18f)
         }
     val v12Accent by animateColorAsState(
         targetValue = targetV12Accent,

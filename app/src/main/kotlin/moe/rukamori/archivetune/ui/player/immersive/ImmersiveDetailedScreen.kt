@@ -17,6 +17,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -54,7 +55,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,13 +74,12 @@ import moe.rukamori.archivetune.LocalPlayerConnection
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.extensions.toggleRepeatMode
 import moe.rukamori.archivetune.ui.component.ListDialog
-import moe.rukamori.archivetune.ui.player.DislikeIconButton
+import moe.rukamori.archivetune.ui.player.rememberCurrentDisliked
 import moe.rukamori.archivetune.ui.player.heartPop
 import moe.rukamori.archivetune.utils.makeTimeString
 
 private val DetailedContent = Color.White
 private val DetailedSecondary = Color.White.copy(alpha = 0.72f)
-private val DetailedFrost = Color.White.copy(alpha = 0.16f)
 
 @Composable
 fun ImmersiveDetailedScreen(
@@ -165,20 +164,20 @@ private fun DetailedHeader(
     val source = sourceTitle.ifBlank { stringResource(R.string.now_playing) }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()) {
         IconButton(onClick = onCollapse) {
-            Icon(painterResource(R.drawable.expand_more), stringResource(R.string.close), tint = DetailedContent, modifier = Modifier.size(32.dp))
+            Icon(painterResource(R.drawable.expand_more), stringResource(R.string.close), tint = DetailedContent, modifier = Modifier.size(30.dp))
         }
         Text(
             text = stringResource(R.string.playing_from, source),
             color = DetailedContent,
             fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.Normal,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onMenu) {
-            Icon(painterResource(R.drawable.more_horiz), stringResource(R.string.more_label), tint = DetailedContent, modifier = Modifier.size(28.dp))
+            Icon(painterResource(R.drawable.more_horiz), stringResource(R.string.more_label), tint = DetailedContent, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -192,7 +191,8 @@ private fun DetailedBody(
     modifier: Modifier = Modifier,
 ) {
     val artistText = remember(model.artists) { model.artists.joinToString(separator = " • ") { it.name } }
-    val circle = if (compact) 38.dp else 44.dp
+    val disliked = rememberCurrentDisliked()
+    val connection = LocalPlayerConnection.current
     Column(
         modifier = modifier,
         verticalArrangement = if (compact) Arrangement.SpaceEvenly else Arrangement.Bottom,
@@ -202,8 +202,8 @@ private fun DetailedBody(
                 Text(
                     text = model.title,
                     color = DetailedContent,
-                    fontSize = if (compact) 22.sp else 28.sp,
-                    lineHeight = if (compact) 26.sp else 33.sp,
+                    fontSize = if (compact) 21.sp else 26.sp,
+                    lineHeight = if (compact) 25.sp else 31.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -212,36 +212,35 @@ private fun DetailedBody(
                 Text(
                     text = artistText,
                     color = DetailedSecondary,
-                    fontSize = if (compact) 15.sp else 18.sp,
+                    fontSize = if (compact) 14.sp else 17.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.basicMarquee().clickable(enabled = model.artists.any { !it.id.isNullOrBlank() }) { onAction(ImmersivePlayerAction.OpenArtists) },
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                DislikeIconButton(
-                    size = circle,
-                    iconSize = 22.dp,
-                    shape = CircleShape,
-                    tint = DetailedContent,
-                    activeTint = DetailedContent,
-                    containerColor = DetailedFrost,
-                    activeContainerColor = Color.White.copy(alpha = 0.34f),
-                )
-                FrostedButton(size = circle, onClick = { onAction(ImmersivePlayerAction.ToggleLike) }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                GlassCircle(size = 32.dp, emphasized = disliked, onClick = { connection?.toggleDislike() }) {
                     Icon(
-                        painter = painterResource(if (model.isLiked) R.drawable.favorite else R.drawable.favorite_border),
-                        contentDescription = stringResource(if (model.isLiked) R.string.action_remove_like else R.string.action_like),
-                        tint = DetailedContent,
-                        modifier = Modifier.heartPop(model.isLiked).size(22.dp),
+                        painterResource(R.drawable.v12_heart_broken),
+                        stringResource(if (disliked) R.string.action_remove_dislike else R.string.action_dislike),
+                        tint = DetailedContent.copy(alpha = if (disliked) 1f else 0.9f),
+                        modifier = Modifier.size(17.dp),
                     )
                 }
-                FrostedButton(size = circle, onClick = { onAction(ImmersivePlayerAction.OpenMenu) }) {
-                    Icon(painterResource(R.drawable.more_vert), stringResource(R.string.more_label), tint = DetailedContent, modifier = Modifier.size(22.dp))
+                GlassCircle(size = 32.dp, emphasized = model.isLiked, onClick = { onAction(ImmersivePlayerAction.ToggleLike) }) {
+                    Icon(
+                        painter = painterResource(if (model.isLiked) R.drawable.v12_favorite else R.drawable.favorite_border),
+                        contentDescription = stringResource(if (model.isLiked) R.string.action_remove_like else R.string.action_like),
+                        tint = DetailedContent,
+                        modifier = Modifier.heartPop(model.isLiked).size(17.dp),
+                    )
+                }
+                GlassCircle(size = 32.dp, onClick = { onAction(ImmersivePlayerAction.OpenMenu) }) {
+                    Icon(painterResource(R.drawable.more_horiz), stringResource(R.string.more_label), tint = DetailedContent, modifier = Modifier.size(18.dp))
                 }
             }
         }
-        Spacer(Modifier.height(if (compact) 4.dp else 18.dp))
+        Spacer(Modifier.height(if (compact) 2.dp else 20.dp))
         val displayPosition = model.seekPositionMs ?: model.positionMs
         AccentSlider(
             value = displayPosition,
@@ -252,80 +251,92 @@ private fun DetailedBody(
             onValueChangeFinished = { onAction(ImmersivePlayerAction.CommitSeek) },
         )
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text(makeTimeString(displayPosition), color = DetailedSecondary, style = MaterialTheme.typography.bodySmall)
+            Text(makeTimeString(displayPosition), color = DetailedSecondary, fontSize = 13.sp)
             Spacer(Modifier.weight(1f))
             Text(
                 stringResource(R.string.remaining_time, makeTimeString((model.durationMs - displayPosition).coerceAtLeast(0L))),
                 color = DetailedSecondary,
-                style = MaterialTheme.typography.bodySmall,
+                fontSize = 13.sp,
             )
         }
-        Spacer(Modifier.height(if (compact) 2.dp else 20.dp))
-        DetailedTransport(model = model, accent = accent, compact = compact, onAction = onAction)
-        Spacer(Modifier.height(if (compact) 2.dp else 16.dp))
+        Spacer(Modifier.height(if (compact) 2.dp else 18.dp))
+        DetailedTransport(model = model, compact = compact, onAction = onAction)
+        Spacer(Modifier.height(if (compact) 2.dp else 8.dp))
     }
 }
 
+/** Frosted-glass circle: soft vertical white fill plus a hairline border that fades from the top-left. */
 @Composable
-private fun FrostedButton(
+private fun GlassCircle(
     size: Dp,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    emphasized: Boolean = false,
+    strong: Boolean = false,
     content: @Composable () -> Unit,
 ) {
+    val topAlpha = if (strong) 0.34f else if (emphasized) 0.30f else 0.20f
+    val bottomAlpha = if (strong) 0.14f else if (emphasized) 0.14f else 0.08f
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(size).clip(CircleShape).background(DetailedFrost).clickable(onClick = onClick),
+        modifier =
+            modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(Brush.linearGradient(listOf(Color.White.copy(alpha = topAlpha), Color.White.copy(alpha = bottomAlpha))))
+                .border(
+                    1.dp,
+                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.42f), Color.White.copy(alpha = 0.04f))),
+                    CircleShape,
+                ).clickable(onClick = onClick),
     ) { content() }
 }
 
 @Composable
 private fun DetailedTransport(
     model: ImmersivePlayerUiModel,
-    accent: Color,
     compact: Boolean,
     onAction: (ImmersivePlayerAction) -> Unit,
 ) {
     val connection = LocalPlayerConnection.current
     val shuffle by (connection?.shuffleModeEnabled ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
     val repeat by (connection?.repeatMode ?: remember { kotlinx.coroutines.flow.MutableStateFlow(Player.REPEAT_MODE_OFF) }).collectAsState()
-    val playSize = if (compact) 64.dp else 76.dp
-    val sideSize = if (compact) 46.dp else 54.dp
+    val playSize = if (compact) 52.dp else 60.dp
+    val sideSize = if (compact) 40.dp else 46.dp
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
     ) {
         ToggleIcon(
-            iconRes = R.drawable.shuffle,
+            iconRes = R.drawable.v12_shuffle,
             description = stringResource(R.string.shuffle),
             active = shuffle,
             onClick = { connection?.let { it.player.shuffleModeEnabled = !shuffle } },
         )
-        FrostedButton(size = sideSize, onClick = { onAction(ImmersivePlayerAction.SkipPrevious) }) {
+        GlassCircle(size = sideSize, onClick = { onAction(ImmersivePlayerAction.SkipPrevious) }) {
             Icon(
-                painterResource(R.drawable.skip_previous),
+                painterResource(R.drawable.v12_skip_previous),
                 stringResource(R.string.widget_previous),
                 tint = DetailedContent.copy(alpha = if (model.canSkipPrevious) 1f else 0.4f),
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(playSize + 28.dp)) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(playSize + 20.dp)) {
             Box(
-                modifier =
-                    Modifier.size(playSize + 28.dp).background(
-                        Brush.radialGradient(listOf(accent.copy(alpha = 0.34f), Color.White.copy(alpha = 0.08f), Color.Transparent)),
-                        CircleShape,
-                    ),
-            )
-            Box(
-                contentAlignment = Alignment.Center,
                 modifier =
                     Modifier
-                        .size(playSize)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.26f))
-                        .clickable { onAction(ImmersivePlayerAction.TogglePlayPause) },
-            ) {
+                        .size(playSize + 20.dp)
+                        .background(
+                            Brush.radialGradient(
+                                0.55f to Color.White.copy(alpha = 0.16f),
+                                0.8f to Color.White.copy(alpha = 0.06f),
+                                1f to Color.Transparent,
+                            ),
+                            CircleShape,
+                        ),
+            )
+            GlassCircle(size = playSize, strong = true, onClick = { onAction(ImmersivePlayerAction.TogglePlayPause) }) {
                 if (model.isBuffering) {
                     CircularProgressIndicator(color = DetailedContent, strokeWidth = 3.dp, modifier = Modifier.size(playSize * 0.45f))
                 } else {
@@ -338,7 +349,7 @@ private fun DetailedTransport(
                         label = "detailedPlayPause",
                     ) { playing ->
                         Icon(
-                            painter = painterResource(if (playing) R.drawable.pause else R.drawable.play),
+                            painter = painterResource(if (playing) R.drawable.v12_pause else R.drawable.v12_play),
                             contentDescription = stringResource(if (playing) R.string.widget_pause else R.string.play),
                             tint = DetailedContent,
                             modifier = Modifier.size(playSize * 0.5f),
@@ -347,16 +358,16 @@ private fun DetailedTransport(
                 }
             }
         }
-        FrostedButton(size = sideSize, onClick = { onAction(ImmersivePlayerAction.SkipNext) }) {
+        GlassCircle(size = sideSize, onClick = { onAction(ImmersivePlayerAction.SkipNext) }) {
             Icon(
-                painterResource(R.drawable.skip_next),
+                painterResource(R.drawable.v12_skip_next),
                 stringResource(R.string.next),
                 tint = DetailedContent.copy(alpha = if (model.canSkipNext) 1f else 0.4f),
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(24.dp),
             )
         }
         ToggleIcon(
-            iconRes = if (repeat == Player.REPEAT_MODE_ONE) R.drawable.repeat_one else R.drawable.repeat,
+            iconRes = if (repeat == Player.REPEAT_MODE_ONE) R.drawable.v12_repeat_one else R.drawable.v12_repeat,
             description = stringResource(R.string.repeat_mode_off),
             active = repeat != Player.REPEAT_MODE_OFF,
             onClick = { connection?.player?.toggleRepeatMode() },
@@ -376,14 +387,11 @@ private fun ToggleIcon(
             Icon(
                 painterResource(iconRes),
                 description,
-                tint = DetailedContent.copy(alpha = if (active) 1f else 0.72f),
-                modifier = Modifier.size(24.dp),
+                tint = DetailedContent.copy(alpha = if (active) 1f else 0.78f),
+                modifier = Modifier.size(22.dp),
             )
         }
-        Box(
-            modifier =
-                Modifier.size(4.dp).clip(CircleShape).background(if (active) DetailedContent else Color.Transparent),
-        )
+        Box(modifier = Modifier.size(3.dp).clip(CircleShape).background(if (active) DetailedContent else Color.Transparent))
     }
 }
 
@@ -403,7 +411,7 @@ private fun AccentSlider(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(28.dp)
+                .height(26.dp)
                 .semantics {
                     contentDescription = label
                     progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
@@ -426,11 +434,11 @@ private fun AccentSlider(
                 },
     ) {
         val cy = size.height / 2f
-        val stroke = 5.dp.toPx()
-        val thumb = 7.dp.toPx()
+        val stroke = 3.dp.toPx()
+        val thumb = 6.dp.toPx()
         val x = (size.width - 2 * thumb) * fraction + thumb
-        drawLine(Color.White.copy(alpha = 0.3f), Offset(thumb, cy), Offset(size.width - thumb, cy), stroke, StrokeCap.Round)
-        drawLine(accent, Offset(thumb, cy), Offset(x, cy), stroke, StrokeCap.Round)
+        drawLine(Color.White.copy(alpha = 0.22f), Offset(0f, cy), Offset(size.width, cy), stroke, StrokeCap.Round)
+        drawLine(accent, Offset(0f, cy), Offset(x, cy), stroke, StrokeCap.Round)
         drawCircle(Color.White, thumb, Offset(x, cy))
     }
 }

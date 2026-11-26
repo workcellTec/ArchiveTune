@@ -57,6 +57,18 @@ val hasReleaseSigningConfig =
         releaseStorePassword != null &&
         releaseKeyAlias != null &&
         releaseKeyPassword != null
+
+// Chave fixa do build "personal" (Perfect Music). O CI decodifica o segredo para este arquivo.
+val personalKeystoreFile = System.getenv("PERSONAL_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }?.let { file(it) }
+val personalStorePassword = System.getenv("PERSONAL_STORE_PASSWORD")?.takeIf { it.isNotBlank() }
+val personalKeyAlias = System.getenv("PERSONAL_KEY_ALIAS")?.takeIf { it.isNotBlank() }
+val personalKeyPassword = System.getenv("PERSONAL_KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+val hasPersonalSigningConfig =
+    personalKeystoreFile?.isFile == true &&
+        personalStorePassword != null &&
+        personalKeyAlias != null &&
+        personalKeyPassword != null
+
 android {
     namespace = "moe.rukamori.archivetune"
     compileSdk = 37
@@ -106,6 +118,10 @@ android {
             providers.gradleProperty("nightlyVersionName").orNull?.trim().orEmpty()
         if (nightlyVersionName.isNotEmpty()) {
             versionName = nightlyVersionName
+        }
+        // Perfect Music: o CI passa o número da build para o Android aceitar a atualização por cima.
+        providers.gradleProperty("buildNumber").orNull?.trim()?.toIntOrNull()?.let { number ->
+            versionCode = (versionCode ?: 0) + number
         }
         buildConfigField("String", "DISTRIBUTION", "\"gms\"")
         buildConfigField("boolean", "UPDATER_AVAILABLE", "true")
@@ -212,6 +228,15 @@ android {
     }
 
     signingConfigs {
+        // Chave fixa do Perfect Music (vem do GitHub Secrets no CI), para a assinatura nunca mudar.
+        create("personal") {
+            if (hasPersonalSigningConfig) {
+                storeFile = personalKeystoreFile
+                storePassword = personalStorePassword
+                keyAlias = personalKeyAlias
+                keyPassword = personalKeyPassword
+            }
+        }
         create("release") {
             if (hasReleaseSigningConfig) {
                 storeFile = releaseKeystoreFile
@@ -244,7 +269,15 @@ android {
         create("personal") {
             initWith(getByName("release"))
             applicationIdSuffix = ".music"
-            signingConfig = signingConfigs.getByName("debug")
+            // As atualizações do Perfect Music vêm das releases do próprio fork.
+            buildConfigField("String", "RELEASE_GITHUB_OWNER", "\"workcellTec\"")
+            buildConfigField("String", "RELEASE_GITHUB_REPO", "\"ArchiveTune\"")
+            signingConfig =
+                if (hasPersonalSigningConfig) {
+                    signingConfigs.getByName("personal")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
             matchingFallbacks += listOf("release")
         }
     }

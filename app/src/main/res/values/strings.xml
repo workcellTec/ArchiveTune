@@ -1247,8 +1247,8 @@
     <string name="permission_status_allowed">Allowed</string>
     <string name="next">Next</string>
     <string name="allow">Allow</string>
-    <string name="onboarding_welcome_title">Welcome to ArchiveTune</string>
-    <string name="onboarding_welcome_subtitle">Stream music and listen to your local collection.</string>
+    <string name="onboarding_welcome_title">Welcome to Perfect Music</string>
+    <string name="onboarding_welcome_subtitle">A custom app based on and edited by Brendon, built on top of ArchiveTune, an open source GitHub project (GPL-3.0). Set up playback, local music and update permissions before you start listening.</string>
     <string name="onboarding_permissions_title">Choose your access</string>
     <string name="onboarding_permissions_subtitle">Every permission is optional. Choose what to allow now, or continue and decide later.</string>
     <string name="onboarding_login_title">Connect YouTube Music</string>

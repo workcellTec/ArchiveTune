@@ -768,8 +768,8 @@
     <string name="permission_status_allowed">Permitido</string>
     <string name="next">Próximo</string>
     <string name="allow">Permitir</string>
-    <string name="onboarding_welcome_title">Bem-vindo ao ArchiveTune</string>
-    <string name="onboarding_welcome_subtitle">Configure reprodução, músicas locais e permissões de atualização antes de começar a ouvir.</string>
+    <string name="onboarding_welcome_title">Bem-vindo ao Perfect Music</string>
+    <string name="onboarding_welcome_subtitle">Um app customizado, baseado e editado por Brendon, feito em cima do ArchiveTune, um projeto aberto do GitHub (GPL-3.0). Configure reprodução, músicas locais e permissões de atualização antes de começar a ouvir.</string>
     <string name="onboarding_permissions_title">Revisar permissões</string>
     <string name="onboarding_permissions_subtitle">Conceda apenas o que deseja agora. Você pode continuar e permitir as permissões depois.</string>
     <string name="onboarding_community_title">Mantenha-se conectado</string>

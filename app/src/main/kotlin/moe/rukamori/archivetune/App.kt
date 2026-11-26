@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import moe.rukamori.archivetune.appicon.RestoreLauncherEntryUseCase
 import moe.rukamori.archivetune.backup.PendingDatabaseRestore
 import moe.rukamori.archivetune.canvas.StartCanvasPolicyUseCase
@@ -63,6 +64,7 @@ import moe.rukamori.archivetune.utils.ProxyUtils
 import moe.rukamori.archivetune.utils.YTPlayerUtils
 import moe.rukamori.archivetune.utils.clearPlaybackAuthSession
 import moe.rukamori.archivetune.utils.clearPlaybackWebAuthSession
+import moe.rukamori.archivetune.utils.PerfectDefaults
 import moe.rukamori.archivetune.utils.dataStore
 import moe.rukamori.archivetune.utils.get
 import moe.rukamori.archivetune.utils.potoken.BotGuardTokenGenerator
@@ -136,6 +138,8 @@ class App :
             Timber.plant(Timber.DebugTree())
             return
         }
+        runCatching { runBlocking(Dispatchers.IO) { PerfectDefaults.applyIfNeeded(this@App) } }
+            .onFailure { Timber.w(it, "Falha ao aplicar os padrões do Perfect Music") }
         BotGuardTokenGenerator.initialize(this)
         PreferenceStore.start(this)
         Timber.plant(Timber.DebugTree())

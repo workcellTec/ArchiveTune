@@ -1,8 +1,9 @@
 name: Build debug APK
 
-# Personal build of the fork: no Telegram, no release keystore needed.
-# The APK is signed with the default debug key, kept in the Actions cache, so every build uses
-# the same key and updates the previous install. It installs as a separate app (package ends
+# Personal build of the fork (Perfect Music): no Telegram, no release keystore needed.
+# The APK is signed with a fixed key stored in the GitHub Secrets PERSONAL_KEYSTORE_BASE64 and
+# PERSONAL_KEYSTORE_PASSWORD, so the signature never changes and updates install over the old app.
+# Without those secrets it falls back to the debug key kept in the Actions cache. It installs as a separate app (package ends
 # with ".music"), next to the original ArchiveTune.
 # Every build is also attached, as a plain .apk (no zip), to the "latest" release.
 # It is the optimized build (faster to open); the debug build is only a fallback if R8 fails.
@@ -58,16 +59,40 @@ jobs:
           path: ~/.android/debug.keystore
           key: personal-signing-key-v1
 
+      - name: Prepare fixed signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.PERSONAL_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.PERSONAL_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASS" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/perfect-music.keystore"
+            {
+              echo "PERSONAL_KEYSTORE_FILE=$RUNNER_TEMP/perfect-music.keystore"
+              echo "PERSONAL_STORE_PASSWORD=$KEYSTORE_PASS"
+              echo "PERSONAL_KEY_PASSWORD=$KEYSTORE_PASS"
+              echo "PERSONAL_KEY_ALIAS=perfectmusic"
+            } >> "$GITHUB_ENV"
+            echo "Using the fixed Perfect Music signing key."
+          else
+            echo "::warning::Secrets PERSONAL_KEYSTORE_BASE64/PERSONAL_KEYSTORE_PASSWORD not set; using the cached debug key."
+          fi
+
+      - name: Compute version
+        id: version
+        run: |
+          BASE=$(sed -n 's/.*versionName = "\([0-9][0-9.]*\)".*/\1/p' app/build.gradle.kts | head -n 1)
+          echo "name=${BASE}-p.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
       - name: Build optimized APK
         id: personal
         # Optimized (R8) build, same app name and icon as before. If R8 breaks, the debug build below
         # is used instead so there is always one APK.
         continue-on-error: true
-        run: ./gradlew assembleGmsMobileArm64Personal --stacktrace
+        run: ./gradlew assembleGmsMobileArm64Personal -PnightlyVersionName=${{ steps.version.outputs.name }} -PbuildNumber=${{ github.run_number }} --stacktrace
 
       - name: Build debug APK (fallback)
         if: steps.personal.outcome == 'failure'
-        run: ./gradlew assembleGmsMobileArm64Debug --stacktrace
+        run: ./gradlew assembleGmsMobileArm64Debug -PnightlyVersionName=${{ steps.version.outputs.name }} -PbuildNumber=${{ github.run_number }} --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -91,3 +116,17 @@ jobs:
             *debug*) gh release delete-asset latest app-gms-mobile-arm64-personal.apk --yes || true ;;
           esac
           echo "APK: https://github.com/${GITHUB_REPOSITORY}/releases/download/latest/$(basename "$APK")"
+
+          # Versioned release: the app's own updater reads these to find the newest build.
+          case "$APK" in
+            *personal*)
+              TAG="v${{ steps.version.outputs.name }}"
+              gh release create "$TAG" "$APK" --target "$GITHUB_SHA" \
+                --title "Perfect Music $TAG" \
+                --notes "$(git log -1 --pretty=%s)" || true
+              # Keep only the 5 newest versioned releases.
+              gh release list --limit 100 --json tagName,createdAt \
+                --jq '[.[] | select(.tagName | test("-p\\.[0-9]+$"))] | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' \
+                | while read -r old; do gh release delete "$old" --yes --cleanup-tag || true; done
+              ;;
+          esac

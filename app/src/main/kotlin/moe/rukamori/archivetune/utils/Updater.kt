@@ -92,7 +92,7 @@ object Updater {
             }
 
     private fun stableReleaseArtifactName(): String =
-        "app-$releaseArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-release.apk"
+        "app-$releaseArtifactPrefix${BuildConfig.DEVICE}-${BuildConfig.ARCHITECTURE}-${BuildConfig.BUILD_TYPE}.apk"
 
     private data class SemVer(
         val major: Int,

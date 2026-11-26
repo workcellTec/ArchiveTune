@@ -19,7 +19,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.zIndex
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import androidx.compose.animation.core.animateDpAsState

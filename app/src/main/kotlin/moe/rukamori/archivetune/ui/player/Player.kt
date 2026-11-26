@@ -181,6 +181,12 @@ import moe.rukamori.archivetune.constants.PlayerCustomImageUriKey
 import moe.rukamori.archivetune.constants.PlayerDesignStyle
 import moe.rukamori.archivetune.constants.PlayerDesignStyleKey
 import moe.rukamori.archivetune.constants.QueuePeekHeight
+import androidx.compose.runtime.derivedStateOf
+import moe.rukamori.archivetune.LocalAnimationsDisabled
+import moe.rukamori.archivetune.constants.MiniPlayerHeight
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.FastOutSlowInEasing
 import moe.rukamori.archivetune.constants.RetractedBarsBottomPadding
 import moe.rukamori.archivetune.constants.RetractedBarsEndPadding
 import moe.rukamori.archivetune.constants.ShowCodecOnPlayerKey
@@ -1209,23 +1215,58 @@ fun BottomSheetPlayer(
         backHandlerEnabled = false,
         pillMode = miniPillMode,
         collapsedContent = {
-            if (miniPillMode && state.isCollapsed) {
+            val density = LocalDensity.current
+            val animationsDisabled = LocalAnimationsDisabled.current
+            // 0 = regular mini player, 1 = retracted pill; both morph through this single progress value.
+            val retract =
+                animateFloatAsState(
+                    targetValue = if (miniPillMode && state.isCollapsed) 1f else 0f,
+                    animationSpec = if (animationsDisabled) snap() else tween(durationMillis = 420, easing = FastOutSlowInEasing),
+                    label = "miniPlayerRetract",
+                )
+            val miniVisible by remember { derivedStateOf { retract.value < 0.99f } }
+            val pillVisible by remember { derivedStateOf { retract.value > 0.01f } }
+            val travelPx = with(density) { (state.collapsedBound - MiniPlayerHeight).coerceAtLeast(0.dp).toPx() }
+            if (miniVisible) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(MiniPlayerHeight)
+                            .graphicsLayer {
+                                val t = retract.value
+                                transformOrigin = TransformOrigin(1f, 1f)
+                                scaleX = 1f - 0.62f * t
+                                scaleY = 1f - 0.3f * t
+                                translationY = travelPx * t
+                                alpha = (1f - 1.5f * t).coerceIn(0f, 1f)
+                            },
+                ) {
+                    MiniPlayer(
+                        position = position,
+                        duration = duration,
+                        hazeState = hazeState,
+                        pureBlack = pureBlack,
+                        navigationProximityProvider = navigationProximityProvider,
+                        navigationBarMode = navigationBarMode,
+                    )
+                }
+            }
+            if (pillVisible) {
                 MiniPlayerPill(
                     onRestore = onRestoreBars,
                     modifier =
                         Modifier
                             .align(Alignment.BottomEnd)
                             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
-                            .padding(end = RetractedBarsEndPadding, bottom = RetractedBarsBottomPadding),
-                )
-            } else {
-                MiniPlayer(
-                    position = position,
-                    duration = duration,
-                    hazeState = hazeState,
-                    pureBlack = pureBlack,
-                    navigationProximityProvider = navigationProximityProvider,
-                    navigationBarMode = navigationBarMode,
+                            .padding(end = RetractedBarsEndPadding, bottom = RetractedBarsBottomPadding)
+                            .graphicsLayer {
+                                val t = retract.value
+                                transformOrigin = TransformOrigin(1f, 1f)
+                                scaleX = 0.4f + 0.6f * t
+                                scaleY = 0.6f + 0.4f * t
+                                alpha = ((t - 0.25f) / 0.75f).coerceIn(0f, 1f)
+                            },
                 )
             }
         },

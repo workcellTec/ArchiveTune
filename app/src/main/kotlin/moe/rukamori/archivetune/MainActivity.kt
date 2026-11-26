@@ -45,6 +45,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -2478,12 +2479,12 @@ class MainActivity : ComponentActivity() {
                                                 }
                                             val homeOverflowFabBottomPadding by animateDpAsState(
                                                 targetValue = homeOverflowFabBottomPaddingTarget,
-                                                animationSpec = if (disableAnimations) snap() else spring(),
+                                                animationSpec = if (disableAnimations) snap() else tween(durationMillis = 420, easing = FastOutSlowInEasing),
                                                 label = "homeOverflowFabBottomPadding",
                                             )
                                             val homeOverflowFabEndPadding by animateDpAsState(
                                                 targetValue = if (barsRetracted) RetractedBarsEndPadding else NavigationBarHorizontalPadding,
-                                                animationSpec = if (disableAnimations) snap() else spring(),
+                                                animationSpec = if (disableAnimations) snap() else tween(durationMillis = 420, easing = FastOutSlowInEasing),
                                                 label = "homeOverflowFabEndPadding",
                                             )
                                             HomeOverflowFabVisibility(

@@ -153,6 +153,7 @@ fun Queue(
                             sleepTimerEnabled = latestChrome.sleepTimerEnabled,
                             onSleepTimerClick = viewModel::sleepTimerClick,
                             onPlayNextFromQueue = if (event.canPlayNext) ({ onAction(QueueAction.PlayNext(event.id)) }) else null,
+                            onPlayNowFromQueue = { onAction(QueueAction.Play(event.id)) },
                             onRemoveFromQueue = { onAction(QueueAction.Remove(event.id)) },
                             onShowDetailsDialog = {
                                 viewModel.dismissQueue()

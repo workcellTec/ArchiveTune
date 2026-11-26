@@ -1573,4 +1573,6 @@
     <string name="list_style_blur_value">Blur radius behind the menu and queue: %1$d</string>
     <string name="widget_glass_center_name">Glass centered</string>
     <string name="widget_glass_center_description">Medium glass card with bigger next-song cards, centered title and grouped controls.</string>
+    <string name="in_queue">In queue</string>
+    <string name="play_now">Play now</string>
 </resources>

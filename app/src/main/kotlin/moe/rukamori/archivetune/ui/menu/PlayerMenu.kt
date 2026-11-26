@@ -30,6 +30,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -139,6 +146,7 @@ fun PlayerMenu(
     sleepTimerEnabled: Boolean = false,
     onSleepTimerClick: (() -> Unit)? = null,
     onPlayNextFromQueue: (() -> Unit)? = null,
+    onPlayNowFromQueue: (() -> Unit)? = null,
     onRemoveFromQueue: (() -> Unit)? = null,
     onShowDetailsDialog: () -> Unit,
     onDismiss: () -> Unit,
@@ -511,9 +519,21 @@ fun PlayerMenu(
                 style = MenuArtworkStyle.Song,
                 thumbnails = playerThumbnails,
                 placeholderIcon = R.drawable.music_note,
-                overline = stringResource(R.string.now_playing),
+                overline =
+                    stringResource(if (isQueueTrigger == true) R.string.in_queue else R.string.now_playing),
                 subtitle = nowPlayingSubtitle,
                 meta = mediaMetadata.album?.title,
+                bottom =
+                    if (isQueueTrigger == true && (onPlayNowFromQueue != null || onPlayNextFromQueue != null)) {
+                        {
+                            QueueItemPlayButtons(
+                                onPlayNow = onPlayNowFromQueue?.let { play -> { play(); onDismiss() } },
+                                onPlayNext = onPlayNextFromQueue?.let { next -> { next(); onDismiss() } },
+                            )
+                        }
+                    } else {
+                        null
+                    },
             )
         },
         leadingContent = {
@@ -528,16 +548,6 @@ fun PlayerMenu(
     ) {
         if (isQueueTrigger == true) {
             MenuSection(title = stringResource(R.string.queue)) {
-                if (onPlayNextFromQueue != null) {
-                    action(
-                        title = stringResource(R.string.play_next),
-                        icon = R.drawable.playlist_play,
-                        onClick = {
-                            onPlayNextFromQueue()
-                            onDismiss()
-                        },
-                    )
-                }
                 if (onRemoveFromQueue != null) {
                     action(
                         title = stringResource(R.string.remove_from_queue),
@@ -1162,4 +1172,41 @@ private fun multiplierToSlider(multiplier: Float): Float {
             else -> 0f
         }
     return (0.5f + y / 2f).coerceIn(0f, 1f)
+}
+
+/** "Play now" and "Play next" for a song picked from the queue, shown inside the menu hero card. */
+@Composable
+private fun QueueItemPlayButtons(
+    onPlayNow: (() -> Unit)?,
+    onPlayNext: (() -> Unit)?,
+) {
+    val start = RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp, topEnd = 6.dp, bottomEnd = 6.dp)
+    val end = RoundedCornerShape(topStart = 6.dp, bottomStart = 6.dp, topEnd = 20.dp, bottomEnd = 20.dp)
+    val single = RoundedCornerShape(20.dp)
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+        if (onPlayNow != null) {
+            Button(
+                onClick = onPlayNow,
+                shape = if (onPlayNext != null) start else single,
+                modifier = Modifier.weight(1f).height(44.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Icon(painterResource(R.drawable.play), contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.play_now), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        if (onPlayNext != null) {
+            FilledTonalButton(
+                onClick = onPlayNext,
+                shape = if (onPlayNow != null) end else single,
+                modifier = Modifier.weight(1f).height(44.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
+            ) {
+                Icon(painterResource(R.drawable.playlist_play), contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.play_next), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
 }

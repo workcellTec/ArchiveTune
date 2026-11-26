@@ -16,6 +16,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -546,7 +547,8 @@ private fun QuickPickStack(
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val maxIndex = (count - 1).coerceAtLeast(0)
-    var position by rememberSaveable { mutableFloatStateOf(0f) }
+    var position by rememberSaveable { mutableFloatStateOf(if (count > 1) 1f else 0f) }
+    var dragStartIndex by remember { mutableIntStateOf(0) }
     val front by remember { derivedStateOf { position.roundToInt().coerceIn(0, maxIndex) } }
     val shape = MaterialTheme.shapes.extraLarge
 
@@ -575,13 +577,23 @@ private fun QuickPickStack(
                     .height(cardHeight)
                     .draggable(
                         orientation = Orientation.Horizontal,
+                        onDragStarted = { dragStartIndex = position.roundToInt().coerceIn(0, maxIndex) },
                         state =
                             rememberDraggableState { delta ->
-                                position = (position - delta / stepPx).coerceIn(0f, maxIndex.toFloat())
+                                // Arrasto mais "pesado" e limitado a um card por gesto.
+                                val low = (dragStartIndex - 1).coerceAtLeast(0).toFloat()
+                                val high = (dragStartIndex + 1).coerceAtMost(maxIndex).toFloat()
+                                position = (position - delta / (stepPx * DragResistance)).coerceIn(low, high)
                             },
                         onDragStopped = { velocity ->
-                            val projected = position - velocity / stepPx * 0.25f
-                            settle(projected.roundToInt())
+                            val flick = abs(velocity) > FlickVelocityPx
+                            val target =
+                                when {
+                                    flick && velocity < 0f -> dragStartIndex + 1
+                                    flick -> dragStartIndex - 1
+                                    else -> position.roundToInt()
+                                }
+                            settle(target.coerceIn(dragStartIndex - 1, dragStartIndex + 1))
                         },
                     ),
         ) {
@@ -628,6 +640,8 @@ private fun QuickPickStack(
 }
 
 private const val StackVisibleDepth = 2
+private const val DragResistance = 2.4f
+private const val FlickVelocityPx = 700f
 
 @OptIn(
     ExperimentalFoundationApi::class,

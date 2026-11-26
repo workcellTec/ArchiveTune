@@ -21,7 +21,7 @@ object PerfectDefaults {
     private val AppliedKey = booleanPreferencesKey("perfect_defaults_applied")
 
     /** Só estilo e reprodução: nada de contas, chaves, históricos ou dados pessoais. */
-    private val defaults: List<Pair<Preferences.Key<*>, Any>> =
+    private val defaults: List<Preferences.Pair<*>> =
         listOf(
         booleanPreferencesKey("playVideoAsOfficialAudio") to true,
         booleanPreferencesKey("networkMetered") to false,
@@ -86,17 +86,9 @@ object PerfectDefaults {
             current[OnboardingCompletedKey] != true && (current[LaunchCountKey] ?: 0) <= 0
         context.dataStore.edit { preferences ->
             if (freshInstall) {
-                defaults.forEach { (key, value) -> preferences.putUnchecked(key, value) }
+                preferences.putAll(*defaults.toTypedArray())
             }
             preferences[AppliedKey] = true
         }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun androidx.datastore.preferences.core.MutablePreferences.putUnchecked(
-        key: Preferences.Key<*>,
-        value: Any,
-    ) {
-        this[key as Preferences.Key<Any>] = value
     }
 }

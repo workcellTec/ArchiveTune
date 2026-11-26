@@ -360,6 +360,7 @@ enum class PlayerStreamClient {
 }
 
 val PersistentQueueKey = booleanKey("persistentQueue")
+val SyncLastPlayedKey = booleanKey("syncLastPlayed")
 val PreloadNextSongKey = booleanKey("preloadNextSong")
 val PermanentShuffleKey = booleanKey("permanentShuffle")
 val SkipSilenceKey = booleanKey("skipSilence")

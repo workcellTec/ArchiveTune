@@ -61,6 +61,7 @@ import moe.rukamori.archivetune.constants.PauseOnDeviceMuteKey
 import moe.rukamori.archivetune.constants.PermanentShuffleKey
 import moe.rukamori.archivetune.constants.PlayVideoAsOfficialAudioKey
 import moe.rukamori.archivetune.constants.PersistentQueueKey
+import moe.rukamori.archivetune.constants.SyncLastPlayedKey
 import moe.rukamori.archivetune.constants.SeekExtraSeconds
 import moe.rukamori.archivetune.constants.SkipSilenceKey
 import moe.rukamori.archivetune.constants.StopMusicOnTaskClearKey
@@ -171,6 +172,11 @@ fun PlayerSettings(navController: NavController) {
     val (persistentQueue, onPersistentQueueChange) =
         rememberPreference(
             PersistentQueueKey,
+            defaultValue = true,
+        )
+    val (syncLastPlayed, onSyncLastPlayedChange) =
+        rememberPreference(
+            SyncLastPlayedKey,
             defaultValue = true,
         )
     val (permanentShuffle, onPermanentShuffleChange) =
@@ -607,6 +613,16 @@ fun PlayerSettings(navController: NavController) {
                         icon = { Icon(painterResource(R.drawable.queue_music), null) },
                         checked = persistentQueue,
                         onCheckedChange = onPersistentQueueChange,
+                    )
+                }
+
+                item {
+                    SwitchPreference(
+                        title = { Text(stringResource(R.string.sync_last_played)) },
+                        description = stringResource(R.string.sync_last_played_desc),
+                        icon = { Icon(painterResource(R.drawable.sync), null) },
+                        checked = syncLastPlayed,
+                        onCheckedChange = onSyncLastPlayedChange,
                     )
                 }
 

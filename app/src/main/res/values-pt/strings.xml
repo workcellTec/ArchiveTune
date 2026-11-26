@@ -1046,4 +1046,6 @@
     <string name="widget_glass_center_description">Cartão de vidro médio com cards maiores, título centralizado e controles juntos no meio.</string>
     <string name="in_queue">Na fila</string>
     <string name="play_now">Tocar agora</string>
+    <string name="sync_last_played">Sincronizar última música</string>
+    <string name="sync_last_played_desc">Mostra no mini player a última música tocada em outro dispositivo ao abrir o app.</string>
 </resources>

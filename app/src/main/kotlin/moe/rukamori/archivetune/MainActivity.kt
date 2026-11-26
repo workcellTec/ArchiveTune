@@ -259,6 +259,9 @@ import moe.rukamori.archivetune.db.entities.Artist
 import moe.rukamori.archivetune.db.entities.Playlist
 import moe.rukamori.archivetune.db.entities.SearchHistory
 import moe.rukamori.archivetune.db.entities.Song
+import moe.rukamori.archivetune.constants.SyncLastPlayedKey
+import moe.rukamori.archivetune.constants.InnerTubeCookieKey
+import moe.rukamori.archivetune.innertube.utils.hasYouTubeLoginCookie
 import moe.rukamori.archivetune.extensions.toMediaItem
 import moe.rukamori.archivetune.innertube.YouTube
 import moe.rukamori.archivetune.innertube.models.AlbumItem
@@ -429,6 +432,7 @@ class MainActivity : ComponentActivity() {
                     playPendingVoiceSearchIfReady()
                     openPendingAodModeIfReady()
                     joinPendingTogetherIfReady()
+                    syncLastPlayedFromAccountIfReady()
                 }
             }
 
@@ -506,6 +510,54 @@ class MainActivity : ComponentActivity() {
                     aodModeLaunchRequestCount++
                 }
             }
+    }
+
+    /**
+     * Cross-device "continue listening": once per app start, when logged in and nothing is playing,
+     * loads the account's most recent song (YouTube Music history) into the player, paused, so the
+     * mini player shows what was played on another device. A local queue is only replaced when the
+     * account's latest song differs from this device's own last played song (meaning another device
+     * played something newer); otherwise the restored local queue is kept.
+     */
+    private fun syncLastPlayedFromAccountIfReady() {
+        if (lastPlayedSyncDone) return
+        val connection = playerConnection ?: return
+        lastPlayedSyncDone = true
+        lifecycleScope.launch(Dispatchers.IO) {
+            runCatching {
+                val prefs = dataStore.data.first()
+                if (!(prefs[SyncLastPlayedKey] ?: true)) return@runCatching
+                if (!hasYouTubeLoginCookie(prefs[InnerTubeCookieKey].orEmpty())) return@runCatching
+                connection.queueRestoreCompleted.first { it }
+
+                val latest =
+                    YouTube
+                        .musicHistory()
+                        .getOrNull()
+                        ?.sections
+                        ?.firstOrNull { it.songs.isNotEmpty() }
+                        ?.songs
+                        ?.firstOrNull()
+                        ?: return@runCatching
+                val localLastId = database.lastEventSongId().first()
+                val metadata = latest.toMediaMetadata()
+                if (metadata.id == localLastId) return@runCatching
+
+                withContext(Dispatchers.Main) {
+                    val player = connection.player
+                    // Never interrupt playback or replace something the user already started.
+                    if (player.isPlaying || player.playWhenReady) return@withContext
+                    if (player.currentMediaItem?.mediaId == metadata.id) return@withContext
+                    connection.service.playQueue(
+                        ListQueue(title = metadata.title, items = listOf(metadata.toMediaItem())),
+                        playWhenReady = false,
+                    )
+                }
+            }.onFailure { error ->
+                if (error is kotlinx.coroutines.CancellationException) throw error
+                timber.log.Timber.w(error, "Last played sync failed")
+            }
+        }
     }
 
     private fun joinPendingTogetherIfReady() {
@@ -3334,3 +3386,7 @@ private fun TranslucentTopAppBarIconButton(
         content = content,
     )
 }
+
+/** Guards the account sync so it runs once per process, not on every Activity recreation. */
+@Volatile
+private var lastPlayedSyncDone = false

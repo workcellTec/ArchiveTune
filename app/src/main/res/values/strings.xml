@@ -1575,4 +1575,6 @@
     <string name="widget_glass_center_description">Medium glass card with bigger next-song cards, centered title and grouped controls.</string>
     <string name="in_queue">In queue</string>
     <string name="play_now">Play now</string>
+    <string name="sync_last_played">Sync last played song</string>
+    <string name="sync_last_played_desc">Show the song last played on another device in the mini player when you open the app.</string>
 </resources>

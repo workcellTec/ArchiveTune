@@ -487,6 +487,20 @@ class HomeViewModel
                     homePage.value?.sections?.flatMap { it.items }.orEmpty()
         }
 
+        /** As músicas mais recentes vão para a esquerda do card central (a mais recente fica ao lado dele). */
+        private suspend fun List<Song>?.withRecentsFirst(): List<Song>? {
+            if (isNullOrEmpty()) return this
+            val recents =
+                database
+                    .recentSongs(limit = 12)
+                    .first()
+                    .distinctBy { it.id }
+                    .take(QuickPickRecentCount)
+            if (recents.isEmpty()) return this
+            val recentIds = recents.mapTo(HashSet()) { it.id }
+            return recents.reversed() + filterNot { it.id in recentIds }
+        }
+
         private suspend fun quickPicksWithFallback(primary: List<Song>): List<Song> {
             val primaryPicks = primary.toQuickPickSample()
             if (primaryPicks.isNotEmpty()) return primaryPicks
@@ -541,7 +555,7 @@ class HomeViewModel
                         reportException(throwable)
                         emit(quickPicksWithFallback(emptyList()))
                     }.collect { picks ->
-                        quickPicks.value = picks
+                        quickPicks.value = picks.withRecentsFirst()
                         updateAllLocalItems()
                     }
             }
@@ -562,7 +576,7 @@ class HomeViewModel
                         null
                     }
                 }
-            quickPicks.value = picks
+            quickPicks.value = picks.withRecentsFirst()
             updateAllLocalItems()
         }
 
@@ -1248,3 +1262,6 @@ class HomeViewModel
             }
         }
     }
+
+/** Músicas recentes que abrem à esquerda na pilha das Escolhas rápidas. */
+private const val QuickPickRecentCount = 4

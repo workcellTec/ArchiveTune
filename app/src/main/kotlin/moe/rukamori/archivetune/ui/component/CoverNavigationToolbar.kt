@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp as lerpColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,7 +75,8 @@ internal fun CoverNavigationToolbar(
     onSearchItemDoubleClick: (() -> Unit)?,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val coverGradient = rememberCoverGradient()
+    val lightCover = scheme.surface.luminance() > 0.5f
+    val coverGradient = rememberCoverGradient(light = lightCover)
     val cover = coverGradient?.colorAt(1f)
     val fallbackContainer = if (pureBlack) Color.Black else scheme.surfaceContainer
     val container by animateColorAsState(cover ?: fallbackContainer, label = "coverNavigationContainer")
@@ -82,10 +84,11 @@ internal fun CoverNavigationToolbar(
     val jointGradient = if (mode == NavigationBarMode.GRADIENT) coverGradient else null
     val barBrush = remember(jointGradient) { jointGradient?.brush(NavigationGradientStart, 1f) }
     val bridgeColor = jointGradient?.colorAt((MiniPlayerGradientEnd + NavigationGradientStart) / 2f) ?: container
-    val selectedTint = if (hasCover) Color.White else scheme.primary
-    val unselectedTint = if (hasCover) Color.White.copy(alpha = 0.72f) else scheme.onSurfaceVariant
+    val coverContent = if (lightCover) Color.Black else Color.White
+    val selectedTint = if (hasCover) coverContent.copy(alpha = if (lightCover) 0.87f else 1f) else scheme.primary
+    val unselectedTint = if (hasCover) coverContent.copy(alpha = if (lightCover) 0.6f else 0.72f) else scheme.onSurfaceVariant
     val indicatorBase = jointGradient?.colorAt((NavigationGradientStart + 1f) / 2f) ?: container
-    val indicator = if (hasCover) lerpColor(indicatorBase, Color.White, 0.22f) else scheme.secondaryContainer
+    val indicator = if (hasCover) lerpColor(indicatorBase, coverContent, if (lightCover) 0.1f else 0.22f) else scheme.secondaryContainer
 
     val isPill = mode == NavigationBarMode.ICONS_PILL
     val proximity = if (mode.joinsMiniPlayer) miniPlayerProximityProvider() else 0f

@@ -547,7 +547,7 @@ private fun QuickPickStack(
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     val maxIndex = (count - 1).coerceAtLeast(0)
-    var position by rememberSaveable { mutableFloatStateOf(if (count > 1) 1f else 0f) }
+    var position by rememberSaveable { mutableFloatStateOf(minOf(StackRecentCount, count / 2).toFloat()) }
     var dragStartIndex by remember { mutableIntStateOf(0) }
     val front by remember { derivedStateOf { position.roundToInt().coerceIn(0, maxIndex) } }
     val shape = MaterialTheme.shapes.extraLarge
@@ -640,6 +640,9 @@ private fun QuickPickStack(
 }
 
 private const val StackVisibleDepth = 2
+
+/** Quantas músicas recentes ficam à esquerda do card central ao abrir a pilha. */
+private const val StackRecentCount = 4
 private const val DragResistance = 2.4f
 private const val FlickVelocityPx = 700f
 

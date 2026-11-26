@@ -57,6 +57,8 @@ class CoverGradient(
     first: Color,
     second: Color,
     third: Color,
+    /** Light theme: tint over white instead of black, so the gradient follows the cover's brightness. */
+    val light: Boolean = false,
 ) {
     private val points =
         listOf(
@@ -89,21 +91,24 @@ class CoverGradient(
     private fun effective(
         color: Color,
         alpha: Float,
-    ): Color = lerp(Color.Black, color.copy(alpha = 1f), alpha * GradientScrimKeep)
+    ): Color = lerp(if (light) Color.White else Color.Black, color.copy(alpha = 1f), alpha * GradientScrimKeep)
 
     companion object {
-        fun from(colors: List<Color>): CoverGradient? {
+        fun from(
+            colors: List<Color>,
+            light: Boolean = false,
+        ): CoverGradient? {
             val first = colors.firstOrNull() ?: return null
             val second = colors.getOrElse(1) { first }
             val third = colors.getOrElse(2) { second }
-            return CoverGradient(first, second, third)
+            return CoverGradient(first, second, third, light)
         }
     }
 }
 
 /** Gradient colors taken from the cover of the song that is playing; empty while unavailable. */
 @Composable
-fun rememberCoverGradient(): CoverGradient? {
+fun rememberCoverGradient(light: Boolean = false): CoverGradient? {
     val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current
     val metadataFlow =
@@ -158,7 +163,7 @@ fun rememberCoverGradient(): CoverGradient? {
         if (extracted.isNotEmpty()) cache[thumbnailUrl] = extracted
         colors = extracted
     }
-    return remember(colors) { CoverGradient.from(colors) }
+    return remember(colors, light) { CoverGradient.from(colors, light) }
 }
 
 /** Solid dark color for the navigation bar: the bottom tone of the gradient. */

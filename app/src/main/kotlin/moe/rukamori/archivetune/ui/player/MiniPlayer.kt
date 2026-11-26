@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -199,9 +200,11 @@ private fun NewMiniPlayer(
             else -> miniPlayerBackgroundStyle
         }
 
+    val lightCover = MaterialTheme.colorScheme.surface.luminance() > 0.5f
     val contentColors =
         rememberMiniPlayerContentColors(
             useArtworkBackground = shouldUseArtworkBackground && backgroundPalette != null,
+            lightCover = lightCover,
         )
     val proximity =
         if (navigationBarMode.joinsMiniPlayer) navigationProximityProvider() else 0f
@@ -243,6 +246,7 @@ private fun NewMiniPlayer(
                 style = effectiveBackgroundStyle,
                 palette = backgroundPalette,
                 continuesIntoNavigation = continuesGradient,
+                lightCover = lightCover,
                 hazeState = hazeState,
                 pureBlack = pureBlack,
                 shape = miniPlayerShape,
@@ -259,10 +263,14 @@ private fun NewMiniPlayer(
 }
 
 @Composable
-private fun rememberMiniPlayerContentColors(useArtworkBackground: Boolean): MiniPlayerContentColors {
+private fun rememberMiniPlayerContentColors(
+    useArtworkBackground: Boolean,
+    lightCover: Boolean,
+): MiniPlayerContentColors {
     val colorScheme = MaterialTheme.colorScheme
     return remember(
         useArtworkBackground,
+        lightCover,
         colorScheme.primary,
         colorScheme.onPrimary,
         colorScheme.outline,
@@ -274,7 +282,24 @@ private fun rememberMiniPlayerContentColors(useArtworkBackground: Boolean): Mini
         colorScheme.primaryContainer,
         colorScheme.onPrimaryContainer,
     ) {
-        if (useArtworkBackground) {
+        if (useArtworkBackground && lightCover) {
+            val ink = Color.Black
+            MiniPlayerContentColors(
+                title = ink.copy(alpha = 0.87f),
+                secondary = ink.copy(alpha = 0.62f),
+                progress = ink.copy(alpha = 0.8f),
+                progressTrack = ink.copy(alpha = 0.14f),
+                artworkContainer = ink.copy(alpha = 0.06f),
+                artworkBorder = ink.copy(alpha = 0.12f),
+                primaryButtonContainer = ink.copy(alpha = 0.84f),
+                primaryButtonIcon = Color.White,
+                secondaryButtonContainer = Color.White.copy(alpha = 0.5f),
+                buttonIcon = ink.copy(alpha = 0.87f),
+                disabledButtonIcon = ink.copy(alpha = 0.32f),
+                togetherContainer = ink.copy(alpha = 0.08f),
+                togetherContent = ink.copy(alpha = 0.87f),
+            )
+        } else if (useArtworkBackground) {
             MiniPlayerContentColors(
                 title = Color.White,
                 secondary = Color.White.copy(alpha = 0.72f),
@@ -315,6 +340,7 @@ private fun MiniPlayerBackground(
     style: MiniPlayerBackgroundStyle,
     palette: MiniPlayerBackgroundPalette?,
     continuesIntoNavigation: Boolean,
+    lightCover: Boolean,
     hazeState: HazeState,
     pureBlack: Boolean,
     shape: RoundedCornerShape,
@@ -350,11 +376,12 @@ private fun MiniPlayerBackground(
             val colors = requireNotNull(palette)
             if (continuesIntoNavigation) {
                 // The navigation bar picks this gradient up below, so only the top slice is drawn here.
-                val joint = remember(colors) { CoverGradient(colors.first, colors.second, colors.third) }
+                val joint = remember(colors, lightCover) { CoverGradient(colors.first, colors.second, colors.third, lightCover) }
                 Box(modifier = modifier.background(joint.brush(0f, MiniPlayerGradientEnd)))
                 return
             }
-            Box(modifier = modifier.background(Color.Black)) {
+            val base = if (lightCover) Color.White else Color.Black
+            Box(modifier = modifier.background(base)) {
                 Box(
                     modifier =
                         Modifier
@@ -374,7 +401,7 @@ private fun MiniPlayerBackground(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.32f)),
+                            .background(base.copy(alpha = 0.32f)),
                 )
             }
         }

@@ -101,7 +101,7 @@
     <string name="aod_customize_entry_desc">ปรับแต่งหน้าจอเล่นเพลงแบบ Always-On</string>
     <string name="aod_customize_preview">ตัวอย่างสด</string>
     <string name="aod_customize_mode_enabled">เปิดใช้งานโหมด AOD</string>
-    <string name="aod_customize_mode_enabled_desc">อนุญาตให้ ArchiveTune แสดงหน้าจอเครื่องเล่น always-on</string>
+    <string name="aod_customize_mode_enabled_desc">อนุญาตให้ Perfect Music แสดงหน้าจอเครื่องเล่น always-on</string>
     <string name="aod_customize_visibility">การมองเห็น</string>
     <string name="aod_customize_show_thumbnail">แสดงภาพขนาดย่อ</string>
     <string name="aod_customize_show_artist">แสดงศิลปิน</string>

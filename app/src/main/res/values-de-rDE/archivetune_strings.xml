@@ -514,8 +514,8 @@
     <string name="storage_location_sheet_title">Speicherort</string>
     <string name="storage_location_apply">Diesen Speicher verwenden</string>
     <string name="storage_folder_selected_restart">Speicherordner gespeichert. App startet in 3 Sekunden neu.</string>
-    <string name="storage_folder_not_writable">ArchiveTune kann keine Cachedateien in diesen Ordner schreiben.</string>
-    <string name="storage_cache_clear_warning">Lasse ArchiveTune offen während Cachedateien entfernt werden.</string>
+    <string name="storage_folder_not_writable">Perfect Music kann keine Cachedateien in diesen Ordner schreiben.</string>
+    <string name="storage_cache_clear_warning">Lasse Perfect Music offen während Cachedateien entfernt werden.</string>
     <string name="history_duration_desc">Minimale Wiedergabezeit, um einen Song als gehört zu zählen</string>
     <string name="crossfade_gapless_title">Lückenlose Alben überspringen</string>
     <string name="restore_corrupted">Die Backupdatei scheint korrumpiert zu sein und konnte nicht gelesen werden.</string>

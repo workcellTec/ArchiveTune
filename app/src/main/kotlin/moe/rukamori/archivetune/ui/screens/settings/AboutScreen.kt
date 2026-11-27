@@ -11,17 +11,14 @@ package moe.rukamori.archivetune.ui.screens.settings
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -93,15 +90,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -116,23 +108,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.graphics.ColorUtils
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
-import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.LocalPlayerAwareWindowInsets
 import moe.rukamori.archivetune.R
 import moe.rukamori.archivetune.ui.component.IconButton
+import moe.rukamori.archivetune.ui.component.PerfectMusicLogo
 import moe.rukamori.archivetune.ui.player.EditorialMorphShape
 import moe.rukamori.archivetune.ui.utils.backToMain
 import moe.rukamori.archivetune.viewmodels.AboutContributorUiCollection
@@ -948,14 +938,8 @@ private fun AboutHeroEmblem(modifier: Modifier = Modifier) {
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
         label = "aboutEmblemPress",
     )
-    val accent by animateColorAsState(
-        targetValue = perfectLogoAccent(MaterialTheme.colorScheme.primary),
-        animationSpec = tween(durationMillis = AboutMotion.EmblemColorMillis),
-        label = "aboutEmblemAccent",
-    )
 
     PerfectMusicLogo(
-        accent = accent,
         modifier =
             modifier
                 .size(AboutDimensions.EmblemSize)
@@ -972,61 +956,6 @@ private fun AboutHeroEmblem(modifier: Modifier = Modifier) {
                     )
                 },
     )
-}
-
-/** Cor de destaque da logo: mantém o matiz do tema (que acompanha o álbum) com saturação/brilho fixos. */
-private fun perfectLogoAccent(themeColor: Color): Color {
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(themeColor.toArgb(), hsl)
-    val saturation = lerp(0.12f, 0.88f, (hsl[1] / 0.5f).coerceIn(0f, 1f))
-    return Color.hsl(hsl[0], saturation, 0.54f)
-}
-
-@Composable
-private fun PerfectMusicLogo(
-    accent: Color,
-    modifier: Modifier = Modifier,
-) {
-    val hsl = FloatArray(3).also { ColorUtils.colorToHSL(accent.toArgb(), it) }
-    val light = Color.hsl(hsl[0], hsl[1], 0.64f)
-    val mid = Color.hsl(hsl[0], hsl[1] * 0.88f, 0.38f)
-    val back = Color.hsl(hsl[0], hsl[1] * 0.66f, 0.19f)
-    val reflection = Color.hsl(hsl[0], hsl[1] * 0.62f, 0.28f).copy(alpha = 0.6f)
-
-    Canvas(modifier = modifier) {
-        val unit = size.minDimension / LogoViewport
-        withTransform({
-            scale(unit, unit, pivot = Offset.Zero)
-            translate(-LogoOriginX, -LogoOriginY)
-        }) {
-            drawRoundRect(back, Offset(130f, 80f), Size(215f, 215f), CornerRadius(56f))
-            drawRoundRect(mid, Offset(102f, 112f), Size(213f, 213f), CornerRadius(56f))
-            drawRoundRect(LogoFrontPlate, Offset(75f, 148f), Size(210f, 207f), CornerRadius(54f))
-            drawRoundRect(
-                color = accent,
-                topLeft = Offset(75f, 148f),
-                size = Size(210f, 207f),
-                cornerRadius = CornerRadius(54f),
-                style = Stroke(width = 7f),
-            )
-            LogoBarCenters.forEachIndexed { index, centerX ->
-                val barHeight = LogoBarHeights[index]
-                val barWidth = if (index % 8 == 0) 12f else 13f
-                drawRoundRect(
-                    color = if (index == LogoPeakBar) light else accent,
-                    topLeft = Offset(centerX - barWidth / 2f, LogoBaseline - barHeight),
-                    size = Size(barWidth, barHeight),
-                    cornerRadius = CornerRadius(6f),
-                )
-                drawRoundRect(
-                    color = reflection,
-                    topLeft = Offset(centerX - barWidth / 2f, LogoBaseline + 6f),
-                    size = Size(barWidth, (barHeight * 0.72f).roundToInt().toFloat()),
-                    cornerRadius = CornerRadius(6f),
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -1999,15 +1928,6 @@ private enum class AboutSection {
     CONTRIBUTORS,
 }
 
-private const val LogoViewport = 300f
-private const val LogoOriginX = 60f
-private const val LogoOriginY = 70f
-private const val LogoBaseline = 246f
-private const val LogoPeakBar = 4
-private val LogoFrontPlate = Color(0xFF19191C)
-private val LogoBarCenters = floatArrayOf(104f, 124f, 144f, 164f, 184f, 204f, 224f, 242f, 262f)
-private val LogoBarHeights = floatArrayOf(10f, 24f, 44f, 68f, 88f, 60f, 76f, 36f, 18f)
-
 private val TeamAvatarPolygons =
     listOf(
         MaterialShapes.Cookie9Sided,
@@ -2057,7 +1977,6 @@ private object AboutMotion {
     const val ContributorStaggerMillis = 28L
     const val ContributorStartScale = 0.6f
     const val HeroParallaxFactor = 0.4f
-    const val EmblemColorMillis = 600
     const val EmblemPressedScale = 0.92f
     const val BadgePressedRotation = 45f
 }

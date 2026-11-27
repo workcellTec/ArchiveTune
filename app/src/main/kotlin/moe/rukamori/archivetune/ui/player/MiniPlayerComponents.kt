@@ -16,7 +16,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
@@ -72,6 +71,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import coil3.compose.AsyncImage
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import moe.rukamori.archivetune.R
@@ -82,10 +83,9 @@ import moe.rukamori.archivetune.extensions.togglePlayPause
 import moe.rukamori.archivetune.models.MediaMetadata
 import moe.rukamori.archivetune.playback.PlayerConnection
 import moe.rukamori.archivetune.together.isConnectedToSession
+import moe.rukamori.archivetune.ui.component.PerfectMusicLogo
 import moe.rukamori.archivetune.utils.rememberLowDataModeActive
 import moe.rukamori.archivetune.utils.rememberPreference
-import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 private val MiniPlayerTransportButtonSpacing = 4.dp
 
@@ -385,11 +385,7 @@ private fun MiniPlayerArtwork(
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {
-                Image(
-                    painter = painterResource(R.drawable.about_splash),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                )
+                PerfectMusicLogo(modifier = Modifier.size(28.dp))
             }
         }
     }

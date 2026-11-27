@@ -459,7 +459,7 @@
     <string name="storage_folder_selected_restart">Carpeta de almacenamiento guardada. La aplicación se reiniciará en 3 segundos.</string>
     <string name="storage_folder_invalid">Seleccione una carpeta válida.</string>
     <string name="storage_folder_unsupported">Esta carpeta no puede ser utilizada por la caché de medios basada en archivos.</string>
-    <string name="storage_folder_not_writable">ArchiveTune no puede escribir archivos de caché en esta carpeta.</string>
+    <string name="storage_folder_not_writable">Perfect Music no puede escribir archivos de caché en esta carpeta.</string>
     <string name="storage_cache_cleared">Caché vaciada.</string>
     <string name="storage_cache_clear_failed">No se pudo borrar la caché. Compruebe el acceso a la tarjeta SD.</string>
     <string name="android_auto_suggested_songs">Canciones sugeridas</string>
@@ -542,7 +542,7 @@
     <string name="music_recognition_notification_no_match_text">Deja que la música suene con claridad y vuelve a intentar el reconocimiento.</string>
     <string name="music_recognition_notification_signature_failed_text">La grabación de audio no contenía suficiente música como para permitir la identificación.</string>
     <string name="music_recognition_notification_recognition_failed_text">El servicio de reconocimiento no pudo identificar este audio. Inténtelo de nuevo en breve.</string>
-    <string name="storage_cache_clear_warning">Mantén ArchiveTune abierto mientras se eliminan los archivos de caché.</string>
+    <string name="storage_cache_clear_warning">Mantén Perfect Music abierto mientras se eliminan los archivos de caché.</string>
     <string name="history_duration_desc">Tiempo mínimo de reproducción para que una canción se considere escuchada</string>
     <string name="history_duration_seconds">%1$s s</string>
     <string name="stats_top_songs">Mejores canciones</string>
@@ -617,7 +617,7 @@
     <string name="aod_customize_auto_start_screen_off">Mostrar la pantalla siempre activa (AOD) cuando la pantalla esté apagada</string>
     <string name="aod_customize_auto_start_screen_off_desc">Mostrar automáticamente la pantalla ambiental AOD cuando la pantalla se apaga durante la reproducción</string>
     <string name="aod_customize_screensaver_info_title">Protector de pantalla del sistema (Cargando AOD)</string>
-    <string name="aod_customize_screensaver_info_desc">Para activar la pantalla siempre activa (AOD) automáticamente mientras se carga o está en la base de carga, ve a Ajustes de Android &gt; Pantalla &gt; Protector de pantalla y selecciona ArchiveTune.</string>
+    <string name="aod_customize_screensaver_info_desc">Para activar la pantalla siempre activa (AOD) automáticamente mientras se carga o está en la base de carga, ve a Ajustes de Android &gt; Pantalla &gt; Protector de pantalla y selecciona Perfect Music.</string>
     <string name="use_system_language">Utilizar el idioma del sistema</string>
     <string name="backup_category_downloads">Sincronizar canciones sin conexión</string>
     <string name="backup_category_downloads_desc">Volverán a descargarse tras la restauración</string>
@@ -663,6 +663,6 @@
     <string name="arrange_library_chips">Ordenar etiquetas de la biblioteca</string>
     <string name="arrange_library_chips_desc">Ordenar pestañas de la biblioteca</string>
     <string name="aod_customize_mode_enabled">Activar el modo AOD</string>
-    <string name="aod_customize_mode_enabled_desc">Permitir que ArchiveTune muestre la pantalla del reproductor siempre activo</string>
+    <string name="aod_customize_mode_enabled_desc">Permitir que Perfect Music muestre la pantalla del reproductor siempre activo</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
 </resources>

@@ -105,7 +105,7 @@
     <string name="aod_customize_entry_desc">Kustomisasi layar pemutar selalu aktif</string>
     <string name="aod_customize_preview">Pratinjau langsung</string>
     <string name="aod_customize_mode_enabled">Aktifkan Mode AOD</string>
-    <string name="aod_customize_mode_enabled_desc">Izinkan ArchiveTune menampilkan layar pemutar selalu aktif</string>
+    <string name="aod_customize_mode_enabled_desc">Izinkan Perfect Music menampilkan layar pemutar selalu aktif</string>
     <string name="aod_customize_visibility">Visibilitas</string>
     <string name="aod_customize_show_thumbnail">Tampilkan thumbnail</string>
     <string name="aod_customize_show_artist">Tampilkan artis</string>
@@ -216,7 +216,7 @@
     <string name="aod_customize_auto_start_screen_off">Tampilkan AOD saat layar mati</string>
     <string name="aod_customize_auto_start_screen_off_desc">Secara otomatis menampilkan layar ambien AOD saat layar mati selama pemutaran</string>
     <string name="aod_customize_screensaver_info_title">Screen Saver Sistem (AOD Pengecasan)</string>
-    <string name="aod_customize_screensaver_info_desc">Untuk mengaktifkan AOD secara otomatis saat mengisi daya atau terpasang di dok, buka Pengaturan Android &gt; Tampilan &gt; Screen saver lalu pilih ArchiveTune.</string>
+    <string name="aod_customize_screensaver_info_desc">Untuk mengaktifkan AOD secara otomatis saat mengisi daya atau terpasang di dok, buka Pengaturan Android &gt; Tampilan &gt; Screen saver lalu pilih Perfect Music.</string>
     <string name="retry_button">Coba lagi</string>
     <string name="top_music_videos">Video musik teratas</string>
     <string name="trending">Sedang tren</string>
@@ -397,10 +397,10 @@
     <string name="storage_folder_selected_restart">Folder penyimpanan disimpan. Aplikasi akan dimulai ulang dalam 3 detik.</string>
     <string name="storage_folder_invalid">Pilih folder yang valid.</string>
     <string name="storage_folder_unsupported">Folder ini tidak dapat digunakan oleh cache media berbasis file.</string>
-    <string name="storage_folder_not_writable">ArchiveTune tidak dapat menulis file cache di folder ini.</string>
+    <string name="storage_folder_not_writable">Perfect Music tidak dapat menulis file cache di folder ini.</string>
     <string name="storage_cache_cleared">Cache dibersihkan.</string>
     <string name="storage_cache_clear_failed">Cache tidak dapat dibersihkan. Periksa akses kartu SD.</string>
-    <string name="storage_cache_clear_warning">Tetap buka ArchiveTune saat file cache sedang dihapus.</string>
+    <string name="storage_cache_clear_warning">Tetap buka Perfect Music saat file cache sedang dihapus.</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="clear_song_cache_dialog">Apakah Anda yakin ingin menghapus semua lagu yang di-cache?</string>
     <string name="clear_image_cache_dialog">Apakah Anda yakin ingin menghapus semua gambar yang di-cache?</string>

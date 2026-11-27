@@ -429,7 +429,7 @@
     <string name="storage_folder_selected_restart">Đã lưu thư mục lưu trữ. Ứng dụng sẽ khởi động lại sau 3 giây.</string>
     <string name="storage_folder_invalid">Chọn thư mục hợp lệ.</string>
     <string name="storage_folder_unsupported">Không thể sử dụng thư mục này cho bộ nhớ đệm phương tiện.</string>
-    <string name="storage_folder_not_writable">ArchiveTune không thể ghi tệp bộ đệm trong thư mục này.</string>
+    <string name="storage_folder_not_writable">Perfect Music không thể ghi tệp bộ đệm trong thư mục này.</string>
     <string name="spotify_connect">Kết nối Spotify</string>
     <string name="spotify_available_count">%1$d danh sách phát có sẵn</string>
     <string name="spotify_connected_as">Đã kết nối với %1$s</string>
@@ -550,7 +550,7 @@
     <string name="music_recognition_notification_signature_failed_text">Âm thanh thu được không chứa đủ nhạc để nhận dạng.</string>
     <string name="music_recognition_notification_recognition_failed_text">Dịch vụ nhận dạng không thể xác định âm thanh này. Hãy thử lại sau.</string>
     <string name="aod_customize_mode_enabled">Bật chế độ AOD</string>
-    <string name="aod_customize_mode_enabled_desc">Cho phép ArchiveTune hiển thị màn hình trình phát luôn bật</string>
+    <string name="aod_customize_mode_enabled_desc">Cho phép Perfect Music hiển thị màn hình trình phát luôn bật</string>
     <string name="aod_customize_show_lyric_ticker">Hiển thị dòng lời chạy</string>
     <string name="aod_background_adaptive_art">Tác phẩm thích ứng</string>
     <string name="aod_background_frosted_wallpaper">Hình nền mờ</string>
@@ -594,7 +594,7 @@
     <string name="aod_customize_auto_start_screen_off">Hiển thị AOD khi màn hình tắt</string>
     <string name="aod_customize_auto_start_screen_off_desc">Tự động hiển thị màn hình môi trường AOD khi màn hình tắt trong khi phát nhạc</string>
     <string name="aod_customize_screensaver_info_title">Trình bảo vệ màn hình hệ thống (AOD khi sạc)</string>
-    <string name="aod_customize_screensaver_info_desc">Để kích hoạt AOD tự động khi sạc hoặc đặt trên đế, hãy vào Cài đặt Android &gt; Màn hình &gt; Trình bảo vệ màn hình và chọn ArchiveTune.</string>
+    <string name="aod_customize_screensaver_info_desc">Để kích hoạt AOD tự động khi sạc hoặc đặt trên đế, hãy vào Cài đặt Android &gt; Màn hình &gt; Trình bảo vệ màn hình và chọn Perfect Music.</string>
     <string name="arrange_playlist_tags">Sắp xếp thẻ danh sách phát</string>
     <string name="arrange_playlist_tags_desc">Chọn thứ tự hiển thị bộ lọc thẻ trong thư viện của bạn</string>
     <string name="block_artist">Chặn nghệ sĩ</string>

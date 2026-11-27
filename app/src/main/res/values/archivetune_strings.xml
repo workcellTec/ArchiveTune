@@ -197,7 +197,7 @@
     <string name="aod_customize_entry_desc">Customize the always-on player screen</string>
     <string name="aod_customize_preview">Live preview</string>
     <string name="aod_customize_mode_enabled">Enable AOD mode</string>
-    <string name="aod_customize_mode_enabled_desc">Allow ArchiveTune to show the always-on player screen</string>
+    <string name="aod_customize_mode_enabled_desc">Allow Perfect Music to show the always-on player screen</string>
     <string name="aod_customize_visibility">Visibility</string>
     <string name="aod_customize_show_thumbnail">Show thumbnail</string>
     <string name="aod_customize_show_artist">Show artist</string>
@@ -308,7 +308,7 @@
     <string name="aod_customize_auto_start_screen_off">Display AOD when screen turns off</string>
     <string name="aod_customize_auto_start_screen_off_desc">Automatically show AOD ambient screen when screen turns off during playback</string>
     <string name="aod_customize_screensaver_info_title">System Screen Saver (Charging AOD)</string>
-    <string name="aod_customize_screensaver_info_desc">To activate AOD automatically while charging or docked, go to Android Settings &gt; Display &gt; Screen saver and select ArchiveTune.</string>
+    <string name="aod_customize_screensaver_info_desc">To activate AOD automatically while charging or docked, go to Android Settings &gt; Display &gt; Screen saver and select Perfect Music.</string>
     <string name="retry_button">Retry</string>
     <string name="top_music_videos">Top music videos</string>
     <string name="trending">Trending</string>
@@ -531,11 +531,11 @@
     <string name="storage_folder_selected_restart">Storage folder saved. App will restart in 3 seconds.</string>
     <string name="storage_folder_invalid">Select a valid folder.</string>
     <string name="storage_folder_unsupported">This folder cannot be used by the file-backed media cache.</string>
-    <string name="storage_folder_not_writable">ArchiveTune cannot write cache files in this folder.</string>
+    <string name="storage_folder_not_writable">Perfect Music cannot write cache files in this folder.</string>
     <string name="storage_cache_cleared">Cache cleared.</string>
     <string name="storage_cache_clear_failed">Cache could not be cleared. Check SD card access.</string>
-    <string name="storage_cache_clear_warning">Keep ArchiveTune open while cache files are being removed.</string>
-    <string name="storage_overview_label">ArchiveTune is using</string>
+    <string name="storage_cache_clear_warning">Keep Perfect Music open while cache files are being removed.</string>
+    <string name="storage_overview_label">Perfect Music is using</string>
     <string name="storage_overview_measuring">Measuring storage…</string>
     <string name="storage_overview_empty">Nothing is stored yet. Downloads and caches appear here as you listen.</string>
     <string name="storage_overview_volume_share">%1$s of %2$s</string>
@@ -543,7 +543,7 @@
     <string name="storage_location_used_percent">%1$s used</string>
     <string name="storage_location_change">Change</string>
     <string name="storage_location_current">Current</string>
-    <string name="storage_location_sheet_supporting">Downloads and caches are moved to the new location, then ArchiveTune restarts.</string>
+    <string name="storage_location_sheet_supporting">Downloads and caches are moved to the new location, then Perfect Music restarts.</string>
     <string name="storage_section_breakdown">What\'s using space</string>
     <string name="storage_legend_detail">%1$s · %2$s</string>
     <string name="storage_section_cleanup">Automatic cleanup</string>
@@ -745,7 +745,7 @@
     <string name="theme_discard_text">Your edits to this theme haven\'t been applied yet.</string>
     <string name="theme_discard_confirm">Discard</string>
     <string name="theme_reset_done">Colors reset to default</string>
-    <string name="theme_import_failed_desc">This file isn\'t a valid ArchiveTune theme.</string>
+    <string name="theme_import_failed_desc">This file isn\'t a valid Perfect Music theme.</string>
     <string name="theme_hex_invalid">Use 6 or 8 hex digits, like #ED5564</string>
     <string name="theme_seed_colors_desc">Pick a role to edit its seed color</string>
     <string name="theme_editor_mode_hsv" translatable="false">HSV</string>

@@ -1112,7 +1112,7 @@ private fun buildCrashReport(
     stack: String,
 ): String =
     buildString {
-        appendLine("ArchiveTune crash report")
+        appendLine("Perfect Music crash report")
         if (timestampText.isNotBlank()) appendLine("Time: $timestampText")
         if (versionLabel != null) appendLine("App: $versionLabel")
         appendLine("Package: $packageName")

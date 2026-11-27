@@ -419,10 +419,10 @@
     <string name="storage_folder_selected_restart">تم حفظ مجلد التخزين. سيتم إعادة تشغيل التطبيق خلال 3 ثوانٍ.</string>
     <string name="storage_folder_invalid">اختر مجلدًا صالحًا.</string>
     <string name="storage_folder_unsupported">لا يمكن استخدام هذا المجلد بواسطة ذاكرة التخزين المؤقت للوسائط.</string>
-    <string name="storage_folder_not_writable">لا يمكن لـ ArchiveTune كتابة ملفات التخزين المؤقت في هذا المجلد.</string>
+    <string name="storage_folder_not_writable">لا يمكن لـ Perfect Music كتابة ملفات التخزين المؤقت في هذا المجلد.</string>
     <string name="storage_cache_cleared">تم مسح ذاكرة التخزين المؤقت.</string>
     <string name="storage_cache_clear_failed">تعذر مسح ذاكرة التخزين المؤقت. تحقق من الوصول إلى بطاقة SD.</string>
-    <string name="storage_cache_clear_warning">أبقِ ArchiveTune مفتوحًا أثناء إزالة ملفات التخزين المؤقت.</string>
+    <string name="storage_cache_clear_warning">أبقِ Perfect Music مفتوحًا أثناء إزالة ملفات التخزين المؤقت.</string>
     <string name="canvas_cache">ذاكرة التخزين المؤقت للشاشة التفاعلية</string>
     <string name="clear_canvas_cache">مسح ذاكرة التخزين المؤقت للشاشة التفاعلية</string>
     <string name="clear_canvas_cache_dialog">هل أنت متأكد من رغبتك في مسح جميع الشاشات التفاعلية المخزنة مؤقتًا؟</string>

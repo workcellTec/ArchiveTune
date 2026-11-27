@@ -1996,7 +1996,7 @@ fun ThemeCreatorScreen(navController: NavController) {
                     val safeName =
                         themeName
                             .trim()
-                            .ifBlank { "ArchiveTune Theme" }
+                            .ifBlank { "Perfect Music Theme" }
                             .replace(Regex("[^a-zA-Z0-9 _\\-]"), "_")
                             .take(64)
                     exportLauncher.launch("$safeName.json")

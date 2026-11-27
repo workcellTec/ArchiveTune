@@ -317,10 +317,10 @@
     <string name="storage_folder_selected_restart">اتحفظ مجلد التخزين. التطبيق هيقفل ويفتح تاني خلال 3 ثواني.</string>
     <string name="storage_folder_invalid">اختار مجلد صالح.</string>
     <string name="storage_folder_unsupported">المجلد ده مش متاح للاستخدام بواسطة التخزين المؤقت المدعوم بالملفات.</string>
-    <string name="storage_folder_not_writable">ArchiveTune مش قادر يكتب ملفات التخزين المؤقت في المجلد ده.</string>
+    <string name="storage_folder_not_writable">Perfect Music مش قادر يكتب ملفات التخزين المؤقت في المجلد ده.</string>
     <string name="storage_cache_cleared">اتمسحت الملفات المؤقتة.</string>
     <string name="storage_cache_clear_failed">معرفناش نمسح الملفات المؤقتة. اتأكد من صلاحية الوصول لكارت الميموري.</string>
-    <string name="storage_cache_clear_warning">سيب ArchiveTune مفتوح لحد ما نخلص مسح ملفات التخزين المؤقت.</string>
+    <string name="storage_cache_clear_warning">سيب Perfect Music مفتوح لحد ما نخلص مسح ملفات التخزين المؤقت.</string>
     <string name="sensitivity_percentage">%1$d%%</string>
     <string name="clear_song_cache_dialog">متأكد إنك عايز تمسح كل الأغاني المتخزنة مؤقتاً؟</string>
     <string name="clear_image_cache_dialog">متأكد إنك عايز تمسح كل الصور المتخزنة مؤقتاً؟</string>

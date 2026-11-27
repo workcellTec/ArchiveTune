@@ -39,11 +39,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.spring
@@ -92,7 +90,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalRippleThemeConfiguration
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
@@ -174,7 +171,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.datastore.preferences.core.edit
-import androidx.graphics.shapes.Morph
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -294,6 +290,7 @@ import moe.rukamori.archivetune.playback.queues.Queue
 import moe.rukamori.archivetune.playback.queues.YouTubeAlbumRadio
 import moe.rukamori.archivetune.playback.queues.YouTubeQueue
 import moe.rukamori.archivetune.ui.back.BackOwnershipPolicy
+import moe.rukamori.archivetune.ui.component.PerfectMusicLogo
 import moe.rukamori.archivetune.ui.component.BottomSheetMenu
 import moe.rukamori.archivetune.ui.component.BottomSheetPage
 import moe.rukamori.archivetune.ui.component.COLLAPSED_ANCHOR
@@ -312,7 +309,6 @@ import moe.rukamori.archivetune.ui.component.rememberBottomSheetState
 import moe.rukamori.archivetune.ui.component.shimmer.ShimmerTheme
 import moe.rukamori.archivetune.ui.menu.YouTubeSongMenu
 import moe.rukamori.archivetune.ui.player.BottomSheetPlayer
-import moe.rukamori.archivetune.ui.player.EditorialMorphShape
 import moe.rukamori.archivetune.ui.screens.library.LibraryHeaderContentPadding
 import moe.rukamori.archivetune.ui.screens.LOGIN_ROUTE
 import moe.rukamori.archivetune.ui.screens.LOGIN_URL_ARGUMENT
@@ -3354,55 +3350,12 @@ private const val TopAppBarIconButtonContainerAlpha = 0.48f
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopAppBarBrand() {
-    val playerConnection = LocalPlayerConnection.current
-    val isPlaying = playerConnection?.isPlaying?.collectAsStateWithLifecycle()?.value == true
-    val morph = remember { Morph(MaterialShapes.Circle, MaterialShapes.Cookie9Sided) }
-    val morphProgress by animateFloatAsState(
-        targetValue = if (isPlaying) 1f else 0f,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-        label = "brandBadgeMorph",
-    )
-    val badgeColor by animateColorAsState(
-        targetValue =
-            if (isPlaying) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            },
-        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "brandBadgeColor",
-    )
-    val badgeContentColor by animateColorAsState(
-        targetValue =
-            if (isPlaying) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onPrimaryContainer
-            },
-        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "brandBadgeContentColor",
-    )
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.semantics(mergeDescendants = true) { heading() },
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier =
-                Modifier
-                    .size(40.dp)
-                    .clip(EditorialMorphShape(morph, morphProgress))
-                    .background(badgeColor),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.about_appbar),
-                contentDescription = null,
-                tint = badgeContentColor,
-                modifier = Modifier.size(26.dp),
-            )
-        }
+        PerfectMusicLogo(modifier = Modifier.size(40.dp))
         Text(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.titleLargeEmphasized,

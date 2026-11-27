@@ -197,7 +197,7 @@
     <string name="aod_customize_entry_desc">常時接続プレーヤー画面をカスタマイズする</string>
     <string name="aod_customize_preview">ライブプレビュー</string>
     <string name="aod_customize_mode_enabled">AOD モードを有効にする</string>
-    <string name="aod_customize_mode_enabled_desc">ArchiveTune が常時オンのプレーヤー画面を表示できるようにします</string>
+    <string name="aod_customize_mode_enabled_desc">Perfect Music が常時オンのプレーヤー画面を表示できるようにします</string>
     <string name="aod_customize_visibility">可視性</string>
     <string name="aod_customize_show_thumbnail">サムネイルを表示</string>
     <string name="aod_customize_show_artist">ショーアーティスト</string>
@@ -308,7 +308,7 @@
     <string name="aod_customize_auto_start_screen_off">画面がオフになったときに AOD を表示する</string>
     <string name="aod_customize_auto_start_screen_off_desc">再生中に画面がオフになると、AOD アンビエント画面が自動的に表示されます</string>
     <string name="aod_customize_screensaver_info_title">システム スクリーン セーバー (AOD の充電)</string>
-    <string name="aod_customize_screensaver_info_desc">充電中またはドッキング中に AOD を自動的に有効にするには、Android の設定 &gt; ディスプレイ &gt; スクリーン セーバーに移動し、ArchiveTune を選択します。</string>
+    <string name="aod_customize_screensaver_info_desc">充電中またはドッキング中に AOD を自動的に有効にするには、Android の設定 &gt; ディスプレイ &gt; スクリーン セーバーに移動し、Perfect Music を選択します。</string>
     <string name="retry_button">再試行</string>
     <string name="top_music_videos">人気のミュージック ビデオ</string>
     <string name="trending">トレンド</string>
@@ -528,11 +528,11 @@
     <string name="storage_folder_selected_restart">保存フォルダーが保存されました。アプリは 3 秒後に再起動します。</string>
     <string name="storage_folder_invalid">有効なフォルダーを選択してください。</string>
     <string name="storage_folder_unsupported">このフォルダーは、ファイルベースのメディア キャッシュでは使用できません。</string>
-    <string name="storage_folder_not_writable">ArchiveTune はこのフォルダーにキャッシュ ファイルを書き込むことができません。</string>
+    <string name="storage_folder_not_writable">Perfect Music はこのフォルダーにキャッシュ ファイルを書き込むことができません。</string>
     <string name="storage_cache_cleared">キャッシュがクリアされました。</string>
     <string name="storage_cache_clear_failed">キャッシュをクリアできませんでした。 SDカードへのアクセスを確認してください。</string>
-    <string name="storage_cache_clear_warning">キャッシュ ファイルが削除されている間、ArchiveTune を開いたままにしてください。</string>
-    <string name="storage_overview_label">ArchiveTune が使用している</string>
+    <string name="storage_cache_clear_warning">キャッシュ ファイルが削除されている間、Perfect Music を開いたままにしてください。</string>
+    <string name="storage_overview_label">Perfect Music が使用している</string>
     <string name="storage_overview_measuring">ストレージを測定中…</string>
     <string name="storage_overview_empty">まだ何も保存されていません。再生すると、ダウンロードとキャッシュがここに表示されます。</string>
     <string name="storage_overview_volume_share">%1$s/%2$s</string>
@@ -540,7 +540,7 @@
     <string name="storage_location_used_percent">%1$s が使用されました</string>
     <string name="storage_location_change">変更</string>
     <string name="storage_location_current">現在</string>
-    <string name="storage_location_sheet_supporting">ダウンロードとキャッシュが新しい場所に移動され、ArchiveTune が再起動されます。</string>
+    <string name="storage_location_sheet_supporting">ダウンロードとキャッシュが新しい場所に移動され、Perfect Music が再起動されます。</string>
     <string name="storage_section_breakdown">スペースを使用しているもの</string>
     <string name="storage_legend_detail">%1$s · %2$s</string>
     <string name="storage_section_cleanup">自動クリーンアップ</string>
@@ -742,7 +742,7 @@
     <string name="theme_discard_text">このテーマに対する編集はまだ適用されていません。</string>
     <string name="theme_discard_confirm">廃棄する</string>
     <string name="theme_reset_done">Colors reset to default</string>
-    <string name="theme_import_failed_desc">このファイルは有効な ArchiveTune テーマではありません。</string>
+    <string name="theme_import_failed_desc">このファイルは有効な Perfect Music テーマではありません。</string>
     <string name="theme_hex_invalid">#ED5564 のように 6 桁または 8 桁の 16 進数を使用します</string>
     <string name="theme_seed_colors_desc">ロールを選択してシードカラーを編集します</string>
     <string name="theme_editor_mode_hsv" translatable="false">HSV</string>

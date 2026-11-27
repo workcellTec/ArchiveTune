@@ -39,7 +39,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,7 +64,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -84,6 +82,7 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.toBitmap
+import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -106,12 +105,12 @@ import moe.rukamori.archivetune.constants.SwipeThumbnailKey
 import moe.rukamori.archivetune.constants.ThumbnailCornerRadiusKey
 import moe.rukamori.archivetune.extensions.metadata
 import moe.rukamori.archivetune.extensions.toMediaItem
+import moe.rukamori.archivetune.ui.component.PerfectMusicLogo
 import moe.rukamori.archivetune.ui.utils.highRes
 import moe.rukamori.archivetune.utils.ImageBlurUtils
 import moe.rukamori.archivetune.utils.rememberEnumPreference
 import moe.rukamori.archivetune.utils.rememberLowDataModeActive
 import moe.rukamori.archivetune.utils.rememberPreference
-import kotlin.math.abs
 
 private data class ThumbnailPage(
     val slotKey: String,
@@ -440,12 +439,7 @@ fun Thumbnail(
                                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                                         contentAlignment = Alignment.Center,
                                     ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.about_splash),
-                                            contentDescription = stringResource(R.string.hide_player_thumbnail),
-                                            tint = textBackgroundColor.copy(alpha = 0.7f),
-                                            modifier = Modifier.size(120.dp),
-                                        )
+                                        PerfectMusicLogo(modifier = Modifier.size(120.dp))
                                     }
                                 } else {
                                     val primaryCanvasUrl = canvasArtwork?.animated

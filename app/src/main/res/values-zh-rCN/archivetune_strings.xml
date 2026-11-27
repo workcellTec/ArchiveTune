@@ -409,10 +409,10 @@
     <string name="storage_folder_selected_restart">存储文件夹已保存，应用将在 3 秒内自动重启</string>
     <string name="storage_folder_invalid">请选择有效的文件夹</string>
     <string name="storage_folder_unsupported">文件系统媒体缓存无法使用该文件夹</string>
-    <string name="storage_folder_not_writable">ArchiveTune 无法在此文件夹中写入缓存文件</string>
+    <string name="storage_folder_not_writable">Perfect Music 无法在此文件夹中写入缓存文件</string>
     <string name="storage_cache_cleared">缓存已清除</string>
     <string name="storage_cache_clear_failed">无法清除缓存，请检查 SD 卡读写权限</string>
-    <string name="storage_cache_clear_warning">清除缓存文件时请保持 ArchiveTune 处于打开状态</string>
+    <string name="storage_cache_clear_warning">清除缓存文件时请保持 Perfect Music 处于打开状态</string>
     <string name="history_duration_desc">计入有效听歌记录的最低播放时长</string>
     <string name="history_duration_seconds">%1$s秒</string>
     <string name="monthly_listeners">月听众数</string>

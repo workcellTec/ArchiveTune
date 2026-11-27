@@ -164,9 +164,9 @@
     <string name="modules_metadata_types">Categorias do provedor</string>
     <string name="modules_metadata_homepage">Página inicial</string>
     <string name="modules_metadata_repository">Repositório do código-fonte</string>
-    <string name="modules_metadata_min_app">Versão mínima do ArchiveTune</string>
+    <string name="modules_metadata_min_app">Versão mínima do Perfect Music</string>
     <string name="modules_metadata_runtime">Recursos de execução necessários</string>
     <string name="modules_metadata_app_attestation">Verificação do app</string>
-    <string name="modules_app_attestation_description">Este módulo pode provar ao serviço dele que as requisições vêm desta versão do ArchiveTune. A prova usa uma chave protegida por hardware e compartilha com o serviço o pacote e o certificado de assinatura do app, a versão do Android, o nível do patch de segurança e o estado da verificação de inicialização.</string>
+    <string name="modules_app_attestation_description">Este módulo pode provar ao serviço dele que as requisições vêm desta versão do Perfect Music. A prova usa uma chave protegida por hardware e compartilha com o serviço o pacote e o certificado de assinatura do app, a versão do Android, o nível do patch de segurança e o estado da verificação de inicialização.</string>
     <string name="modules_link_failed">Nenhum aplicativo conseguiu abrir este link.</string>
 </resources>
